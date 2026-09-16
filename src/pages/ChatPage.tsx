@@ -1,10 +1,16 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { ArrowDown, Paperclip, Send } from "lucide-react";
+import {
+  ArrowDown,
+  Paperclip,
+  RotateCcw,
+  Send,
+  ThumbsDown,
+  ThumbsUp,
+} from "lucide-react";
 
 import { messages as initial } from "../mocks/data";
 import { sendChatMessage } from "../services/chat.service";
 
-// Ngưỡng (px) tính từ đáy khung cuộn để coi là "đang ở gần cuối"
 const NEAR_BOTTOM_THRESHOLD = 120;
 
 export function ChatPage() {
@@ -12,7 +18,11 @@ export function ChatPage() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Có tin nhắn mới bị che khuất phía dưới hay không (khi user đã cuộn lên)
+  // State lưu trạng thái Like / Dislike cho từng tin nhắn (key: message.id, value: 'like' | 'dislike')
+  const [reactions, setReactions] = useState<
+    Record<string, "like" | "dislike">
+  >({});
+
   const [showJumpToLatest, setShowJumpToLatest] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -21,9 +31,7 @@ export function ChatPage() {
 
   function isNearBottom() {
     const el = scrollRef.current;
-
     if (!el) return true;
-
     return (
       el.scrollHeight - el.scrollTop - el.clientHeight < NEAR_BOTTOM_THRESHOLD
     );
@@ -36,13 +44,10 @@ export function ChatPage() {
 
   function handleScroll() {
     const nearBottom = isNearBottom();
-
     isNearBottomRef.current = nearBottom;
     setShowJumpToLatest(!nearBottom);
   }
 
-  // Tự động cuộn xuống khi có tin nhắn mới, NHƯNG chỉ khi user đang ở gần đáy.
-  // Nếu user đã cuộn lên đọc lại tin cũ, không "giật" xuống dưới ép buộc.
   useEffect(() => {
     if (isNearBottomRef.current) {
       scrollToBottom(msgs.length <= 1 ? "auto" : "smooth");
@@ -54,11 +59,9 @@ export function ChatPage() {
 
   async function submit(e?: FormEvent) {
     e?.preventDefault();
-
     if (!input.trim() || loading) return;
 
     const text = input.trim();
-
     setInput("");
 
     setMsgs((m) => [
@@ -70,14 +73,53 @@ export function ChatPage() {
       },
     ]);
 
-    // Gửi tin của chính mình luôn kéo về đáy
     isNearBottomRef.current = true;
-
     setLoading(true);
 
     try {
       const reply = await sendChatMessage(text);
+      setMsgs((m) => [...m, reply]);
+    } finally {
+      setLoading(false);
+    }
+  }
 
+  // Hàm xử lý Like / Dislike
+  function handleReaction(id: string, type: "like" | "dislike") {
+    setReactions((prev) => {
+      if (prev[id] === type) {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      }
+
+      return {
+        ...prev,
+        [id]: type,
+      };
+    });
+  }
+
+  // Hàm xử lý Tạo lại câu trả lời (Regenerate)
+  async function handleRegenerate(index: number) {
+    if (loading) return;
+
+    // Tìm tin nhắn user gần nhất ngay trước tin nhắn AI này
+    const prevUserMsg = msgs
+      .slice(0, index)
+      .reverse()
+      .find((m) => m.role === "user");
+
+    if (!prevUserMsg) return;
+
+    // Xóa câu trả lời hiện tại và các tin nhắn phía sau
+    setMsgs((m) => m.slice(0, index));
+
+    isNearBottomRef.current = true;
+    setLoading(true);
+
+    try {
+      const reply = await sendChatMessage(prevUserMsg.content);
       setMsgs((m) => [...m, reply]);
     } finally {
       setLoading(false);
@@ -85,10 +127,6 @@ export function ChatPage() {
   }
 
   return (
-    // FIX: "New conversation" + "Recent" đã chuyển sang sidebar chính (AppLayout),
-    // ChatPage giờ chỉ còn đúng 1 cột, chiếm trọn phần nội dung mà AppLayout cấp
-    // (h-full thay vì tự tính "100vh - 3rem" như trước, vì giờ chiều cao do
-    // AppLayout.main quyết định, tránh xung đột 2 nơi cùng set chiều cao).
     <div className="flex h-full min-w-0 flex-col overflow-hidden">
       {/* Header */}
       <header
@@ -100,18 +138,8 @@ export function ChatPage() {
         "
       >
         <div className="min-w-0">
-          <p
-            className="
-              font-mono text-[10px]
-              uppercase tracking-[0.18em]
-              text-[#04714a]
-            "
-          >
-            Conversation / 001
-          </p>
-
           <h1 className="mt-1 truncate text-xl font-semibold text-[#11130f]">
-            New conversation
+            Đông Đông
           </h1>
         </div>
 
@@ -127,11 +155,6 @@ export function ChatPage() {
         </span>
       </header>
 
-      {/* =========================================
-          MESSAGES AREA
-      ========================================== */}
-      {/* min-h-0 là bắt buộc trong flex column để flex-1 thực sự co lại được
-          và overflow-y-auto phát huy tác dụng, thay vì bị nội dung đẩy giãn. */}
       <div className="relative min-h-0 flex-1">
         <div
           ref={scrollRef}
@@ -140,7 +163,7 @@ export function ChatPage() {
         >
           <div className="mx-auto w-full max-w-4xl px-2">
             <div className="flex flex-col gap-5">
-              {msgs.map((message) => (
+              {msgs.map((message, idx) => (
                 <div
                   key={message.id}
                   className={
@@ -163,30 +186,51 @@ export function ChatPage() {
                       `
                   }
                 >
-                  {/* Message content */}
                   <div className="whitespace-pre-wrap">{message.content}</div>
 
-                  {/* Sources */}
-                  {message.sources && (
-                    <div
-                      className="
-                        mt-4
-                        border-t border-black/10
-                        pt-3
-                        text-xs text-black/45
-                      "
-                    >
-                      <span className="font-medium text-black/55">Sources</span>
+                  {/* Thanh công cụ Like / Unlike / Restart cho câu trả lời của AI */}
+                  {message.role !== "user" && (
+                    <div className="mt-2 flex items-center gap-1 text-black/40">
+                      <button
+                        type="button"
+                        title="Hữu ích"
+                        onClick={() => handleReaction(message.id, "like")}
+                        className={`rounded-md p-1.5 transition-colors hover:bg-black/5 hover:text-black ${
+                          reactions[message.id] === "like"
+                            ? "bg-black/5 text-[#00a86b]"
+                            : ""
+                        }`}
+                      >
+                        <ThumbsUp size={14} />
+                      </button>
 
-                      <span className="mx-1">·</span>
+                      <button
+                        type="button"
+                        title="Chưa tốt"
+                        onClick={() => handleReaction(message.id, "dislike")}
+                        className={`rounded-md p-1.5 transition-colors hover:bg-black/5 hover:text-black ${
+                          reactions[message.id] === "dislike"
+                            ? "bg-black/5 text-red-500"
+                            : ""
+                        }`}
+                      >
+                        <ThumbsDown size={14} />
+                      </button>
 
-                      {message.sources.join(" · ")}
+                      <button
+                        type="button"
+                        title="Tạo lại câu trả lời"
+                        onClick={() => handleRegenerate(idx)}
+                        disabled={loading}
+                        className="rounded-md p-1.5 transition-colors hover:bg-black/5 hover:text-black disabled:opacity-30"
+                      >
+                        <RotateCcw size={14} />
+                      </button>
                     </div>
                   )}
                 </div>
               ))}
 
-              {/* Loading */}
               {loading && (
                 <div className="flex items-center gap-1 px-4 py-2">
                   <span className="size-2 animate-bounce rounded-full bg-[#00a86b]" />
@@ -195,15 +239,11 @@ export function ChatPage() {
                 </div>
               )}
 
-              {/* Điểm neo để cuộn tới */}
               <div ref={bottomRef} />
             </div>
           </div>
         </div>
 
-        {/* =========================================
-            NÚT "XUỐNG TIN MỚI NHẤT"
-        ========================================== */}
         {showJumpToLatest && (
           <button
             type="button"
@@ -229,9 +269,7 @@ export function ChatPage() {
         )}
       </div>
 
-      {/* =========================================
-          COMPOSER
-      ========================================== */}
+      {/* Input Form */}
       <div className="shrink-0">
         <form
           onSubmit={submit}
@@ -250,7 +288,6 @@ export function ChatPage() {
             focus-within:shadow-[0_0_0_3px_rgba(0,168,107,0.08)]
           "
         >
-          {/* Attachment */}
           <button
             type="button"
             aria-label="Attach a file"
@@ -266,8 +303,6 @@ export function ChatPage() {
           >
             <Paperclip size={18} />
           </button>
-
-          {/* Input */}
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -298,8 +333,6 @@ export function ChatPage() {
               placeholder:text-black/35
             "
           />
-
-          {/* Send */}
           <button
             type="submit"
             aria-label="Send message"
@@ -322,7 +355,8 @@ export function ChatPage() {
         </form>
 
         <p className="mt-3 text-center text-[11px] text-black/35">
-          Đông Đông can make mistakes. Check important information.
+          Đông Đông có thể mắc lỗi, vui lòng kiểm tra lại thông tin trước khi áp
+          dụng vào thực tế.
         </p>
       </div>
     </div>
