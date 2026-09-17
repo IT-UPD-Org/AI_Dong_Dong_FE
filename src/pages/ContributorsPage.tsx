@@ -16,11 +16,17 @@ export function ContributorsPage() {
       aria-labelledby="contributors-title"
       className="rounded-3xl bg-[#f5f6f3] px-5 py-7 md:px-8 md:py-9"
     >
-      <header className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+      <header className="mb-8 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="mono text-[11px] uppercase tracking-[.16em] text-[#04714a]">
-            The people behind it
-          </p>
+          <div className="flex flex-wrap items-center gap-3">
+            <p className="mono text-[11px] uppercase tracking-[.16em] text-[#04714a]">
+              The people behind it
+            </p>
+            <span aria-hidden="true" className="h-px w-8 bg-[#04714a]/25" />
+            <p className="mono text-[10px] uppercase tracking-[.14em] text-black/40">
+              {contributors.length} contributors
+            </p>
+          </div>
           <h1
             id="contributors-title"
             className="mt-2 text-4xl font-bold tracking-[-.05em] text-[#172b21] md:text-5xl"
@@ -28,14 +34,9 @@ export function ContributorsPage() {
             Contributors<span aria-hidden="true" className="text-[#00a86b]">.</span>
           </h1>
         </div>
-        <div className="flex items-center gap-4 lg:pb-1">
-          <span className="whitespace-nowrap rounded-full border border-black/[.06] bg-white/70 px-3 py-1.5 text-xs font-medium text-black/50">
-            {contributors.length} contributors
-          </span>
-          <p className="max-w-xs text-sm leading-6 text-black/50">
-            A shared project grows through many kinds of care.
-          </p>
-        </div>
+        <p className="max-w-sm text-sm leading-6 text-black/50 lg:pb-1 lg:text-right">
+          A shared project grows through many kinds of care.
+        </p>
       </header>
 
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
