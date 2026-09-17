@@ -19,14 +19,14 @@ export function LandingPage() {
             University Artificial Intelligence / barcode : UAI-01
           </p>
           <h1 className="max-w-4xl text-6xl font-extrabold text-[#04714a] leading-[.94] tracking-[-.08em] md:text-8xl text-justify">
-            <div className="inline-block pb-10">Đông Đông GenAI</div>
+            <div className="inline-block pb-10">IT UPD GenAI</div>
             <br />
             <span className="text-black/35 md:text-6xl tracking-tighter leading-tight">
               Đạt những thành tựu học tập với sự trợ giúp của trí tuệ nhân tạo.
             </span>
           </h1>
           <p className="mt-8 max-w-2/3 text-lg leading-8 text-black/60 text-justify">
-            Đông Đông là một nền tảng trí tuệ nhân tạo được thiết kế để hỗ trợ
+            IT UPD GenAIlà một nền tảng trí tuệ nhân tạo được thiết kế để hỗ trợ
             sinh viên và giảng viên trong việc tìm kiếm thông tin, giải đáp thắc
             mắc và nâng cao trải nghiệm học tập tại Đại học Phương Đông.
           </p>
@@ -52,7 +52,7 @@ export function LandingPage() {
 
           {/* Header thẻ */}
           <div className="relative z-10 flex justify-between text-xs text-white/45">
-            <span className="mono">UAI-series: Kỳ Lân Đông Đông</span>
+            <span className="mono">UAI-series: IT UPD GenAI UAI01</span>
             <span>Được xây dựng bởi IT UPD</span>
           </div>
 
@@ -73,7 +73,7 @@ export function LandingPage() {
       {/* Features Section */}
       <section className="border-t border-black/10 px-6 py-20 md:px-12">
         <p className="mono text-xs uppercase tracking-[.18em] text-black/45">
-          UAI-01 Đông Đông sẽ làm được những gì
+          UAI-01 IT UPD GenAIsẽ làm được những gì
         </p>
 
         <div className="mt-12 space-y-16">

@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 const dongDongMessages = [
-  "Mình là Đông Đông mã #UAI-UNIT_01, sẽ hỗ trợ bạn trong học tập.",
+  "Mình là IT UPD GenAImã #UAI-UNIT_01, sẽ hỗ trợ bạn trong học tập.",
   "Cùng mình đạt những thành tựu trong học tập nhé!",
   "Bạn có thể hỏi bất cứ điều gì, mình sẽ cố gắng giải đáp cho bạn.",
   "Đại học Phương Đông - Vững gốc để vươn xa, dưỡng ngọc thành hình nhoaaaa!",
@@ -115,8 +115,8 @@ export function PresentLPDongDong() {
         />
 
         <img
-          src="/assets/dongdong_avt_01.png"
-          alt="Đông Đông GenAI Avatar"
+          src="/assets/xample_avt.jpg"
+          alt="IT UPD GenAIGenAI Avatar"
           className={`
             relative
             z-10
@@ -150,7 +150,7 @@ export function PresentLPDongDong() {
           ${isHovered ? "opacity-0" : "opacity-100"}
         `}
       >
-        Di chuột để xem thông điệp từ Đông Đông
+        Di chuột để xem thông điệp từ IT UPD GenAI
       </div>
     </div>
   );

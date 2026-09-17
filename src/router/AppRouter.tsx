@@ -24,7 +24,7 @@ export function AppRouter() {
           path="/about"
           element={
             <InfoPage
-              title="About Đông Đông"
+              title="About IT UPD GenAI"
               eyebrow="A shared intelligence"
               body="A university assistant shaped by the people, language, and questions of Phương Đông."
             />

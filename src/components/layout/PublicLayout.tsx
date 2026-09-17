@@ -10,15 +10,15 @@ export function PublicLayout() {
         {/* Logo & Avatar */}
         <Link to="/" className="flex items-center gap-3">
           <div className="size-18 overflow-hidden rounded-full flex items-center justify-center">
-            <img
+            {/* <img
               src="/assets/dongdong_avt_00.png"
-              alt="Đông Đông AI Logo"
+              alt="IT UPD GenAIAI Logo"
               className="size-18 max-w-none object-cover scale-125 transition-transform hover:scale-135"
-            />
+            /> */}
           </div>
           <div className="flex flex-col">
             <span className="font-bold leading-none text-[#04714a] text-lg">
-              ĐÔNG ĐÔNG
+              IT UPD GenAI
             </span>
           </div>
         </Link>

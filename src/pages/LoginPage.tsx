@@ -93,7 +93,7 @@ export function LoginPage() {
           Chào mừng trở lại
         </p>
         <h1 className="mt-2 text-4xl font-bold tracking-[-.06em] md:text-5xl">
-          Đăng nhập vào Đông Đông.
+          Đăng nhập vào IT UPD GenAI.
         </h1>
         <p className="mt-2 text-black/55">
           Sử dụng email nhà trường của bạn để tiếp tục.

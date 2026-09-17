@@ -1,1 +1,1 @@
-export { AppShell as Sidebar } from './AppShell';
+export { AppShell as Sidebar } from "./AppShell";
