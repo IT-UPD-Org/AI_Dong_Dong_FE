@@ -1,3 +1,4 @@
+// \dong-dong_FE\src\pages\LandingPage.tsx
 import {
   ArrowUpRight,
   BrainCircuit,
@@ -8,6 +9,7 @@ import {
 import { Link } from "react-router-dom";
 import { contributors } from "../mocks/data";
 import { PresentLPDongDong } from "../components/layout/PresentLPDongDong";
+import { ChatShowcaseSection } from "../components/landing/ChatShowcaseSection";
 
 export function LandingPage() {
   return (
@@ -73,7 +75,7 @@ export function LandingPage() {
       {/* Features Section */}
       <section className="border-t border-black/10 px-6 py-20 md:px-12">
         <p className="mono text-xs uppercase tracking-[.18em] text-black/45">
-          UAI-01 IT UPD GenAIsẽ làm được những gì
+          UAI-01 IT UPD GenAI sẽ làm được những gì
         </p>
 
         <div className="mt-12 space-y-16">
@@ -85,37 +87,8 @@ export function LandingPage() {
                 1. Trợ lý Trò chuyện & Tạo nội dung (Generative AI)
               </h2>
             </div>
-            <div className="grid gap-4 md:grid-cols-3">
-              <article className="rounded-3xl border border-black/10 bg-white p-7">
-                <span className="mono text-sm text-[#00a86b]">01</span>
-                <h3 className="mt-6 text-xl font-semibold">
-                  Hội thoại thông minh
-                </h3>
-                <p className="mt-3 leading-7 text-black/55">
-                  Trò chuyện tự nhiên dựa trên các mô hình LLM tiên tiến nhất
-                  hiện nay.
-                </p>
-              </article>
-              <article className="rounded-3xl border border-black/10 bg-white p-7">
-                <span className="mono text-sm text-[#00a86b]">02</span>
-                <h3 className="mt-6 text-xl font-semibold">
-                  Sáng tạo nội dung
-                </h3>
-                <p className="mt-3 leading-7 text-black/55">
-                  Hỗ trợ sinh viên gen content bài viết, giải đáp thắc mắc môn
-                  học, review/fix lỗi code, hướng dẫn viết báo cáo và bài tập
-                  lớn.
-                </p>
-              </article>
-              <article className="rounded-3xl border border-black/10 bg-white p-7">
-                <span className="mono text-sm text-[#00a86b]">03</span>
-                <h3 className="mt-6 text-xl font-semibold">Kho học liệu số</h3>
-                <p className="mt-3 leading-7 text-black/55">
-                  Tự động tìm kiếm, gửi lại tài liệu bài giảng và trích xuất
-                  link sách tham khảo trực tiếp từ thư viện nhà trường.
-                </p>
-              </article>
-            </div>
+
+            <ChatShowcaseSection />
           </div>
 
           {/* Nhóm 2: Tra cứu & Hỗ trợ Hành chính Nội bộ */}
