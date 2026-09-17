@@ -3,7 +3,6 @@ import { AiSphereIllustration } from "./AiSphereIllustration";
 
 interface FeatureCaption {
   text: string;
-  // Vị trí absolute riêng cho từng caption trên desktop (md trở lên)
   positionClassName: string;
 }
 
@@ -22,8 +21,6 @@ const CAPTIONS: FeatureCaption[] = [
   },
 ];
 
-// Section giới thiệu "01 — Trò Chuyện Thông Minh": khối cầu tech ở giữa,
-// 3 caption bay quanh (desktop) hoặc xếp thành list gạch đầu dòng (mobile).
 export function ChatShowcaseSection() {
   return (
     <div>
@@ -52,7 +49,6 @@ export function ChatShowcaseSection() {
           </p>
         ))}
       </div>
-      {/* Mobile: thay caption bay quanh bằng danh sách gạch đầu dòng bên dưới khối cầu */}
       <ul className="mt-8 space-y-3 md:hidden">
         {CAPTIONS.map((caption) => (
           <li
