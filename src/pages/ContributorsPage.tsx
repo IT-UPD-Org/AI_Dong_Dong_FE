@@ -70,7 +70,7 @@ export function ContributorsPage() {
                     className="flex max-w-full items-center gap-2 rounded-md text-left text-sm leading-6 text-black/60 transition-colors hover:text-[#04714a] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#04714a]"
                   >
                     <span className="truncate">{contributor.contribution}</span>
-                    <span aria-hidden="true" className="shrink-0 -translate-x-1 opacity-0 transition group-hover/task:translate-x-0 group-hover/task:opacity-100 group-focus-within/task:translate-x-0 group-focus-within/task:opacity-100">
+                    <span aria-hidden="true" className="shrink-0 -translate-x-1 opacity-0 transition group-hover/task:translate-x-0 group-hover/task:opacity-100">
                       ↗
                     </span>
                   </button>
@@ -78,7 +78,7 @@ export function ContributorsPage() {
                   <div
                     id={`contributor-preview-${contributor.id}`}
                     role="tooltip"
-                    className="pointer-events-none absolute bottom-[calc(100%+10px)] left-0 z-20 w-60 translate-y-1 rounded-xl border border-black/[.07] bg-white p-4 opacity-0 shadow-xl transition duration-150 group-hover/task:translate-y-0 group-hover/task:opacity-100 group-focus-within/task:translate-y-0 group-focus-within/task:opacity-100"
+                    className="pointer-events-none absolute bottom-[calc(100%+10px)] left-0 z-20 w-60 translate-y-1 rounded-xl border border-black/[.07] bg-white p-4 opacity-0 shadow-xl transition duration-150 group-hover/task:translate-y-0 group-hover/task:opacity-100"
                   >
                     <p className="text-xs font-semibold text-[#172b21]">Quick view</p>
                     <div className="mt-3 space-y-2 text-xs">
