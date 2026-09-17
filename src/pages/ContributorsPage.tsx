@@ -6,23 +6,13 @@ export function ContributorsPage() {
   const [selected, setSelected] = useState<Contributor | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
-  const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const hoverAfter = useRef(0);
-
-  function cancelPreview() {
-    if (hoverTimer.current) clearTimeout(hoverTimer.current);
-    hoverTimer.current = null;
-  }
 
   function openDetails(contributor: Contributor, trigger: HTMLButtonElement) {
-    cancelPreview();
     triggerRef.current = trigger;
     setSelected(contributor);
   }
 
   function closeDetails() {
-    cancelPreview();
-    hoverAfter.current = Date.now() + 800;
     setSelected(null);
     triggerRef.current?.focus({ preventScroll: true });
   }
@@ -30,8 +20,6 @@ export function ContributorsPage() {
   useEffect(() => {
     if (selected && !dialogRef.current?.open) dialogRef.current?.showModal();
   }, [selected]);
-
-  useEffect(() => () => cancelPreview(), []);
 
   return (
     <section aria-labelledby="contributors-title" className="min-h-full rounded-3xl bg-[#f3f4f5] px-5 py-7 sm:p-8 lg:p-10">
@@ -47,43 +35,60 @@ export function ContributorsPage() {
 
       <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {contributors.map((contributor) => (
-          <li key={contributor.id} className="min-w-0">
-            <button
-              type="button"
-              aria-label={`View details for ${contributor.name}`}
-              aria-haspopup="dialog"
-              aria-controls="contributor-details"
-              onPointerEnter={(event) => {
-                if (event.pointerType !== "mouse" || dialogRef.current?.open || Date.now() < hoverAfter.current) return;
-                const trigger = event.currentTarget;
-                cancelPreview();
-                hoverTimer.current = setTimeout(() => openDetails(contributor, trigger), 450);
-              }}
-              onPointerLeave={cancelPreview}
-              onPointerDown={cancelPreview}
-              onBlur={cancelPreview}
-              onClick={(event) => openDetails(contributor, event.currentTarget)}
-              className="group flex h-full w-full flex-col rounded-2xl border border-black/[.06] bg-[#fafafa] p-6 text-left shadow-[0_4px_16px_-6px_rgba(24,39,30,0.12)] transition-[translate,box-shadow,border-color] duration-200 hover:border-[#b9c8be] hover:shadow-[0_12px_28px_-10px_rgba(24,39,30,0.2)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#04714a] motion-safe:hover:-translate-y-1 motion-reduce:transition-none"
-            >
-              <span className="break-words text-base font-semibold tracking-tight text-[#25332c]">
+          <li key={contributor.id}>
+            <article className="flex h-full min-w-0 flex-col rounded-2xl border border-black/[.06] bg-[#fafafa] p-6 shadow-[0_4px_16px_-6px_rgba(24,39,30,0.12)] transition-[translate,box-shadow,border-color] duration-200 hover:border-[#b9c8be] hover:shadow-[0_12px_28px_-10px_rgba(24,39,30,0.2)] motion-safe:hover:-translate-y-1 motion-reduce:transition-none">
+              <h2 className="break-words text-base font-semibold tracking-tight text-[#25332c]">
                 {contributor.name}
-              </span>
-              <span className="mt-1.5 text-xs font-medium leading-5 text-[#527061]">
+              </h2>
+              <p className="mt-1.5 text-xs font-medium leading-5 text-[#527061]">
                 {contributor.role}
-              </span>
-              <span className="mt-6 block w-full border-t border-black/[.05] pt-4 text-[13px] leading-6 text-[#707873]">
-                {contributor.contribution}
-              </span>
-            </button>
+              </p>
+
+              <div className="group/task relative mt-6 border-t border-black/[.05] pt-4">
+                <button
+                  type="button"
+                  aria-describedby={`contributor-preview-${contributor.id}`}
+                  onClick={(event) => openDetails(contributor, event.currentTarget)}
+                  className="w-full rounded-lg text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#04714a]"
+                >
+                  <span className="text-[10px] font-medium uppercase tracking-[.12em] text-[#8a918d]">
+                    Task
+                  </span>
+                  <span className="mt-1.5 flex items-center justify-between gap-3 text-[13px] leading-6 text-[#626c66] transition-colors group-hover/task:text-[#04714a]">
+                    {contributor.contribution}
+                    <span aria-hidden="true" className="text-base transition-transform group-hover/task:translate-x-0.5">↗</span>
+                  </span>
+                </button>
+
+                <div
+                  id={`contributor-preview-${contributor.id}`}
+                  role="tooltip"
+                  className="pointer-events-none absolute bottom-[calc(100%+12px)] left-0 z-20 w-56 translate-y-1 rounded-xl border border-black/[.07] bg-white p-4 opacity-0 shadow-[0_16px_40px_-14px_rgba(20,35,26,0.3)] transition-[opacity,translate] duration-150 group-hover/task:translate-y-0 group-hover/task:opacity-100 group-focus-within/task:translate-y-0 group-focus-within/task:opacity-100 motion-reduce:transition-none"
+                >
+                  <p className="text-xs font-semibold text-[#25332c]">Quick view</p>
+                  <dl className="mt-3 space-y-2 text-xs">
+                    <div className="flex justify-between gap-3">
+                      <dt className="text-[#8a918d]">Team</dt>
+                      <dd className="text-right font-medium text-[#4e5b54]">{contributor.team}</dd>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <dt className="text-[#8a918d]">Position</dt>
+                      <dd className="text-right font-medium text-[#4e5b54]">{contributor.role}</dd>
+                    </div>
+                  </dl>
+                  <p className="mt-3 border-t border-black/[.06] pt-3 text-[11px] text-[#04714a]">
+                    Click to view full details
+                  </p>
+                </div>
+              </div>
+            </article>
           </li>
         ))}
       </ul>
 
       <dialog
         ref={dialogRef}
-        id="contributor-details"
         aria-labelledby="contributor-name"
-        aria-describedby="contributor-description"
         onClose={closeDetails}
         onClick={(event) => {
           if (event.target === event.currentTarget) dialogRef.current?.close();
@@ -101,29 +106,24 @@ export function ContributorsPage() {
                 autoFocus
                 aria-label="Close contributor details"
                 onClick={() => dialogRef.current?.close()}
-                onKeyDown={(event) => {
-                  if (event.key === "Tab") event.preventDefault();
-                }}
                 className="flex size-9 items-center justify-center rounded-full text-[#67736c] transition-colors hover:bg-black/5 hover:text-[#25332c] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#04714a]"
               >
-                <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                  <path d="m6 6 12 12M18 6 6 18" />
-                </svg>
+                <span aria-hidden="true" className="text-xl leading-none">×</span>
               </button>
             </div>
+
             <h2 id="contributor-name" className="break-words text-2xl font-semibold tracking-tight">
               {selected.name}
             </h2>
-            <p id="contributor-description" className="mt-2 text-sm text-[#527061]">
-              {selected.role}
-            </p>
+            <p className="mt-2 text-sm text-[#527061]">{selected.role}</p>
+
             <dl className="mt-7 space-y-5 border-t border-black/[.07] pt-6 text-sm">
               <div>
                 <dt className="text-xs text-[#707873]">Team</dt>
                 <dd className="mt-1.5 font-medium">{selected.team}</dd>
               </div>
               <div>
-                <dt className="text-xs text-[#707873]">Contribution</dt>
+                <dt className="text-xs text-[#707873]">Task</dt>
                 <dd className="mt-1.5 leading-6">{selected.contribution}</dd>
               </div>
             </dl>
