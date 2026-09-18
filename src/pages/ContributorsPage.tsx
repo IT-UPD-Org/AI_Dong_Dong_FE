@@ -43,26 +43,35 @@ export function ContributorsPage() {
         {contributors.map((contributor) => (
           <article
             key={contributor.id}
-            className="group min-w-0 rounded-2xl border border-black/[.07] bg-[#fbfbf9] shadow-sm transition duration-300 hover:border-[#04714a]/20 hover:shadow-lg motion-safe:hover:-translate-y-0.5 motion-reduce:transition-none"
+            className="group relative isolate min-w-0 rounded-2xl border border-black/[.07] bg-[#fbfbf9] shadow-sm transition duration-300 hover:border-black/10 hover:shadow-xl motion-safe:hover:-translate-y-1 motion-reduce:transition-none"
           >
+            <span
+              aria-hidden="true"
+              className="absolute inset-x-6 top-0 z-10 h-0.5 origin-left scale-x-0 rounded-full transition-transform duration-500 ease-out group-hover:scale-x-100"
+              style={{ backgroundColor: contributor.color }}
+            />
             <div
               aria-hidden="true"
               className="relative h-20 overflow-hidden rounded-t-2xl bg-[#e9ece7]"
             >
-              <span className="absolute -right-4 -top-12 size-40 rounded-full border-[22px] border-white/35 transition-transform duration-500 motion-safe:group-hover:translate-x-2 motion-safe:group-hover:translate-y-2" />
+              <span
+                className="absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-30"
+                style={{ backgroundColor: contributor.color }}
+              />
+              <span className="absolute -right-4 -top-12 size-40 rounded-full border-[22px] border-white/35 transition-transform duration-500 ease-out motion-safe:group-hover:translate-x-3 motion-safe:group-hover:translate-y-3 motion-safe:group-hover:scale-105" />
             </div>
 
             <div className="relative flex min-h-52 flex-col px-5 pb-4">
               <div
                 aria-hidden="true"
-                className="-mt-7 flex size-16 items-center justify-center rounded-full border-4 border-[#fbfbf9] text-base font-semibold text-[#172b21] shadow-sm"
+                className="-mt-7 flex size-16 items-center justify-center rounded-full border-4 border-[#fbfbf9] text-base font-semibold text-[#172b21] shadow-sm transition duration-300 ease-out group-hover:-translate-y-1 group-hover:shadow-md"
                 style={{ backgroundColor: contributor.color }}
               >
                 {contributor.initials}
               </div>
 
               <div className="mt-4 flex-1">
-                <h2 className="break-words text-lg font-semibold tracking-tight text-[#172b21]">
+                <h2 className="break-words text-lg font-semibold tracking-tight text-[#172b21] transition-colors duration-300 group-hover:text-[#04714a]">
                   {contributor.name}
                 </h2>
                 <p className="mt-0.5 text-[13px] font-medium leading-5 text-[#04714a]">
@@ -81,7 +90,7 @@ export function ContributorsPage() {
                     className="flex w-full items-center justify-between gap-2 rounded-md text-left text-[13px] leading-6 text-black/60 transition-colors hover:text-[#04714a] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#04714a]"
                   >
                     <span className="truncate">{contributor.contribution}</span>
-                    <span aria-hidden="true" className="shrink-0 opacity-0 transition-opacity group-hover/task:opacity-100">
+                    <span aria-hidden="true" className="shrink-0 -translate-x-1 opacity-0 transition duration-200 group-hover/task:translate-x-0 group-hover/task:opacity-100">
                       ↗
                     </span>
                   </button>
@@ -112,7 +121,7 @@ export function ContributorsPage() {
               <p className="mt-5 flex items-center gap-2 border-t border-black/[.06] pt-3.5 text-xs font-medium text-black/50">
                 <span
                   aria-hidden="true"
-                  className="size-2 rounded-full"
+                  className="size-2 rounded-full transition-transform duration-300 group-hover:scale-125"
                   style={{ backgroundColor: contributor.color }}
                 />
                 {contributor.team}
