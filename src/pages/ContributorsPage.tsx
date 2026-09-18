@@ -43,7 +43,7 @@ export function ContributorsPage() {
         {contributors.map((contributor) => (
           <article
             key={contributor.id}
-            className="group relative isolate min-w-0 rounded-2xl border-[0.5px] border-[#dfe3e0] bg-[#fbfbf9] shadow-sm transition duration-300 hover:border-[#bfd2c7] hover:bg-[#f9fbf9] hover:shadow-xl motion-safe:hover:-translate-y-1 motion-reduce:transition-none"
+            className="group relative isolate min-w-0 rounded-2xl border-[0.5px] border-[#d7e1db] bg-[#fbfbf9] shadow-sm transition duration-300 hover:border-[#bfd2c7] hover:shadow-xl motion-safe:hover:-translate-y-1 motion-reduce:transition-none"
           >
             <span
               aria-hidden="true"
@@ -51,7 +51,7 @@ export function ContributorsPage() {
             />
             <div
               aria-hidden="true"
-              className="relative h-20 overflow-hidden rounded-t-2xl bg-[#ecefec] transition-colors duration-500 ease-out group-hover:bg-[#d2e2d9]"
+              className="relative h-20 overflow-hidden rounded-t-2xl bg-[#dce8e1] transition-colors duration-500 group-hover:bg-[#cfdfd6]"
             >
               <span className="absolute -right-4 -top-12 size-40 rounded-full border-[22px] border-white/35 transition-transform duration-500 ease-out motion-safe:group-hover:translate-x-3 motion-safe:group-hover:translate-y-3 motion-safe:group-hover:scale-105" />
             </div>
@@ -59,16 +59,16 @@ export function ContributorsPage() {
             <div className="relative flex min-h-52 flex-col px-5 pb-4">
               <div
                 aria-hidden="true"
-                className="-mt-7 flex size-16 items-center justify-center rounded-full border-4 border-[#fbfbf9] bg-[#e1e5e2] text-base font-semibold text-[#172b21] shadow-sm transition duration-300 ease-out group-hover:-translate-y-1 group-hover:bg-[#b9d0c1] group-hover:shadow-md"
+                className="-mt-7 flex size-16 items-center justify-center rounded-full border-4 border-[#fbfbf9] bg-[#b9d0c1] text-base font-semibold text-[#172b21] shadow-sm transition duration-300 ease-out group-hover:-translate-y-1 group-hover:shadow-md"
               >
                 {contributor.initials}
               </div>
 
               <div className="mt-4 flex-1">
-                <h2 className="break-words text-lg font-semibold tracking-tight text-[#172b21] transition-colors duration-300 group-hover:text-[#04714a]">
+                <h2 className="break-words text-lg font-semibold tracking-tight text-[#04714a]">
                   {contributor.name}
                 </h2>
-                <p className="mt-0.5 text-[13px] font-medium leading-5 text-black/55 transition-colors duration-300 group-hover:text-[#04714a]">
+                <p className="mt-0.5 text-[13px] font-medium leading-5 text-[#04714a]">
                   {contributor.role}
                 </p>
 
@@ -115,7 +115,7 @@ export function ContributorsPage() {
               <p className="mt-5 flex items-center gap-2 border-t border-black/[.06] pt-3.5 text-xs font-medium text-black/50">
                 <span
                   aria-hidden="true"
-                  className="size-2 rounded-full bg-[#d2d7d3] transition duration-300 group-hover:scale-125 group-hover:bg-[#b9d0c1]"
+                  className="size-2 rounded-full bg-[#b9d0c1] transition-transform duration-300 group-hover:scale-125"
                 />
                 {contributor.team}
               </p>

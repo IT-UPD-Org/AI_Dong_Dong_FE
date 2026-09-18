@@ -1,5 +1,13 @@
 import type { ChatMessage, Conversation, Contributor, DocumentItem } from '../types';
 export const conversations: Conversation[] = [{ id: '1', title: 'Course registration guide', date: 'Today' }, { id: '2', title: 'Research proposal feedback', date: 'Yesterday' }, { id: '3', title: 'Library opening hours', date: 'Aug 22' }];
 export const messages: ChatMessage[] = [{ id: '1', role: 'assistant', content: 'Xin chào, I’m Đông Đông. I can help you navigate university knowledge, courses, research, and campus life.', sources: ['University Knowledge Base', 'Student handbook'] }];
-export const contributors: Contributor[] = [{ id: '1', name: 'Minh Anh', role: 'Project Manager', contribution: 'Product direction', team: 'Core team', initials: 'MA', color: '#d9c6a5' }, { id: '2', name: 'Tuấn Nguyễn', role: 'AI Researcher', contribution: 'Retrieval systems', team: 'Research', initials: 'TN', color: '#b9d0c1' }, { id: '3', name: 'Linh Phạm', role: 'Frontend Engineer', contribution: 'Interface architecture', team: 'Engineering', initials: 'LP', color: '#c3c1d5' }, { id: '4', name: 'Hà My', role: 'Knowledge Curator', contribution: 'University library', team: 'Knowledge', initials: 'HM', color: '#d9b8a9' }, { id: '5', name: 'Duy Trần', role: 'Data Engineer', contribution: 'Document pipeline', team: 'Engineering', initials: 'DT', color: '#b8c9d9' }];
+export const contributors: Contributor[] = [{ id: '1', name: 'Minh Anh', role: 'Project Manager', contribution: 'Product direction', team: 'Core team', initials: 'MA', color: '#d9c6a5' }, { id: '2', name: 'Tuấn Nguyễn', role: 'AI Researcher', contribution: 'Retrieval systems', team: 'Research', initials: 'TN', color: '#b9d0c1' }, { id: '3', name: 'Linh Phạm', role: 'Frontend Engineer', contribution: 'Interface architecture', team: 'Engineering', initials: 'LP', color: '#c3c1d5' }, { id: '4', name: 'Hà My', role: 'Knowledge Curator', contribution: 'University library', team: 'Knowledge', initials: 'HM', color: '#d9b8a9' }, { id: '5', name: 'Duy Trần', role: 'Data Engineer', contribution: 'Document pipeline', team: 'Engineering', initials: 'DT', color: '#b8c9d9' },{
+    id: "6",
+    name: "Chu Huy",
+    role: "AI Researcher",
+    contribution: "Retrieval systems",
+    team: "Research",
+    initials: "TN",
+    color: "#b9d0c1",
+  }];
 export const documents: DocumentItem[] = [{ id: '1', name: 'Student handbook 2025.pdf', type: 'PDF', status: 'Ready', progress: 100, updated: 'Today, 09:42', size: '4.2 MB' }, { id: '2', name: 'Faculty regulations.docx', type: 'DOCX', status: 'Processing', progress: 68, updated: 'Today, 09:18', size: '1.8 MB' }, { id: '3', name: 'Library knowledge base.md', type: 'MD', status: 'Needs review', progress: 100, updated: 'Yesterday', size: '820 KB' }];
