@@ -43,7 +43,7 @@ export function ContributorsPage() {
         {contributors.map((contributor) => (
           <article
             key={contributor.id}
-            className="group relative isolate min-w-0 rounded-2xl border border-black/[.07] bg-[#fbfbf9] shadow-sm transition duration-300 hover:border-black/10 hover:shadow-xl motion-safe:hover:-translate-y-1 motion-reduce:transition-none"
+            className="group relative isolate min-w-0 rounded-2xl border-[0.5px] border-[#d7e1db] bg-[#fbfbf9] shadow-sm transition duration-300 hover:border-[#bfd2c7] hover:shadow-xl motion-safe:hover:-translate-y-1 motion-reduce:transition-none"
           >
             <span
               aria-hidden="true"
