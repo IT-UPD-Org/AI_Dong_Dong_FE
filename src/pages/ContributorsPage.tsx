@@ -43,80 +43,82 @@ export function ContributorsPage() {
         {contributors.map((contributor) => (
           <article
             key={contributor.id}
-            className="group relative isolate min-w-0 rounded-2xl border border-black/[.06] bg-[#f9f9f6] shadow-sm transition duration-300 hover:border-black/10 hover:shadow-lg motion-safe:hover:-translate-y-1 motion-reduce:transition-none"
+            className="group relative isolate min-w-0 rounded-2xl border border-black/[.07] bg-[#fbfbf9] shadow-sm transition duration-300 hover:border-black/10 hover:shadow-xl motion-safe:hover:-translate-y-1 motion-reduce:transition-none"
           >
             <span
               aria-hidden="true"
-              className="absolute inset-0 rounded-2xl bg-[#e8f2ed] opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+              className="absolute inset-x-6 top-0 z-10 h-0.5 origin-left scale-x-0 rounded-full bg-[#9fc4b0] transition-transform duration-500 ease-out group-hover:scale-x-100"
             />
-            <span
-              aria-hidden="true"
-              className="absolute inset-x-5 top-0 z-20 h-px origin-left scale-x-0 bg-[#69a888] transition-transform duration-500 ease-out group-hover:scale-x-100"
-            />
-
             <div
               aria-hidden="true"
-              className="relative z-10 h-16 overflow-hidden rounded-t-2xl bg-[#e7ebe7] transition-colors duration-500 group-hover:bg-[#dcebe3]"
+              className="relative h-20 overflow-hidden rounded-t-2xl bg-[#dce8e1] transition-colors duration-500 group-hover:bg-[#cfdfd6]"
             >
-              <span className="absolute -right-5 -top-12 size-36 rounded-full border-[20px] border-white/35 transition duration-500 ease-out motion-safe:group-hover:translate-x-2 motion-safe:group-hover:translate-y-2 motion-safe:group-hover:scale-105" />
+              <span className="absolute -right-4 -top-12 size-40 rounded-full border-[22px] border-white/35 transition-transform duration-500 ease-out motion-safe:group-hover:translate-x-3 motion-safe:group-hover:translate-y-3 motion-safe:group-hover:scale-105" />
             </div>
 
-            <div className="relative z-10 flex min-h-44 flex-col px-5 pb-4">
+            <div className="relative flex min-h-52 flex-col px-5 pb-4">
               <div
                 aria-hidden="true"
-                className="-mt-6 flex size-14 items-center justify-center rounded-full border-4 border-[#f9f9f6] bg-[#c9ded2] text-sm font-semibold text-[#172b21] shadow-sm transition duration-300 group-hover:-translate-y-1 group-hover:border-[#e8f2ed] group-hover:shadow-md"
+                className="-mt-7 flex size-16 items-center justify-center rounded-full border-4 border-[#fbfbf9] bg-[#b9d0c1] text-base font-semibold text-[#172b21] shadow-sm transition duration-300 ease-out group-hover:-translate-y-1 group-hover:shadow-md"
               >
                 {contributor.initials}
               </div>
 
-              <div className="mt-3 flex-1">
-                <h2 className="break-words text-base font-semibold tracking-tight text-[#172b21] transition-colors duration-300 group-hover:text-[#04714a]">
+              <div className="mt-4 flex-1">
+                <h2 className="break-words text-lg font-semibold tracking-tight text-[#04714a]">
                   {contributor.name}
                 </h2>
-                <p className="mt-1 text-xs font-medium leading-5 text-[#04714a]">
+                <p className="mt-0.5 text-[13px] font-medium leading-5 text-[#04714a]">
                   {contributor.role}
                 </p>
-              </div>
 
-              <div className="group/task relative mt-5 border-t border-black/[.06] pt-3.5">
-                <p className="mono mb-1 text-[9px] uppercase tracking-[.14em] text-black/35">
-                  Task
-                </p>
-                <button
-                  type="button"
-                  aria-haspopup="dialog"
-                  aria-describedby={`contributor-preview-${contributor.id}`}
-                  onClick={() => openDetails(contributor)}
-                  className="flex w-full items-center justify-between gap-3 rounded-md text-left text-[13px] leading-6 text-black/60 transition-colors hover:text-[#04714a] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#04714a]"
-                >
-                  <span className="truncate">{contributor.contribution}</span>
-                  <span aria-hidden="true" className="flex size-7 shrink-0 items-center justify-center rounded-full border border-black/[.06] bg-white/70 text-xs opacity-0 transition duration-200 group-hover/task:bg-[#04714a] group-hover/task:text-white group-hover/task:opacity-100">
-                    ↗
-                  </span>
-                </button>
+                <div className="group/task relative mt-5 w-full">
+                  <p className="mono mb-1 text-[10px] uppercase tracking-[.14em] text-black/35">
+                    Task
+                  </p>
+                  <button
+                    type="button"
+                    aria-haspopup="dialog"
+                    aria-describedby={`contributor-preview-${contributor.id}`}
+                    onClick={() => openDetails(contributor)}
+                    className="flex w-full items-center justify-between gap-2 rounded-md text-left text-[13px] leading-6 text-black/60 transition-colors hover:text-[#04714a] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#04714a]"
+                  >
+                    <span className="truncate">{contributor.contribution}</span>
+                    <span aria-hidden="true" className="shrink-0 -translate-x-1 opacity-0 transition duration-200 group-hover/task:translate-x-0 group-hover/task:opacity-100">
+                      ↗
+                    </span>
+                  </button>
 
-                <div
-                  id={`contributor-preview-${contributor.id}`}
-                  role="tooltip"
-                  className="pointer-events-none absolute bottom-[calc(100%+10px)] left-0 z-30 w-64 translate-y-1 rounded-xl border border-black/[.06] bg-[#fdfdfb] p-4 opacity-0 shadow-xl transition duration-150 group-hover/task:translate-y-0 group-hover/task:opacity-100"
-                >
-                  <p className="text-sm font-semibold text-[#172b21]">{contributor.name}</p>
-                  <p className="mt-0.5 text-xs text-[#04714a]">{contributor.role}</p>
-                  <div className="mt-3 space-y-2 border-t border-black/[.06] pt-3 text-xs">
-                    <p className="flex justify-between gap-3">
-                      <span className="text-black/45">Team</span>
-                      <span className="font-medium">{contributor.team}</span>
-                    </p>
-                    <p className="flex justify-between gap-3">
-                      <span className="text-black/45">Task</span>
-                      <span className="text-right font-medium">{contributor.contribution}</span>
+                  <div
+                    id={`contributor-preview-${contributor.id}`}
+                    role="tooltip"
+                    className="pointer-events-none absolute bottom-[calc(100%+8px)] left-0 z-20 w-60 translate-y-1 rounded-xl border border-black/[.07] bg-white p-4 opacity-0 shadow-lg transition duration-150 group-hover/task:translate-y-0 group-hover/task:opacity-100"
+                  >
+                    <p className="text-xs font-semibold text-[#172b21]">Quick view</p>
+                    <div className="mt-3 space-y-2 text-xs">
+                      <p className="flex justify-between gap-3">
+                        <span className="text-black/45">Team</span>
+                        <span className="font-medium">{contributor.team}</span>
+                      </p>
+                      <p className="flex justify-between gap-3">
+                        <span className="text-black/45">Position</span>
+                        <span className="font-medium">{contributor.role}</span>
+                      </p>
+                    </div>
+                    <p className="mt-3 border-t border-black/[.06] pt-3 text-[11px] text-[#04714a]">
+                      Click to view full details
                     </p>
                   </div>
-                  <p className="mt-3 border-t border-black/[.06] pt-3 text-[11px] text-[#04714a]">
-                    Click to view full details
-                  </p>
                 </div>
               </div>
+
+              <p className="mt-5 flex items-center gap-2 border-t border-black/[.06] pt-3.5 text-xs font-medium text-black/50">
+                <span
+                  aria-hidden="true"
+                  className="size-2 rounded-full bg-[#b9d0c1] transition-transform duration-300 group-hover:scale-125"
+                />
+                {contributor.team}
+              </p>
             </div>
           </article>
         ))}
@@ -133,7 +135,7 @@ export function ContributorsPage() {
       >
         {selected && (
           <>
-            <div className="relative h-24 overflow-hidden bg-[#dfece5]">
+            <div className="relative h-24 overflow-hidden bg-[#dce8e1]">
               <span aria-hidden="true" className="absolute -right-5 -top-16 size-52 rounded-full border-[28px] border-white/20" />
               <button
                 type="button"
@@ -149,7 +151,7 @@ export function ContributorsPage() {
             <div className="relative px-7 pb-8">
               <span
                 aria-hidden="true"
-                className="-mt-9 flex size-[72px] items-center justify-center rounded-full border-[5px] border-[#fbfbf9] bg-[#c9ded2] text-xl font-semibold shadow-sm"
+                className="-mt-9 flex size-[72px] items-center justify-center rounded-full border-[5px] border-white bg-[#b9d0c1] text-xl font-semibold shadow-sm"
               >
                 {selected.initials}
               </span>
