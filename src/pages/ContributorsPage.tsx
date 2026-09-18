@@ -61,14 +61,14 @@ export function ContributorsPage() {
               const x = (event.clientX - bounds.left) / bounds.width;
               const y = (event.clientY - bounds.top) / bounds.height;
 
-              card.style.setProperty("--tilt-x", `${(0.5 - y) * 7}deg`);
-              card.style.setProperty("--tilt-y", `${(x - 0.5) * 9}deg`);
+              card.style.setProperty("--tilt-x", `${(0.5 - y) * 4.5}deg`);
+              card.style.setProperty("--tilt-y", `${(x - 0.5) * 6}deg`);
               card.style.setProperty("--mouse-x", `${x * 100}%`);
               card.style.setProperty("--mouse-y", `${y * 100}%`);
-              card.style.setProperty("--orb-x", `${(x - 0.5) * 12}px`);
-              card.style.setProperty("--orb-y", `${(y - 0.5) * 10}px`);
-              card.style.setProperty("--orb-back-x", `${(0.5 - x) * 8}px`);
-              card.style.setProperty("--orb-back-y", `${(0.5 - y) * 7}px`);
+              card.style.setProperty("--orb-x", `${(x - 0.5) * 8}px`);
+              card.style.setProperty("--orb-y", `${(y - 0.5) * 7}px`);
+              card.style.setProperty("--orb-back-x", `${(0.5 - x) * 6}px`);
+              card.style.setProperty("--orb-back-y", `${(0.5 - y) * 5}px`);
             }}
             onPointerLeave={(event) => {
               const card = event.currentTarget;
@@ -83,7 +83,7 @@ export function ContributorsPage() {
                 "--orb-back-y",
               ].forEach((property) => card.style.removeProperty(property));
             }}
-            className="group relative isolate min-w-0 rounded-2xl border-[0.5px] border-[#dfe3e0] bg-[#fbfbf9] shadow-[0_1px_2px_rgba(23,43,33,.05)] [--card-scale:1] [--lift:0px] [--tilt-x:0deg] [--tilt-y:0deg] [transform-style:preserve-3d] transform-[perspective(1000px)_rotateX(var(--tilt-x))_rotateY(var(--tilt-y))_translateY(var(--lift))_scale(var(--card-scale))] transition-[transform,box-shadow,border-color,background-color] duration-300 ease-[cubic-bezier(.22,.8,.25,1)] will-change-transform hover:[--card-scale:1.018] hover:[--lift:-9px] hover:border-[#8fbea5] hover:bg-white hover:shadow-[0_34px_70px_-30px_rgba(4,113,74,.5)] motion-reduce:animate-none motion-reduce:transform-none motion-reduce:transition-none animate-in fade-in slide-in-from-bottom-3"
+            className="group relative isolate min-w-0 rounded-2xl border-[0.5px] border-[#dfe3e0] bg-[#fbfbf9] shadow-[0_1px_2px_rgba(23,43,33,.05)] [--card-scale:1] [--lift:0px] [--tilt-x:0deg] [--tilt-y:0deg] [transform-style:preserve-3d] transform-[perspective(1000px)_rotateX(var(--tilt-x))_rotateY(var(--tilt-y))_translateY(var(--lift))_scale(var(--card-scale))] transition-[transform,box-shadow,border-color,background-color] duration-500 ease-[cubic-bezier(.16,1,.3,1)] will-change-transform hover:[--card-scale:1.012] hover:[--lift:-7px] hover:border-[#8fbea5] hover:bg-white hover:shadow-[0_34px_70px_-30px_rgba(4,113,74,.5)] motion-reduce:animate-none motion-reduce:transform-none motion-reduce:transition-none animate-in fade-in slide-in-from-bottom-3"
             style={{
               animationDelay: `${index * 55}ms`,
               animationFillMode: "both",
@@ -91,11 +91,11 @@ export function ContributorsPage() {
           >
             <span
               aria-hidden="true"
-              className="pointer-events-none absolute inset-0 -z-10 rounded-2xl bg-[radial-gradient(circle_at_88%_2%,rgba(0,168,107,.15),transparent_44%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+              className="pointer-events-none absolute inset-0 -z-10 rounded-2xl bg-[radial-gradient(circle_at_88%_2%,rgba(0,168,107,.15),transparent_44%)] opacity-0 transition-opacity duration-700 group-hover:opacity-100"
             />
             <span
               aria-hidden="true"
-              className="pointer-events-none absolute inset-0 z-20 rounded-2xl opacity-0 mix-blend-screen transition-opacity duration-300 group-hover:opacity-100 motion-reduce:hidden"
+              className="pointer-events-none absolute inset-0 z-20 rounded-2xl opacity-0 mix-blend-screen transition-opacity duration-600 group-hover:opacity-100 motion-reduce:hidden"
               style={{
                 background:
                   "radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 20%), rgba(255,255,255,.8), rgba(255,255,255,.18) 17%, transparent 38%)",
@@ -103,34 +103,34 @@ export function ContributorsPage() {
             />
             <span
               aria-hidden="true"
-              className="pointer-events-none absolute -inset-y-1/2 -left-1/2 z-20 w-1/3 -translate-x-[180%] rotate-[18deg] bg-gradient-to-r from-transparent via-white/55 to-transparent blur-sm transition-transform duration-1000 ease-[cubic-bezier(.2,.7,.2,1)] group-hover:translate-x-[650%] motion-reduce:hidden"
+              className="pointer-events-none absolute -inset-y-1/2 -left-1/2 z-20 w-1/3 -translate-x-[180%] rotate-[18deg] bg-gradient-to-r from-transparent via-white/55 to-transparent blur-sm transition-transform duration-[1600ms] ease-[cubic-bezier(.16,1,.3,1)] group-hover:translate-x-[650%] motion-reduce:hidden"
             />
             <span
               aria-hidden="true"
-              className="absolute inset-x-6 top-0 z-10 h-0.5 origin-left scale-x-0 rounded-full bg-[#72ad8e] transition-transform duration-500 ease-out group-hover:scale-x-100"
+              className="absolute inset-x-6 top-0 z-10 h-0.5 origin-left scale-x-0 rounded-full bg-[#72ad8e] transition-transform duration-700 ease-[cubic-bezier(.16,1,.3,1)] group-hover:scale-x-100"
             />
             <div
               aria-hidden="true"
-              className="relative h-20 overflow-hidden rounded-t-2xl bg-[#ecefec] [transform:translateZ(8px)] transition-colors duration-500 ease-out group-hover:bg-[#cfe3d8]"
+              className="relative h-20 overflow-hidden rounded-t-2xl bg-[#ecefec] [transform:translateZ(8px)] transition-colors duration-700 ease-[cubic-bezier(.16,1,.3,1)] group-hover:bg-[#cfe3d8]"
             >
-              <div className="absolute -right-4 -top-12 size-40 rounded-full border-[22px] border-white/45 [transform:translate3d(var(--orb-x,0px),var(--orb-y,0px),0)_scale(var(--orb-scale,1))] transition-transform duration-500 ease-[cubic-bezier(.22,.8,.25,1)] group-hover:[--orb-scale:1.12] motion-reduce:transition-none" />
-              <div className="absolute -right-12 -top-20 size-44 rounded-full border border-[#04714a]/10 opacity-0 [transform:translate3d(var(--orb-back-x,0px),var(--orb-back-y,0px),0)] transition-[opacity,transform] duration-700 group-hover:opacity-100 motion-reduce:transition-none" />
-              <span className="absolute bottom-4 right-6 size-2 rounded-full bg-[#04714a]/0 transition-[background-color,transform] duration-500 group-hover:bg-[#04714a]/25 motion-safe:group-hover:scale-150" />
+              <div className="absolute -right-4 -top-12 size-40 rounded-full border-[22px] border-white/45 [transform:translate3d(var(--orb-x,0px),var(--orb-y,0px),0)_scale(var(--orb-scale,1))] transition-transform duration-700 ease-[cubic-bezier(.16,1,.3,1)] group-hover:[--orb-scale:1.1] motion-reduce:transition-none" />
+              <div className="absolute -right-12 -top-20 size-44 rounded-full border border-[#04714a]/10 opacity-0 [transform:translate3d(var(--orb-back-x,0px),var(--orb-back-y,0px),0)] transition-[opacity,transform] duration-1000 ease-[cubic-bezier(.16,1,.3,1)] group-hover:opacity-100 motion-reduce:transition-none" />
+              <span className="absolute bottom-4 right-6 size-2 rounded-full bg-[#04714a]/0 transition-[background-color,transform] duration-700 ease-[cubic-bezier(.16,1,.3,1)] group-hover:bg-[#04714a]/25 motion-safe:group-hover:scale-150" />
             </div>
 
             <div className="relative flex min-h-52 flex-col px-5 pb-4 [transform:translateZ(22px)]">
               <div
                 aria-hidden="true"
-                className="-mt-7 flex size-16 items-center justify-center rounded-full border-4 border-[#fbfbf9] bg-[#e1e5e2] text-base font-semibold text-[#172b21] shadow-sm ring-0 ring-[#9fc4b0]/20 [transform:translateZ(30px)] transition-[transform,background-color,box-shadow,ring-width] duration-500 ease-[cubic-bezier(.22,.8,.25,1)] group-hover:bg-[#b9d0c1] group-hover:shadow-[0_12px_28px_-12px_rgba(4,113,74,.72)] group-hover:ring-8 motion-safe:group-hover:[transform:translateZ(38px)_translateY(-4px)_scale(1.06)_rotate(-2deg)] motion-reduce:transition-none"
+                className="-mt-7 flex size-16 items-center justify-center rounded-full border-4 border-[#fbfbf9] bg-[#e1e5e2] text-base font-semibold text-[#172b21] shadow-sm ring-0 ring-[#9fc4b0]/20 [transform:translateZ(30px)] transition-[transform,background-color,box-shadow,ring-width] duration-700 ease-[cubic-bezier(.16,1,.3,1)] group-hover:bg-[#b9d0c1] group-hover:shadow-[0_12px_28px_-12px_rgba(4,113,74,.72)] group-hover:ring-8 motion-safe:group-hover:[transform:translateZ(38px)_translateY(-3px)_scale(1.04)_rotate(-1deg)] motion-reduce:transition-none"
               >
                 {contributor.initials}
               </div>
 
               <div className="mt-4 flex-1">
-                <h2 className="break-words text-lg font-semibold tracking-tight text-[#172b21] transition-colors duration-300 group-hover:text-[#04714a]">
+                <h2 className="break-words text-lg font-semibold tracking-tight text-[#172b21] transition-colors duration-500 group-hover:text-[#04714a]">
                   {contributor.name}
                 </h2>
-                <p className="mt-0.5 text-[13px] font-medium leading-5 text-black/55 transition-colors duration-300 group-hover:text-[#04714a]">
+                <p className="mt-0.5 text-[13px] font-medium leading-5 text-black/55 transition-colors duration-500 group-hover:text-[#04714a]">
                   {contributor.role}
                 </p>
 
@@ -144,14 +144,14 @@ export function ContributorsPage() {
                         type="button"
                         aria-describedby={`contributor-preview-${contributor.id}`}
                         onClick={() => setSelected(contributor)}
-                        className="flex w-full items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-left text-[13px] leading-6 text-black/60 transition-[color,background-color,transform] duration-200 hover:bg-[#e8f2ed] hover:text-[#04714a] focus-visible:bg-[#e8f2ed] focus-visible:text-[#04714a] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#04714a] motion-safe:hover:translate-x-0.5"
+                        className="flex w-full items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-left text-[13px] leading-6 text-black/60 transition-[color,background-color,transform] duration-[350ms] ease-[cubic-bezier(.16,1,.3,1)] hover:bg-[#e8f2ed] hover:text-[#04714a] focus-visible:bg-[#e8f2ed] focus-visible:text-[#04714a] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#04714a] motion-safe:hover:translate-x-0.5"
                       />
                     }
                   >
                     <span className="truncate">{contributor.contribution}</span>
                     <span
                       aria-hidden="true"
-                      className="flex size-6 shrink-0 -translate-x-1 items-center justify-center rounded-full bg-[#cfe3d8] opacity-0 transition duration-200 group-hover/task:translate-x-0 group-hover/task:opacity-100 group-focus-within/task:translate-x-0 group-focus-within/task:opacity-100"
+                      className="flex size-6 shrink-0 -translate-x-1 items-center justify-center rounded-full bg-[#cfe3d8] opacity-0 transition duration-[350ms] ease-[cubic-bezier(.16,1,.3,1)] group-hover/task:translate-x-0 group-hover/task:opacity-100 group-focus-within/task:translate-x-0 group-focus-within/task:opacity-100"
                     >
                       ↗
                     </span>
@@ -160,7 +160,7 @@ export function ContributorsPage() {
                   <div
                     id={`contributor-preview-${contributor.id}`}
                     role="tooltip"
-                    className="pointer-events-none absolute bottom-[calc(100%+8px)] left-0 z-20 w-60 translate-y-2 scale-[.97] rounded-xl border-[0.5px] border-[#bfd2c7] bg-[#fbfbf9] p-4 opacity-0 shadow-[0_20px_45px_-22px_rgba(4,113,74,.38)] transition-[opacity,transform] duration-200 ease-[cubic-bezier(.22,.8,.25,1)] group-hover/task:translate-y-0 group-hover/task:scale-100 group-hover/task:opacity-100 group-focus-within/task:translate-y-0 group-focus-within/task:scale-100 group-focus-within/task:opacity-100 motion-reduce:transition-none"
+                    className="pointer-events-none absolute bottom-[calc(100%+8px)] left-0 z-20 w-60 translate-y-2 scale-[.97] rounded-xl border-[0.5px] border-[#bfd2c7] bg-[#fbfbf9] p-4 opacity-0 shadow-[0_20px_45px_-22px_rgba(4,113,74,.38)] transition-[opacity,transform] duration-300 ease-[cubic-bezier(.16,1,.3,1)] group-hover/task:translate-y-0 group-hover/task:scale-100 group-hover/task:opacity-100 group-focus-within/task:translate-y-0 group-focus-within/task:scale-100 group-focus-within/task:opacity-100 motion-reduce:transition-none"
                   >
                     <p className="text-xs font-semibold text-[#172b21]">Quick view</p>
                     <dl className="mt-3 space-y-2 text-xs">
@@ -180,10 +180,10 @@ export function ContributorsPage() {
                 </div>
               </div>
 
-              <div className="mt-5 flex items-center gap-2 border-t border-black/[.06] pt-3.5 text-xs font-medium text-black/50 transition-colors duration-300 group-hover:text-[#315d48]">
+              <div className="mt-5 flex items-center gap-2 border-t border-black/[.06] pt-3.5 text-xs font-medium text-black/50 transition-colors duration-500 group-hover:text-[#315d48]">
                 <span
                   aria-hidden="true"
-                  className="size-2 rounded-full bg-[#d2d7d3] transition duration-300 group-hover:scale-150 group-hover:bg-[#72ad8e] group-hover:shadow-[0_0_0_4px_rgba(114,173,142,.14)]"
+                  className="size-2 rounded-full bg-[#d2d7d3] transition duration-500 ease-[cubic-bezier(.16,1,.3,1)] group-hover:scale-150 group-hover:bg-[#72ad8e] group-hover:shadow-[0_0_0_4px_rgba(114,173,142,.14)]"
                 />
                 {contributor.team}
               </div>
@@ -194,8 +194,8 @@ export function ContributorsPage() {
     </section>
 
     <Dialog.Portal>
-      <Dialog.Backdrop className="fixed inset-0 z-40 bg-[#172b21]/25 opacity-100 backdrop-blur-[2px] transition-opacity duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0 motion-reduce:transition-none" />
-      <Dialog.Popup className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-3xl border-[0.5px] border-[#bfd2c7] bg-[#fbfbf9] text-[#172b21] opacity-100 shadow-[0_32px_80px_-32px_rgba(23,43,33,.55)] outline-none transition-[opacity,scale] duration-300 ease-[cubic-bezier(.22,.8,.25,1)] data-ending-style:scale-[.94] data-ending-style:opacity-0 data-starting-style:scale-[.94] data-starting-style:opacity-0 motion-reduce:transition-none">
+      <Dialog.Backdrop className="fixed inset-0 z-40 bg-[#172b21]/25 opacity-100 backdrop-blur-[2px] transition-opacity duration-[350ms] data-ending-style:opacity-0 data-starting-style:opacity-0 motion-reduce:transition-none" />
+      <Dialog.Popup className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-3xl border-[0.5px] border-[#bfd2c7] bg-[#fbfbf9] text-[#172b21] opacity-100 shadow-[0_32px_80px_-32px_rgba(23,43,33,.55)] outline-none transition-[opacity,scale] duration-[450ms] ease-[cubic-bezier(.16,1,.3,1)] data-ending-style:scale-[.94] data-ending-style:opacity-0 data-starting-style:scale-[.94] data-starting-style:opacity-0 motion-reduce:transition-none">
         {selected && (
           <>
             <div className="relative h-24 overflow-hidden bg-gradient-to-br from-[#c7dfd2] to-[#e8f2ed]">
@@ -207,7 +207,7 @@ export function ContributorsPage() {
                 aria-hidden="true"
                 className="absolute right-28 top-8 size-16 rounded-full border border-[#04714a]/10"
               />
-              <Dialog.Close className="absolute right-5 top-5 flex size-9 items-center justify-center rounded-full bg-white/80 text-xl text-[#172b21] shadow-sm transition-[transform,background-color] duration-200 hover:bg-white motion-safe:hover:scale-105">
+              <Dialog.Close className="absolute right-5 top-5 flex size-9 items-center justify-center rounded-full bg-white/80 text-xl text-[#172b21] shadow-sm transition-[transform,background-color] duration-[350ms] ease-[cubic-bezier(.16,1,.3,1)] hover:bg-white motion-safe:hover:scale-105">
                 <span aria-hidden="true">×</span>
                 <span className="sr-only">Close contributor details</span>
               </Dialog.Close>
