@@ -53,7 +53,37 @@ export function ContributorsPage() {
         {contributors.map((contributor, index) => (
           <article
             key={contributor.id}
-            className="group relative isolate min-w-0 rounded-2xl border-[0.5px] border-[#dfe3e0] bg-[#fbfbf9] shadow-[0_1px_2px_rgba(23,43,33,.05)] transition-[transform,box-shadow,border-color,background-color] duration-500 ease-[cubic-bezier(.22,.8,.25,1)] hover:border-[#9fc4b0] hover:bg-white hover:shadow-[0_28px_60px_-28px_rgba(4,113,74,.42)] motion-safe:hover:-translate-y-2 motion-safe:hover:scale-[1.012] motion-reduce:animate-none motion-reduce:transition-none animate-in fade-in slide-in-from-bottom-3"
+            onPointerMove={(event) => {
+              if (event.pointerType === "touch") return;
+
+              const card = event.currentTarget;
+              const bounds = card.getBoundingClientRect();
+              const x = (event.clientX - bounds.left) / bounds.width;
+              const y = (event.clientY - bounds.top) / bounds.height;
+
+              card.style.setProperty("--tilt-x", `${(0.5 - y) * 7}deg`);
+              card.style.setProperty("--tilt-y", `${(x - 0.5) * 9}deg`);
+              card.style.setProperty("--mouse-x", `${x * 100}%`);
+              card.style.setProperty("--mouse-y", `${y * 100}%`);
+              card.style.setProperty("--orb-x", `${(x - 0.5) * 12}px`);
+              card.style.setProperty("--orb-y", `${(y - 0.5) * 10}px`);
+              card.style.setProperty("--orb-back-x", `${(0.5 - x) * 8}px`);
+              card.style.setProperty("--orb-back-y", `${(0.5 - y) * 7}px`);
+            }}
+            onPointerLeave={(event) => {
+              const card = event.currentTarget;
+              [
+                "--tilt-x",
+                "--tilt-y",
+                "--mouse-x",
+                "--mouse-y",
+                "--orb-x",
+                "--orb-y",
+                "--orb-back-x",
+                "--orb-back-y",
+              ].forEach((property) => card.style.removeProperty(property));
+            }}
+            className="group relative isolate min-w-0 rounded-2xl border-[0.5px] border-[#dfe3e0] bg-[#fbfbf9] shadow-[0_1px_2px_rgba(23,43,33,.05)] [--card-scale:1] [--lift:0px] [--tilt-x:0deg] [--tilt-y:0deg] [transform-style:preserve-3d] transform-[perspective(1000px)_rotateX(var(--tilt-x))_rotateY(var(--tilt-y))_translateY(var(--lift))_scale(var(--card-scale))] transition-[transform,box-shadow,border-color,background-color] duration-300 ease-[cubic-bezier(.22,.8,.25,1)] will-change-transform hover:[--card-scale:1.018] hover:[--lift:-9px] hover:border-[#8fbea5] hover:bg-white hover:shadow-[0_34px_70px_-30px_rgba(4,113,74,.5)] motion-reduce:animate-none motion-reduce:transform-none motion-reduce:transition-none animate-in fade-in slide-in-from-bottom-3"
             style={{
               animationDelay: `${index * 55}ms`,
               animationFillMode: "both",
@@ -65,21 +95,33 @@ export function ContributorsPage() {
             />
             <span
               aria-hidden="true"
+              className="pointer-events-none absolute inset-0 z-20 rounded-2xl opacity-0 mix-blend-screen transition-opacity duration-300 group-hover:opacity-100 motion-reduce:hidden"
+              style={{
+                background:
+                  "radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 20%), rgba(255,255,255,.8), rgba(255,255,255,.18) 17%, transparent 38%)",
+              }}
+            />
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute -inset-y-1/2 -left-1/2 z-20 w-1/3 -translate-x-[180%] rotate-[18deg] bg-gradient-to-r from-transparent via-white/55 to-transparent blur-sm transition-transform duration-1000 ease-[cubic-bezier(.2,.7,.2,1)] group-hover:translate-x-[650%] motion-reduce:hidden"
+            />
+            <span
+              aria-hidden="true"
               className="absolute inset-x-6 top-0 z-10 h-0.5 origin-left scale-x-0 rounded-full bg-[#72ad8e] transition-transform duration-500 ease-out group-hover:scale-x-100"
             />
             <div
               aria-hidden="true"
-              className="relative h-20 overflow-hidden rounded-t-2xl bg-[#ecefec] transition-colors duration-500 ease-out group-hover:bg-[#cfe3d8]"
+              className="relative h-20 overflow-hidden rounded-t-2xl bg-[#ecefec] [transform:translateZ(8px)] transition-colors duration-500 ease-out group-hover:bg-[#cfe3d8]"
             >
-              <div className="absolute -right-4 -top-12 size-40 rounded-full border-[22px] border-white/45 transition-transform duration-700 ease-[cubic-bezier(.22,.8,.25,1)] motion-safe:group-hover:translate-x-4 motion-safe:group-hover:translate-y-4 motion-safe:group-hover:scale-110 motion-reduce:transition-none" />
-              <div className="absolute -right-12 -top-20 size-44 rounded-full border border-[#04714a]/10 opacity-0 transition-[opacity,transform] duration-700 group-hover:opacity-100 motion-safe:group-hover:-translate-x-5 motion-safe:group-hover:translate-y-5 motion-reduce:transition-none" />
+              <div className="absolute -right-4 -top-12 size-40 rounded-full border-[22px] border-white/45 [transform:translate3d(var(--orb-x,0px),var(--orb-y,0px),0)_scale(var(--orb-scale,1))] transition-transform duration-500 ease-[cubic-bezier(.22,.8,.25,1)] group-hover:[--orb-scale:1.12] motion-reduce:transition-none" />
+              <div className="absolute -right-12 -top-20 size-44 rounded-full border border-[#04714a]/10 opacity-0 [transform:translate3d(var(--orb-back-x,0px),var(--orb-back-y,0px),0)] transition-[opacity,transform] duration-700 group-hover:opacity-100 motion-reduce:transition-none" />
               <span className="absolute bottom-4 right-6 size-2 rounded-full bg-[#04714a]/0 transition-[background-color,transform] duration-500 group-hover:bg-[#04714a]/25 motion-safe:group-hover:scale-150" />
             </div>
 
-            <div className="relative flex min-h-52 flex-col px-5 pb-4">
+            <div className="relative flex min-h-52 flex-col px-5 pb-4 [transform:translateZ(22px)]">
               <div
                 aria-hidden="true"
-                className="-mt-7 flex size-16 items-center justify-center rounded-full border-4 border-[#fbfbf9] bg-[#e1e5e2] text-base font-semibold text-[#172b21] shadow-sm ring-0 ring-[#9fc4b0]/20 transition-[transform,background-color,box-shadow,ring-width] duration-500 ease-[cubic-bezier(.22,.8,.25,1)] group-hover:bg-[#b9d0c1] group-hover:shadow-[0_10px_24px_-12px_rgba(4,113,74,.65)] group-hover:ring-8 motion-safe:group-hover:-translate-y-1 motion-safe:group-hover:scale-105 motion-safe:group-hover:-rotate-2 motion-reduce:transition-none"
+                className="-mt-7 flex size-16 items-center justify-center rounded-full border-4 border-[#fbfbf9] bg-[#e1e5e2] text-base font-semibold text-[#172b21] shadow-sm ring-0 ring-[#9fc4b0]/20 [transform:translateZ(30px)] transition-[transform,background-color,box-shadow,ring-width] duration-500 ease-[cubic-bezier(.22,.8,.25,1)] group-hover:bg-[#b9d0c1] group-hover:shadow-[0_12px_28px_-12px_rgba(4,113,74,.72)] group-hover:ring-8 motion-safe:group-hover:[transform:translateZ(38px)_translateY(-4px)_scale(1.06)_rotate(-2deg)] motion-reduce:transition-none"
               >
                 {contributor.initials}
               </div>
