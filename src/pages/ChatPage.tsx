@@ -1,8 +1,11 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 
 import { messages as initial } from "../mocks/data";
 import { sendChatMessage } from "../services/chat.service";
-import { ChatComposer } from "../components/chat/ChatComposer";
+import {
+  AgentLevel,
+  ModifiedPromptInput,
+} from "../components/chat/ModifiedPromptInput";
 import { ScrollToLatestButton } from "../components/chat/ScrollToLatestButton";
 import { ConversationScrollbar } from "../components/chat/ConversationScrollbar";
 import { useConversationNav } from "../components/chat/useConversationNav";
@@ -10,13 +13,38 @@ import { MessageBubble } from "../components/chat/MessageBubble.tsx";
 
 type Reaction = "like" | "dislike";
 
+function EmptyStatePrompt() {
+  const [shown, setShown] = useState(false);
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setShown(true));
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
+  return (
+    <div className="flex justify-center px-2 pb-3">
+      <div
+        className={`
+          rounded-full border border-black/10 bg-white px-5 py-2.5
+          text-sm font-medium text-[#11130f] shadow-sm
+          transition-all duration-500 ease-out
+          ${shown ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0"}
+        `}
+      >
+        Hãy hỏi bất cứ điều gì
+      </div>
+    </div>
+  );
+}
+
 export function ChatPage() {
   const [msgs, setMsgs] = useState(initial);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-
-  // State lưu trạng thái Like / Dislike cho từng tin nhắn (key: message.id)
+  const [level, setLevel] = useState<AgentLevel>("L2");
   const [reactions, setReactions] = useState<Record<string, Reaction>>({});
+
+  const isEmpty = msgs.length === 0;
 
   const {
     scrollRef,
@@ -51,7 +79,6 @@ export function ChatPage() {
     setLoading(true);
 
     try {
-      // Giữ đúng 2s30ms (2030ms) và gọi service song song
       const [reply] = await Promise.all([
         sendChatMessage(text),
         new Promise((resolve) => setTimeout(resolve, 2030)),
@@ -62,7 +89,6 @@ export function ChatPage() {
     }
   }
 
-  // Hàm xử lý Like / Dislike
   function handleReaction(id: string, type: Reaction) {
     setReactions((prev) => {
       if (prev[id] === type) {
@@ -78,11 +104,8 @@ export function ChatPage() {
     });
   }
 
-  // Hàm xử lý Tạo lại câu trả lời (Regenerate)
   async function handleRegenerate(index: number) {
     if (loading) return;
-
-    // Tìm tin nhắn user gần nhất ngay trước tin nhắn AI này
     const prevUserMsg = msgs
       .slice(0, index)
       .reverse()
@@ -90,7 +113,6 @@ export function ChatPage() {
 
     if (!prevUserMsg) return;
 
-    // Xóa câu trả lời hiện tại và các tin nhắn phía sau
     setMsgs((m) => m.slice(0, index));
 
     markNearBottom();
@@ -130,9 +152,6 @@ export function ChatPage() {
       </header>
 
       <div className="relative min-h-0 flex-1">
-        {/* FIX: ẩn thanh cuộn mặc định của trình duyệt — thay bằng
-            ConversationScrollbar (thanh vạch kiểu ChatGPT) ở ngay dưới, nằm
-            sát mép phải (right-0) của khung chat. */}
         <div
           ref={scrollRef}
           onScroll={handleScroll}
@@ -142,7 +161,6 @@ export function ChatPage() {
             [&::-webkit-scrollbar]:hidden
           "
         >
-          {/* md:pr-8: chừa chỗ bên phải cho ConversationScrollbar, tránh đè lên chữ */}
           <div className="mx-auto w-full max-w-4xl px-2 md:pr-8">
             <div className="flex flex-col gap-5">
               {msgs.map((message, idx) => (
@@ -174,7 +192,6 @@ export function ChatPage() {
                 />
               ))}
 
-              {/* Hiển thị "Đang suy nghĩ..." khi AI phản hồi */}
               {loading && (
                 <div className="flex animate-pulse items-center gap-2 px-2 py-2 text-sm font-medium text-[#04714a]">
                   <span className="size-2 rounded-full bg-[#00a86b]" />
@@ -187,23 +204,31 @@ export function ChatPage() {
           </div>
         </div>
 
-        <ConversationScrollbar
-          items={navItems}
-          activeId={activeId}
-          onSelect={scrollToMessage}
-        />
+        {!isEmpty && (
+          <>
+            <ConversationScrollbar
+              items={navItems}
+              activeId={activeId}
+              onSelect={scrollToMessage}
+            />
 
-        <ScrollToLatestButton
-          visible={showJumpToLatest}
-          onClick={() => scrollToBottom()}
-        />
+            <ScrollToLatestButton
+              visible={showJumpToLatest}
+              onClick={() => scrollToBottom()}
+            />
+          </>
+        )}
       </div>
 
-      <ChatComposer
+      {isEmpty && <EmptyStatePrompt />}
+
+      <ModifiedPromptInput
         value={input}
         onChange={setInput}
         onSubmit={submit}
         loading={loading}
+        level={level}
+        onLevelChange={setLevel}
       />
     </div>
   );

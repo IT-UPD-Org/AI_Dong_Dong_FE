@@ -4,20 +4,17 @@ import type {
   Contributor,
   DocumentItem,
 } from "../types";
+
 export const conversations: Conversation[] = [
   { id: "1", title: "Course registration guide", date: "Today" },
   { id: "2", title: "Research proposal feedback", date: "Yesterday" },
   { id: "3", title: "Library opening hours", date: "Aug 22" },
 ];
-export const messages: ChatMessage[] = [
-  {
-    id: "1",
-    role: "assistant",
-    content:
-      "Xin chào bạn, mình là IT UPD GenAI. Cùng nhau trò chuyện và làm việc nhé!",
-    sources: ["University Knowledge Base", "Student handbook"],
-  },
-];
+
+// Không còn tin nhắn chào mặc định — màn hình chat sẽ trống,
+// modal "Hãy hỏi bất cứ điều gì" trong ChatPage sẽ đảm nhiệm phần chào.
+export const messages: ChatMessage[] = [];
+
 export const contributors: Contributor[] = [
   {
     id: "1",
@@ -65,6 +62,7 @@ export const contributors: Contributor[] = [
     color: "#b8c9d9",
   },
 ];
+
 export const documents: DocumentItem[] = [
   {
     id: "1",
