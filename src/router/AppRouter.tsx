@@ -1,3 +1,4 @@
+// src\router\AppRouter.tsx
 import { Navigate, Route, Routes } from "react-router-dom";
 import { AppShell } from "../components/layout/AppShell";
 import { PublicLayout } from "../components/layout/PublicLayout";
@@ -12,6 +13,8 @@ import { ContributorsPage } from "../pages/ContributorsPage";
 import { ProfilePage } from "../pages/ProfilePage";
 import { SettingsPage } from "../pages/SettingsPage";
 import { InfoPage } from "../pages/InfoPage";
+import { AuthCallbackPage } from "../pages/AuthCallbackPage";
+import { MockMicrosoftLoginPage } from "../pages/MockMicrosoftLoginPage";
 
 export function AppRouter() {
   return (
@@ -59,6 +62,11 @@ export function AppRouter() {
         <Route path="/contributors" element={<ContributorsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/auth/callback" element={<AuthCallbackPage />} />
+        <Route
+          path="/mock-microsoft-login"
+          element={<MockMicrosoftLoginPage />}
+        />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

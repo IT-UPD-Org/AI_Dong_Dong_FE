@@ -90,10 +90,7 @@ export function AiSphereIllustration({
     () =>
       Array.from({ length: 150 }, (_, i) => {
         const angle = Math.random() * Math.PI * 2;
-
-        // Phân bố dày hơn ở vùng quanh quả cầu
         const radius = 92 + Math.random() * 78;
-
         return {
           id: i,
           x: 200 + Math.cos(angle) * radius,
