@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useState } from "react";
 
 import { messages as initial } from "../mocks/data";
-import { sendChatMessage } from "../services/chat.service";
+import { streamChatMessage } from "../services/chat.service";
 import {
   AgentLevel,
   ModifiedPromptInput,
@@ -9,7 +9,7 @@ import {
 import { ScrollToLatestButton } from "../components/chat/ScrollToLatestButton";
 import { ConversationScrollbar } from "../components/chat/ConversationScrollbar";
 import { useConversationNav } from "../components/chat/useConversationNav";
-import { MessageBubble } from "../components/chat/MessageBubble.tsx";
+import { MessageBubble } from "../components/chat/MessageBubble";
 
 type Reaction = "like" | "dislike";
 
@@ -66,6 +66,8 @@ export function ChatPage() {
     const text = input.trim();
     setInput("");
 
+    const assistantMsgId = crypto.randomUUID();
+
     setMsgs((m) => [
       ...m,
       {
@@ -73,17 +75,38 @@ export function ChatPage() {
         role: "user",
         content: text,
       },
+      {
+        id: assistantMsgId,
+        role: "assistant",
+        content: "",
+      },
     ]);
 
     markNearBottom();
     setLoading(true);
 
     try {
-      const [reply] = await Promise.all([
-        sendChatMessage(text),
-        new Promise((resolve) => setTimeout(resolve, 2030)),
-      ]);
-      setMsgs((m) => [...m, reply]);
+      await streamChatMessage(
+        text,
+        (chunk) => {
+          setMsgs((prev) =>
+            prev.map((msg) =>
+              msg.id === assistantMsgId
+                ? { ...msg, content: msg.content + chunk }
+                : msg
+            )
+          );
+        },
+        (finalMsg) => {
+          setMsgs((prev) =>
+            prev.map((msg) =>
+              msg.id === assistantMsgId
+                ? { ...msg, content: finalMsg.content, sources: finalMsg.sources }
+                : msg
+            )
+          );
+        }
+      );
     } finally {
       setLoading(false);
     }
@@ -113,17 +136,43 @@ export function ChatPage() {
 
     if (!prevUserMsg) return;
 
-    setMsgs((m) => m.slice(0, index));
+    const assistantMsgId = crypto.randomUUID();
+
+    // Giữ lại các tin nhắn trước index và thêm assistant placeholder
+    setMsgs((m) => [
+      ...m.slice(0, index),
+      {
+        id: assistantMsgId,
+        role: "assistant",
+        content: "",
+      },
+    ]);
 
     markNearBottom();
     setLoading(true);
 
     try {
-      const [reply] = await Promise.all([
-        sendChatMessage(prevUserMsg.content),
-        new Promise((resolve) => setTimeout(resolve, 2030)),
-      ]);
-      setMsgs((m) => [...m, reply]);
+      await streamChatMessage(
+        prevUserMsg.content,
+        (chunk) => {
+          setMsgs((prev) =>
+            prev.map((msg) =>
+              msg.id === assistantMsgId
+                ? { ...msg, content: msg.content + chunk }
+                : msg
+            )
+          );
+        },
+        (finalMsg) => {
+          setMsgs((prev) =>
+            prev.map((msg) =>
+              msg.id === assistantMsgId
+                ? { ...msg, content: finalMsg.content, sources: finalMsg.sources }
+                : msg
+            )
+          );
+        }
+      );
     } finally {
       setLoading(false);
     }

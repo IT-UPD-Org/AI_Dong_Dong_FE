@@ -1,14 +1,25 @@
 import { messages } from "../mocks/data";
-import type { ChatMessage } from "../types";
+import type { ChatMessage } from "../api/types";
+import { chatApi } from "../api/chat.api";
+
 export async function getConversationMessages(): Promise<ChatMessage[]> {
   return messages;
 }
+
+export async function streamChatMessage(
+  content: string,
+  onChunk: (text: string) => void,
+  onFinish: (message: ChatMessage) => void
+): Promise<void> {
+  return chatApi.streamMessage({ message: content }, onChunk, onFinish);
+}
+
 export async function sendChatMessage(content: string): Promise<ChatMessage> {
-  await new Promise((r) => setTimeout(r, 700));
-  return {
-    id: crypto.randomUUID(),
-    role: "assistant",
-    content: `Dựa trên kết quả tìm kiếm cho “${content}”. Tôi đã tìm thấy một số thông tin có thể giúp bạn. Hãy xem xét các nguồn dưới đây để biết thêm chi tiết.`,
-    sources: ["University Knowledge Base"],
-  };
+  return new Promise((resolve) => {
+    chatApi.streamMessage(
+      { message: content },
+      () => {},
+      (msg) => resolve(msg)
+    );
+  });
 }

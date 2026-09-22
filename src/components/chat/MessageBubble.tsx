@@ -59,7 +59,15 @@ export const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
             isUser && !expanded ? "line-clamp-3" : ""
           }`}
         >
-          {message.content}
+          {message.content ? (
+            message.content
+          ) : (
+            <span className="inline-flex items-center gap-1.5 py-1 text-black/40">
+              <span className="size-1.5 rounded-full bg-[#04714a] animate-bounce [animation-delay:-0.3s]" />
+              <span className="size-1.5 rounded-full bg-[#04714a] animate-bounce [animation-delay:-0.15s]" />
+              <span className="size-1.5 rounded-full bg-[#04714a] animate-bounce" />
+            </span>
+          )}
         </div>
 
         {!isUser && (onLike || onDislike || onRegenerate) && (
