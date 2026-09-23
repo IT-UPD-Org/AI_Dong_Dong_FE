@@ -7,6 +7,13 @@ import { contributors } from "../mocks/data";
 import { PresentLPDongDong } from "../components/layout/PresentLPDongDong";
 import { ChatShowcaseSection } from "../components/landing/ChatShowcaseSection";
 import { KnowledgeRepositoryIllustration } from "../components/landing/KnowledgeRepositoryIllustration";
+const gems = [
+  { id: "v1", size: "10%", top: "8%", left: "6%" },
+  { id: "v2", size: "15%", top: "14%", right: "8%" },
+  { id: "v3", size: "30%", top: "50%", left: "60%", center: true },
+  { id: "v4", size: "12%", bottom: "20%", right: "24%" },
+  { id: "v5", size: "20%", bottom: "6%", right: "6%" },
+];
 
 export function LandingPage() {
   return (
@@ -55,13 +62,107 @@ export function LandingPage() {
           </div>
         </div>
 
-        {/* RIGHT — DONG DONG CARD */}
-        <div className="relative flex min-h-155 flex-col justify-between overflow-hidden rounded-[2rem] bg-[#11130f] p-6 text-white shadow-2xl">
-          {/* Background glow */}
-          <div className="pointer-events-none absolute -right-20 -top-16 size-72 rounded-full bg-[#00a86b]/30 blur-3xl" />
+        <div className="group relative flex min-h-155 flex-col justify-between overflow-hidden rounded-[2rem] bg-[#f8faf9] p-6 text-white shadow-2xl">
+          {/* Background */}
+          <div className="pointer-events-none absolute inset-0 overflow-hidden">
+            {/* Base gradient — xanh trong → mint → trắng */}
+            <div
+              className="absolute inset-0"
+              style={{
+                background: `
+          radial-gradient(
+            circle at 38% 34%,
+            #00a86b 0%,
+            #12b47c 22%,
+            #4bc99d 42%,
+            #a9e3cf 63%,
+            #e8f6f1 82%,
+            #f8faf9 100%
+          )
+        `,
+              }}
+            />
 
+            {/* White light beam — sắc và sạch hơn */}
+            <div
+              className="absolute inset-0"
+              style={{
+                background: `
+          conic-gradient(
+            from 218deg at 30% 65%,
+            transparent 0deg,
+            transparent 25deg,
+            rgba(255,255,255,0.05) 32deg,
+            rgba(255,255,255,0.55) 43deg,
+            rgba(255,255,255,0.92) 58deg,
+            rgba(255,255,255,0.45) 68deg,
+            transparent 82deg,
+            transparent 360deg
+          )
+        `,
+              }}
+            />
+
+            {/* Clean white highlight */}
+            <div
+              className="absolute -right-16 -top-20 size-80 rounded-full"
+              style={{
+                background:
+                  "radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.45) 38%, rgba(255,255,255,0) 72%)",
+              }}
+            />
+
+            {/* Subtle green depth — KHÔNG blur mạnh */}
+            <div
+              className="absolute -left-32 top-12 size-96 rounded-full"
+              style={{
+                background:
+                  "radial-gradient(circle, rgba(0,168,107,0.22) 0%, rgba(0,168,107,0.08) 45%, transparent 72%)",
+              }}
+            />
+
+            {/* Very subtle glass highlight */}
+            <div
+              className="absolute inset-0"
+              style={{
+                background: `
+          linear-gradient(
+            115deg,
+            rgba(255,255,255,0.12) 0%,
+            transparent 28%,
+            transparent 72%,
+            rgba(255,255,255,0.22) 100%
+          )
+        `,
+              }}
+            />
+          </div>
+          <div className="absolute inset-0">
+            {gems.map((g, i) => (
+              <div
+                key={g.id}
+                className="absolute opacity-0 scale-50 drop-shadow-[0_10px_28px_rgba(0,80,55,0.5)] transition-all duration-700 ease-[cubic-bezier(.22,1,.36,1)] group-hover:opacity-100 group-hover:scale-100"
+                style={{
+                  width: g.size,
+                  aspectRatio: "1 / 1",
+                  top: g.top,
+                  left: g.left,
+                  right: g.right,
+                  bottom: g.bottom,
+                  transform: g.center ? "translate(-50%, -50%)" : undefined,
+                  transitionDelay: `${i * 90}ms`,
+                }}
+              >
+                <img
+                  src="/assets/UPD_Vertical Logo.png"
+                  alt=""
+                  className="h-full w-full object-contain"
+                />
+              </div>
+            ))}
+          </div>
           {/* Header */}
-          <div className="relative z-10 flex justify-between text-xs text-white/45">
+          <div className="relative z-10 flex justify-between text-xs text-black/45">
             <span className="mono">UAI-series: IT UPD GenAI UAI01</span>
 
             <span>Được xây dựng bởi IT UPD</span>
@@ -72,7 +173,7 @@ export function LandingPage() {
 
           {/* Footer */}
           <div className="relative z-10">
-            <p className="mono text-center text-xs text-white/45 md:text-left">
+            <p className="mono text-center text-xs text-black/45 md:text-left">
               Version : UAI-01.0.0 / 2026-11-20. Tri thức nhân tạo tham khảo
               theo các mô hình LLM phổ biến, huấn luyện và tối ưu hóa cho các
               tác vụ học tập và hành chính nội bộ.
@@ -81,19 +182,12 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* =========================================================
-          FEATURES SECTION
-      ========================================================= */}
       <section className="border-t border-black/10 px-6 py-20 md:px-12">
-        {/* Section label */}
         <p className="mono text-xs uppercase tracking-[.18em] text-black/45">
           UAI-01 IT UPD GenAI sẽ làm được những gì
         </p>
 
         <div className="mt-12 space-y-32">
-          {/* =====================================================
-              01 — TRÒ CHUYỆN THÔNG MINH
-          ===================================================== */}
           <section>
             <div className="mb-6 flex items-center gap-3">
               <Sparkles className="text-[#00a86b]" size={24} />
@@ -106,12 +200,7 @@ export function LandingPage() {
 
             <ChatShowcaseSection />
           </section>
-
-          {/* =====================================================
-              02 — KHO TRI THỨC SỐ
-          ===================================================== */}
           <section className="relative">
-            {/* Heading */}
             <div className="mb-2 flex items-center gap-3">
               <BookOpen className="text-[#00a86b]" size={24} />
 
@@ -123,13 +212,9 @@ export function LandingPage() {
             <p className="mono text-xs uppercase tracking-[.18em] text-black/35">
               DIGITAL KNOWLEDGE REPOSITORY
             </p>
-
-            {/* SVG illustration */}
             <div className="mx-auto mt-4 w-full max-w-[1100px]">
               <KnowledgeRepositoryIllustration className="h-auto w-full" />
             </div>
-
-            {/* Description */}
             <div className="mx-auto mt-2 max-w-3xl text-center">
               <p className="text-sm leading-7 text-black/55 md:text-base">
                 Kết nối trực tiếp với hệ thống thư viện và giáo trình của nhà
@@ -140,9 +225,6 @@ export function LandingPage() {
             </div>
           </section>
 
-          {/* =====================================================
-              03 — TRA CỨU & HỖ TRỢ HÀNH CHÍNH
-          ===================================================== */}
           <section>
             <div className="mb-6 flex items-center gap-3">
               <FileText className="text-[#00a86b]" size={24} />
@@ -153,7 +235,6 @@ export function LandingPage() {
             </div>
 
             <div className="grid gap-4 md:grid-cols-3">
-              {/* CARD 01 */}
               <article className="rounded-3xl border border-black/10 bg-white p-7 transition-all duration-300 hover:-translate-y-1 hover:border-[#00a86b]/30 hover:shadow-lg">
                 <span className="mono text-sm text-[#00a86b]">01</span>
 
@@ -164,7 +245,6 @@ export function LandingPage() {
                 </p>
               </article>
 
-              {/* CARD 02 */}
               <article className="rounded-3xl border border-black/10 bg-white p-7 transition-all duration-300 hover:-translate-y-1 hover:border-[#00a86b]/30 hover:shadow-lg">
                 <span className="mono text-sm text-[#00a86b]">02</span>
 
@@ -193,9 +273,6 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* =========================================================
-          CONTRIBUTORS SECTION
-      ========================================================= */}
       <section className="bg-[#11130f] px-6 py-20 text-white md:px-12">
         <div className="flex flex-col justify-between gap-10 md:flex-row md:items-end">
           {/* Heading */}
@@ -219,7 +296,6 @@ export function LandingPage() {
           </Link>
         </div>
 
-        {/* Contributors */}
         <div className="mt-16 flex -space-x-4">
           {contributors.map((c) => (
             <div

@@ -144,7 +144,7 @@ export function PresentLPDongDong() {
           text-[9px]
           uppercase
           tracking-[0.18em]
-          text-white/30
+          text-black/40
           transition-opacity
           duration-300
           ${isHovered ? "opacity-0" : "opacity-100"}
