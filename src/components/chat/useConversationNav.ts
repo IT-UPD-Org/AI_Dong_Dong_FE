@@ -20,6 +20,7 @@ export function useConversationNav(messages: ChatMessage[], loading: boolean) {
     Map<string, (el: HTMLDivElement | null) => void>
   >(new Map());
   const isNearBottomRef = useRef(true);
+  const wasLoadingRef = useRef(loading);
 
   const [showJumpToLatest, setShowJumpToLatest] = useState(false);
   const [navItems, setNavItems] = useState<ScrollbarItem[]>([]);
@@ -120,13 +121,18 @@ export function useConversationNav(messages: ChatMessage[], loading: boolean) {
   useEffect(() => {
     recomputeNavItems();
 
-    if (isNearBottomRef.current) {
+    const responseJustFinished = wasLoadingRef.current && !loading;
+
+    // Khi phản hồi hoàn tất, panel đánh giá được thêm ngay dưới câu trả lời.
+    // Không ép cuộn ở lần render này để nội dung không bị giật xuống đáy.
+    if (isNearBottomRef.current && !responseJustFinished) {
       scrollToBottom(messages.length <= 1 ? "auto" : "smooth");
     } else {
-      setShowJumpToLatest(true);
+      setShowJumpToLatest(!isNearBottomRef.current);
     }
 
     updateActiveFromScroll();
+    wasLoadingRef.current = loading;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages.length, loading]);
 

@@ -1,6 +1,8 @@
 import { useState, type FormEvent, type ReactNode } from "react";
 import { AlertTriangle, Lightbulb, Star, X } from "lucide-react";
 
+import { IssueImagePicker } from "./IssueImagePicker";
+
 type FeedbackMode = "suggestion" | "issue";
 
 interface MessageFeedbackPanelProps {
@@ -29,6 +31,7 @@ export function MessageFeedbackPanel({ onClose }: MessageFeedbackPanelProps) {
   const [suggestion, setSuggestion] = useState("");
   const [issueType, setIssueType] = useState("");
   const [issueDetail, setIssueDetail] = useState("");
+  const [issueImage, setIssueImage] = useState<File | null>(null);
   const [submitted, setSubmitted] = useState(false);
 
   const canSubmit =
@@ -94,7 +97,7 @@ export function MessageFeedbackPanel({ onClose }: MessageFeedbackPanelProps) {
       {submitted ? (
         <div
           role="status"
-          className="mt-4 rounded-xl border border-[#9fc4b0]/60 bg-[#e8f2ed] px-4 py-5 text-center"
+          className="mt-4 grid min-h-[250px] place-content-center rounded-xl border border-[#9fc4b0]/60 bg-[#e8f2ed] px-4 py-5 text-center"
         >
           <p className="text-sm font-semibold text-[#04714a]">
             Cảm ơn bạn đã gửi {mode === "suggestion" ? "góp ý" : "báo lỗi"}.
@@ -104,24 +107,31 @@ export function MessageFeedbackPanel({ onClose }: MessageFeedbackPanelProps) {
           </p>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="mt-4">
-          {mode === "suggestion" ? (
-            <SuggestionForm
-              rating={rating}
-              hoveredRating={hoveredRating}
-              suggestion={suggestion}
-              onRatingChange={setRating}
-              onRatingHover={setHoveredRating}
-              onSuggestionChange={setSuggestion}
-            />
-          ) : (
-            <IssueForm
-              issueType={issueType}
-              issueDetail={issueDetail}
-              onIssueTypeChange={setIssueType}
-              onIssueDetailChange={setIssueDetail}
-            />
-          )}
+        <form
+          onSubmit={handleSubmit}
+          className="mt-4 flex min-h-[250px] flex-col"
+        >
+          <div className="flex-1">
+            {mode === "suggestion" ? (
+              <SuggestionForm
+                rating={rating}
+                hoveredRating={hoveredRating}
+                suggestion={suggestion}
+                onRatingChange={setRating}
+                onRatingHover={setHoveredRating}
+                onSuggestionChange={setSuggestion}
+              />
+            ) : (
+              <IssueForm
+                issueType={issueType}
+                issueDetail={issueDetail}
+                issueImage={issueImage}
+                onIssueTypeChange={setIssueType}
+                onIssueDetailChange={setIssueDetail}
+                onImageChange={setIssueImage}
+              />
+            )}
+          </div>
 
           <div className="mt-4 flex justify-end">
             <button
@@ -250,15 +260,19 @@ function SuggestionForm({
 interface IssueFormProps {
   issueType: string;
   issueDetail: string;
+  issueImage: File | null;
   onIssueTypeChange: (issueType: string) => void;
   onIssueDetailChange: (issueDetail: string) => void;
+  onImageChange: (file: File | null) => void;
 }
 
 function IssueForm({
   issueType,
   issueDetail,
+  issueImage,
   onIssueTypeChange,
   onIssueDetailChange,
+  onImageChange,
 }: IssueFormProps) {
   return (
     <div role="tabpanel">
@@ -284,21 +298,32 @@ function IssueForm({
         </div>
       </fieldset>
 
-      <label className="mt-4 block text-xs font-medium text-black/60">
-        Mô tả lỗi
-        <textarea
-          value={issueDetail}
-          maxLength={500}
-          rows={3}
-          required
-          onChange={(event) => onIssueDetailChange(event.target.value)}
-          placeholder="Hãy mô tả điều đã xảy ra để chúng tôi có thể kiểm tra."
-          className="mt-2 w-full resize-none rounded-xl border border-black/10 bg-white px-3.5 py-3 text-sm leading-6 text-[#11130f] outline-none transition-colors placeholder:text-black/30 focus:border-[#00a86b]/60"
-        />
-      </label>
-      <p className="mt-1 text-right text-[10px] text-black/35">
-        {issueDetail.length}/500
-      </p>
+      <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_240px]">
+        <div>
+          <label className="block text-xs font-medium text-black/60">
+            Mô tả lỗi
+            <textarea
+              value={issueDetail}
+              maxLength={500}
+              rows={3}
+              required
+              onChange={(event) => onIssueDetailChange(event.target.value)}
+              placeholder="Hãy mô tả điều đã xảy ra để chúng tôi có thể kiểm tra."
+              className="mt-2 h-[108px] w-full resize-none rounded-xl border border-black/10 bg-white px-3.5 py-3 text-sm leading-6 text-[#11130f] outline-none transition-colors placeholder:text-black/30 focus:border-[#00a86b]/60"
+            />
+          </label>
+          <p className="mt-1.5 min-h-4 text-right text-[10px] text-black/35">
+            {issueDetail.length}/500
+          </p>
+        </div>
+
+        <div>
+          <p className="mb-2 text-xs font-medium text-black/60">
+            Ảnh lỗi <span className="font-normal text-black/35">(không bắt buộc)</span>
+          </p>
+          <IssueImagePicker file={issueImage} onChange={onImageChange} />
+        </div>
+      </div>
     </div>
   );
 }
