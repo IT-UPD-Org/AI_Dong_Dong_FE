@@ -3,4 +3,5 @@ export interface ChatMessage {
   role: string;
   content: string;
   sources?: string[];
+  attachments?: { name: string; size: string; type?: string }[];
 }

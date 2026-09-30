@@ -1,4 +1,4 @@
-import { useEffect, useState, type ChangeEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { ImagePlus, X } from "lucide-react";
 
 interface IssueImagePickerProps {
@@ -10,6 +10,7 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 export function IssueImagePicker({ file, onChange }: IssueImagePickerProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
   const [previewUrl, setPreviewUrl] = useState("");
   const [error, setError] = useState("");
 
@@ -49,8 +50,21 @@ export function IssueImagePicker({ file, onChange }: IssueImagePickerProps) {
     onChange(null);
   }
 
+  function openImagePicker() {
+    inputRef.current?.click();
+  }
+
   return (
     <div>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/png,image/jpeg,image/webp"
+        onChange={selectImage}
+        tabIndex={-1}
+        className="hidden"
+      />
+
       <div className="h-[108px] overflow-hidden rounded-xl border border-dashed border-black/15 bg-white">
         {file && previewUrl ? (
           <div className="flex h-full items-center gap-3 p-2.5">
@@ -66,15 +80,13 @@ export function IssueImagePicker({ file, onChange }: IssueImagePickerProps) {
               <p className="mt-1 text-[10px] text-black/40">
                 {formatFileSize(file.size)}
               </p>
-              <label className="mt-2 inline-flex cursor-pointer text-[11px] font-medium text-[#04714a] hover:underline">
+              <button
+                type="button"
+                onClick={openImagePicker}
+                className="mt-2 inline-flex text-[11px] font-medium text-[#04714a] hover:underline"
+              >
                 Chọn ảnh khác
-                <input
-                  type="file"
-                  accept="image/png,image/jpeg,image/webp"
-                  onChange={selectImage}
-                  className="sr-only"
-                />
-              </label>
+              </button>
             </div>
             <button
               type="button"
@@ -86,16 +98,14 @@ export function IssueImagePicker({ file, onChange }: IssueImagePickerProps) {
             </button>
           </div>
         ) : (
-          <label className="flex h-full cursor-pointer flex-col items-center justify-center gap-2 px-4 text-xs font-medium text-black/45 transition-colors hover:bg-[#f2f8f5] hover:text-[#04714a]">
+          <button
+            type="button"
+            onClick={openImagePicker}
+            className="flex h-full w-full flex-col items-center justify-center gap-2 px-4 text-xs font-medium text-black/45 transition-colors hover:bg-[#f2f8f5] hover:text-[#04714a]"
+          >
             <ImagePlus size={18} />
             Đính kèm ảnh lỗi
-            <input
-              type="file"
-              accept="image/png,image/jpeg,image/webp"
-              onChange={selectImage}
-              className="sr-only"
-            />
-          </label>
+          </button>
         )}
       </div>
 

@@ -1,6 +1,7 @@
 import { ArrowUpRight, MessageCircle } from "lucide-react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+import { BrandMark } from "./BrandMark";
 
 export function PublicLayout() {
   const location = useLocation();
@@ -9,13 +10,11 @@ export function PublicLayout() {
   return (
     <>
       <header className="sticky top-0 z-50 flex h-20 items-center justify-between border-b border-black/10 bg-white/80 px-6 backdrop-blur-md md:px-12">
-        {/* Logo */}
-        <Link to="/" className="flex items-center gap-3">
-          <div className="flex flex-col">
-            <span className="font-bold leading-none text-[#04714a] text-lg">
-              IT UPD GenAI
-            </span>
-          </div>
+        <Link to="/" className="flex items-center gap-2.5" aria-label="IT UPD GenAI - Trang chủ">
+          <BrandMark className="size-9 shrink-0 object-contain" />
+          <span className="text-lg font-bold leading-none text-[#04714a]">
+            IT UPD GenAI
+          </span>
         </Link>
 
         {/* Menu Điều hướng */}

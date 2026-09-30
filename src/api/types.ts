@@ -37,6 +37,7 @@ export interface ChatMessage {
   content: string;
   sources?: string[];
   createdAt?: string;
+  attachments?: { name: string; size: string; type?: string }[];
 }
 
 export interface SendMessagePayload {

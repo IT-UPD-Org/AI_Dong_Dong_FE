@@ -1,25 +1,21 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import {
   BookOpen,
-  FileText,
   History,
   Settings,
-  Users,
   MessageCircle,
   UserRound,
   Plus,
   LogOut,
 } from "lucide-react";
 
-import { conversations } from "../../mocks/data";
 import { useAuth } from "../../contexts/AuthContext";
+import { BrandMark } from "./BrandMark";
 
 const links = [
   ["/chat", "Trò chuyện", MessageCircle],
   ["/history", "Lịch sử", History],
   ["/knowledge", "Kho tri thức", BookOpen],
-  ["/documents", "Tài liệu", FileText],
-  ["/contributors", "Người đóng góp", Users],
 ] as const;
 
 export function AppShell() {
@@ -34,8 +30,9 @@ export function AppShell() {
   return (
     <div className="flex h-screen w-full flex-col overflow-hidden bg-white md:flex-row">
       <aside className="hidden h-full w-64 shrink-0 flex-col border-r border-black/10 bg-white p-5 md:flex">
-        <NavLink to="/" className="mb-6 shrink-0 text-lg font-extrabold">
-          IT UPD GenAI<span className="text-[#00a86b]">.</span>
+        <NavLink to="/" className="mb-6 flex shrink-0 items-center gap-2.5 text-lg font-extrabold">
+          <BrandMark className="size-8 shrink-0 object-contain" />
+          <span>IT UPD GenAI<span className="text-[#00a86b]">.</span></span>
         </NavLink>
         <button
           type="button"
@@ -74,43 +71,8 @@ export function AppShell() {
           ))}
         </nav>
 
-        <div className="mt-6 flex min-h-0 flex-1 flex-col">
-          <p
-            className="
-              mb-2 shrink-0 px-2
-              font-mono text-[9px]
-              uppercase tracking-[0.18em]
-              text-black/35
-            "
-          >
-            Gần đây
-          </p>
-
-          <div className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto">
-            {conversations.map((conversation) => (
-              <NavLink
-                key={conversation.id}
-                to="/chat"
-                className="
-                  w-full min-w-0
-                  truncate
-                  rounded-lg
-                  px-2.5 py-2
-                  text-left text-xs
-                  text-black/55
-                  transition-colors
-                  hover:bg-[#e8f7ef]
-                  hover:text-[#04714a]
-                "
-              >
-                {conversation.title}
-              </NavLink>
-            ))}
-          </div>
-        </div>
-
         {/* User Card & Logout */}
-        <div className="mt-4 flex shrink-0 flex-col gap-2 border-t border-black/10 pt-4">
+        <div className="mt-auto flex shrink-0 flex-col gap-2 border-t border-black/10 pt-4">
           {user && (
             <div className="flex items-center gap-2.5 px-2 py-1.5 rounded-xl bg-black/[0.02]">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#04714a]/10 text-[#04714a] font-bold text-xs">
@@ -157,8 +119,9 @@ export function AppShell() {
       <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto">
         <div className="mx-auto flex h-full w-full max-w-6xl flex-col px-5 py-6 md:px-10">
           <div className="mb-6 flex shrink-0 items-center justify-between md:hidden">
-            <NavLink to="/" className="font-extrabold">
-              IT UPD GenAI<span className="text-[#00a86b]">.</span>
+            <NavLink to="/" className="flex items-center gap-2 font-extrabold">
+              <BrandMark className="size-7 shrink-0 object-contain" />
+              <span>IT UPD GenAI<span className="text-[#00a86b]">.</span></span>
             </NavLink>
             <div className="flex items-center gap-3">
               <NavLink to="/settings">

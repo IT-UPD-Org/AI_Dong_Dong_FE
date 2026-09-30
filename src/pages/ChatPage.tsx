@@ -64,14 +64,28 @@ export function ChatPage() {
     markNearBottom,
   } = useConversationNav(msgs, loading);
 
-  async function submit(e?: FormEvent) {
+  function formatFileSize(bytes: number): string {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  async function submit(e?: FormEvent, attachedFiles?: File[]) {
     e?.preventDefault();
-    if (!input.trim() || loading) return;
+    const hasText = input.trim().length > 0;
+    const hasFiles = Boolean(attachedFiles && attachedFiles.length > 0);
+    if ((!hasText && !hasFiles) || loading) return;
 
     const text = input.trim();
     setInput("");
 
     const assistantMsgId = crypto.randomUUID();
+
+    const formattedAttachments = attachedFiles?.map((file) => ({
+      name: file.name,
+      size: formatFileSize(file.size),
+      type: file.type,
+    }));
 
     setMsgs((m) => [
       ...m,
@@ -79,6 +93,7 @@ export function ChatPage() {
         id: crypto.randomUUID(),
         role: "user",
         content: text,
+        attachments: formattedAttachments,
       },
       {
         id: assistantMsgId,
@@ -91,8 +106,9 @@ export function ChatPage() {
     setLoading(true);
 
     try {
+      const promptToSend = text || (formattedAttachments?.length ? `[Đã gửi ${formattedAttachments.length} tệp: ${formattedAttachments.map(f => f.name).join(", ")}]` : "");
       await streamChatMessage(
-        text,
+        promptToSend,
         (chunk) => {
           setMsgs((prev) =>
             prev.map((msg) =>

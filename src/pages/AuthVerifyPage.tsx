@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams, useLocation, Link } from "react-router-dom";
-import { Loader2, CheckCircle2, AlertCircle, ArrowRight } from "lucide-react";
+import { CheckCircle2, AlertCircle, ArrowRight } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
+import { PageLoader } from "../components/layout/PageLoader";
 
 export function AuthVerifyPage() {
   const [params] = useSearchParams();
@@ -46,21 +47,13 @@ export function AuthVerifyPage() {
     return () => { isMounted = false; };
   }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  if (status === "verifying") {
+    return <PageLoader content label="Đang xác thực liên kết..." />;
+  }
+
   return (
     <main className="grid min-h-[calc(100vh-80px)] place-items-center px-6 py-12">
       <div className="w-full max-w-md rounded-3xl border border-black/10 bg-white p-8 shadow-sm text-center">
-        {status === "verifying" && (
-          <div className="flex flex-col items-center gap-4 py-6">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#04714a]/10 text-[#04714a]">
-              <Loader2 className="animate-spin" size={32} />
-            </div>
-            <h2 className="text-xl font-bold text-gray-900">Đang xác thực liên kết...</h2>
-            <p className="text-sm text-black/60 max-w-xs leading-relaxed">
-              Hệ thống đang kiểm tra chữ ký và cấp quyền truy cập vào tài khoản của bạn.
-            </p>
-          </div>
-        )}
-
         {status === "success" && (
           <div className="flex flex-col items-center gap-4 py-6">
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-green-100 text-green-700 animate-in zoom-in-50 duration-300">

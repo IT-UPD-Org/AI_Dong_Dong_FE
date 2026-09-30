@@ -1,5 +1,4 @@
-// \dong-dong_FE\src\pages\LandingPage.tsx
-
+import { useState } from "react";
 import { ArrowUpRight, BookOpen, FileText, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -7,15 +6,17 @@ import { contributors } from "../mocks/data";
 import { PresentLPDongDong } from "../components/layout/PresentLPDongDong";
 import { ChatShowcaseSection } from "../components/landing/ChatShowcaseSection";
 import { KnowledgeRepositoryIllustration } from "../components/landing/KnowledgeRepositoryIllustration";
+
+// 1 cái to làm điểm nhấn chính, 2 cái nhỏ làm điểm xuyết vệ tinh cân đối
 const gems = [
-  { id: "v1", size: "10%", top: "8%", left: "6%" },
-  { id: "v2", size: "15%", top: "14%", right: "8%" },
-  { id: "v3", size: "30%", top: "50%", left: "60%", center: true },
-  { id: "v4", size: "12%", bottom: "20%", right: "24%" },
-  { id: "v5", size: "20%", bottom: "6%", right: "6%" },
+  { id: "gem-large", size: "32%", top: "50%", left: "62%", center: true, delay: 0 },
+  { id: "gem-small-top", size: "14%", top: "13%", right: "12%", delay: 120 },
+  { id: "gem-small-bottom", size: "13%", bottom: "16%", right: "15%", delay: 220 },
 ];
 
 export function LandingPage() {
+  const [isLogoHovered, setIsLogoHovered] = useState(false);
+
   return (
     <main>
       {/* =========================================================
@@ -65,41 +66,70 @@ export function LandingPage() {
         <div className="group relative flex min-h-155 flex-col justify-between overflow-hidden rounded-[2rem] bg-[#f8faf9] p-6 text-white shadow-2xl">
           {/* Background */}
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
-            {/* Base gradient — xanh trong → mint → trắng */}
+            {/* Emerald-to-mint background from the approved visual direction. */}
             <div
               className="absolute inset-0"
               style={{
                 background: `
-          radial-gradient(
-            circle at 38% 34%,
-            #00a86b 0%,
-            #12b47c 22%,
-            #4bc99d 42%,
-            #a9e3cf 63%,
-            #e8f6f1 82%,
-            #f8faf9 100%
-          )
+          radial-gradient(circle at 76% 22%, rgba(255,255,255,.9), transparent 43%),
+          radial-gradient(circle at 22% 78%, rgba(144,229,202,.9), transparent 55%),
+          linear-gradient(125deg, #04aa73 0%, #22c58c 38%, #a9e4d1 74%, #e9f8f1 100%)
         `,
               }}
             />
 
-            {/* White light beam — sắc và sạch hơn */}
+            {/* White light beam — tỏa tự nhiên từ phía sau logo CLB IT UPD sang phải */}
             <div
               className="absolute inset-0"
               style={{
                 background: `
-          conic-gradient(
-            from 218deg at 30% 65%,
-            transparent 0deg,
-            transparent 25deg,
-            rgba(255,255,255,0.05) 32deg,
-            rgba(255,255,255,0.55) 43deg,
-            rgba(255,255,255,0.92) 58deg,
-            rgba(255,255,255,0.45) 68deg,
-            transparent 82deg,
-            transparent 360deg
-          )
-        `,
+                  conic-gradient(
+                    from 26deg at 16% 48%,
+                    transparent 0deg,
+                    transparent 20deg,
+                    rgba(255, 255, 255, 0.04) 30deg,
+                    rgba(255, 255, 255, 0.35) 48deg,
+                    rgba(255, 255, 255, 0.85) 60deg,
+                    rgba(255, 255, 255, 0.35) 72deg,
+                    rgba(255, 255, 255, 0.04) 90deg,
+                    transparent 100deg,
+                    transparent 360deg
+                  )
+                `,
+                maskImage: `
+                  radial-gradient(
+                    ellipse 95% 75% at 16% 48%,
+                    black 20%,
+                    rgba(0, 0, 0, 0.8) 45%,
+                    rgba(0, 0, 0, 0.15) 80%,
+                    transparent 100%
+                  )
+                `,
+                WebkitMaskImage: `
+                  radial-gradient(
+                    ellipse 95% 75% at 16% 48%,
+                    black 20%,
+                    rgba(0, 0, 0, 0.8) 45%,
+                    rgba(0, 0, 0, 0.15) 80%,
+                    transparent 100%
+                  )
+                `,
+              }}
+            />
+
+            {/* Vầng hào quang sáng dịu sau logo giúp ánh sáng tỏa ra liền mạch */}
+            <div
+              className="absolute inset-0"
+              style={{
+                background: `
+                  radial-gradient(
+                    circle at 17% 48%,
+                    rgba(255, 255, 255, 0.6) 0%,
+                    rgba(255, 255, 255, 0.22) 28%,
+                    rgba(255, 255, 255, 0.04) 55%,
+                    transparent 75%
+                  )
+                `,
               }}
             />
 
@@ -137,11 +167,15 @@ export function LandingPage() {
               }}
             />
           </div>
-          <div className="absolute inset-0">
-            {gems.map((g, i) => (
+          <div className="absolute inset-0 pointer-events-none">
+            {gems.map((g) => (
               <div
                 key={g.id}
-                className="absolute opacity-0 scale-50 drop-shadow-[0_10px_28px_rgba(0,80,55,0.5)] transition-all duration-700 ease-[cubic-bezier(.22,1,.36,1)] group-hover:opacity-100 group-hover:scale-100"
+                className={`absolute drop-shadow-[0_12px_32px_rgba(0,80,55,0.38)] transition-all duration-700 ease-out ${
+                  isLogoHovered
+                    ? "opacity-95"
+                    : "opacity-0"
+                }`}
                 style={{
                   width: g.size,
                   aspectRatio: "1 / 1",
@@ -149,13 +183,15 @@ export function LandingPage() {
                   left: g.left,
                   right: g.right,
                   bottom: g.bottom,
-                  transform: g.center ? "translate(-50%, -50%)" : undefined,
-                  transitionDelay: `${i * 90}ms`,
+                  transform: g.center
+                    ? `translate(-50%, -50%) ${isLogoHovered ? "scale(1)" : "scale(0.7)"}`
+                    : `${isLogoHovered ? "scale(1)" : "scale(0.7)"}`,
+                  transitionDelay: `${g.delay}ms`,
                 }}
               >
                 <img
                   src="/assets/UPD_Vertical Logo.png"
-                  alt=""
+                  alt="Biểu tượng Phương Đông"
                   className="h-full w-full object-contain"
                 />
               </div>
@@ -169,7 +205,7 @@ export function LandingPage() {
           </div>
 
           {/* Dong Dong Avatar */}
-          <PresentLPDongDong />
+          <PresentLPDongDong onHoverLogo={setIsLogoHovered} />
 
           {/* Footer */}
           <div className="relative z-10">
