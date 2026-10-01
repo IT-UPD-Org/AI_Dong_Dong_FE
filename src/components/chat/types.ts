@@ -1,6 +1,1 @@
-export interface ChatMessage {
-  id: string;
-  role: string;
-  content: string;
-  sources?: string[];
-}
+export type { ChatMessage, ChatSource, ChatStatus, MessageRole } from '../../api/types';

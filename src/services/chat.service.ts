@@ -1,5 +1,5 @@
 import { messages } from "../mocks/data";
-import type { ChatMessage } from "../api/types";
+import type { ChatMessage, ChatStreamChunk, SendMessagePayload } from "../api/types";
 import { chatApi } from "../api/chat.api";
 
 export async function getConversationMessages(): Promise<ChatMessage[]> {
@@ -7,11 +7,11 @@ export async function getConversationMessages(): Promise<ChatMessage[]> {
 }
 
 export async function streamChatMessage(
-  content: string,
-  onChunk: (text: string) => void,
+  payload: SendMessagePayload,
+  onChunk: (chunk: ChatStreamChunk) => void,
   onFinish: (message: ChatMessage) => void
 ): Promise<void> {
-  return chatApi.streamMessage({ message: content }, onChunk, onFinish);
+  return chatApi.streamMessage(payload, onChunk, onFinish);
 }
 
 export async function sendChatMessage(content: string): Promise<ChatMessage> {

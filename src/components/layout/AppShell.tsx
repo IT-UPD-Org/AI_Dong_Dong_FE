@@ -13,6 +13,7 @@ import {
 
 import { conversations } from "../../mocks/data";
 import { useAuth } from "../../contexts/AuthContext";
+import { DocumentProcessingNotifications } from "./DocumentProcessingNotifications";
 
 const links = [
   ["/chat", "Trò chuyện", MessageCircle],
@@ -63,7 +64,7 @@ export function AppShell() {
               className={({ isActive }) =>
                 `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${
                   isActive
-                    ? "bg-[#e8f7ef] font-semibold text-[#04714a]"
+                    ? "bg-[#e8f7ef] font-semibold text-[#013422]"
                     : "text-black/55 hover:bg-[#e8f7ef] hover:text-[#04714a]"
                 }`
               }
@@ -154,7 +155,7 @@ export function AppShell() {
         </div>
       </aside>
 
-      <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto">
+      <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto relative">
         <div className="mx-auto flex h-full w-full max-w-6xl flex-col px-5 py-6 md:px-10">
           <div className="mb-6 flex shrink-0 items-center justify-between md:hidden">
             <NavLink to="/" className="font-extrabold">
@@ -174,6 +175,7 @@ export function AppShell() {
             <Outlet />
           </div>
         </div>
+        <DocumentProcessingNotifications />
       </main>
     </div>
   );

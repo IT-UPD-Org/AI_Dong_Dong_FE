@@ -8,11 +8,14 @@ import { PresentLPDongDong } from "../components/layout/PresentLPDongDong";
 import { ChatShowcaseSection } from "../components/landing/ChatShowcaseSection";
 import { KnowledgeRepositoryIllustration } from "../components/landing/KnowledgeRepositoryIllustration";
 const gems = [
-  { id: "v1", size: "10%", top: "8%", left: "6%" },
-  { id: "v2", size: "15%", top: "14%", right: "8%" },
-  { id: "v3", size: "30%", top: "50%", left: "60%", center: true },
-  { id: "v4", size: "12%", bottom: "20%", right: "24%" },
-  { id: "v5", size: "20%", bottom: "6%", right: "6%" },
+  {
+    id: "v3",
+    size: "90%",
+    top: "50%",
+    left: "50%",
+    center: true,
+    opacity: 0.1,
+  },
 ];
 
 export function LandingPage() {
@@ -147,8 +150,6 @@ export function LandingPage() {
                   aspectRatio: "1 / 1",
                   top: g.top,
                   left: g.left,
-                  right: g.right,
-                  bottom: g.bottom,
                   transform: g.center ? "translate(-50%, -50%)" : undefined,
                   transitionDelay: `${i * 90}ms`,
                 }}
