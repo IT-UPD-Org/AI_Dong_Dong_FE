@@ -1,6 +1,8 @@
+// src\components\chat\MessageBubble.tsx
 import { forwardRef, useState, useEffect, useRef } from "react";
-import { RotateCcw, ThumbsDown, ThumbsUp, Edit2, Check, X } from "lucide-react";
+import { RotateCcw, ThumbsDown, ThumbsUp, Edit2 } from "lucide-react";
 import type { ChatMessage } from "../../api/types";
+import { SafeMarkdown } from "./SafeMarkdown";
 
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -14,7 +16,15 @@ interface MessageBubbleProps {
 
 export const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
   function MessageBubble(
-    { message, reaction, onLike, onDislike, onRegenerate, onEdit, regenerateDisabled },
+    {
+      message,
+      reaction,
+      onLike,
+      onDislike,
+      onRegenerate,
+      onEdit,
+      regenerateDisabled,
+    },
     ref,
   ) {
     const isUser = message.role === "user";
@@ -40,7 +50,10 @@ export const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
 
     if (isEditing) {
       return (
-        <div ref={ref} className="ml-auto w-full max-w-[78%] rounded-2xl rounded-br-sm bg-black/5 p-3">
+        <div
+          ref={ref}
+          className="ml-auto w-full max-w-[78%] rounded-2xl rounded-br-sm bg-black/5 p-3"
+        >
           <textarea
             ref={textareaRef}
             value={editContent}
@@ -54,7 +67,10 @@ export const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
           />
           <div className="mt-2 flex justify-end gap-2">
             <button
-              onClick={() => { setIsEditing(false); setEditContent(message.content); }}
+              onClick={() => {
+                setIsEditing(false);
+                setEditContent(message.content);
+              }}
               className="rounded-lg bg-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-300"
             >
               Hủy
@@ -72,7 +88,7 @@ export const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
     }
 
     return (
-      <div className={`group flex ${isUser ? 'justify-end' : 'justify-start'}`}>
+      <div className={`group flex ${isUser ? "justify-end" : "justify-start"}`}>
         <div
           ref={ref}
           onClick={isUser ? () => setExpanded((v) => !v) : undefined}
@@ -95,65 +111,80 @@ export const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
             </button>
           )}
 
-          <div
-            className={`whitespace-pre-wrap [overflow-wrap:anywhere] ${
-              isUser && !expanded ? "line-clamp-3" : ""
-            }`}
-          >
-            {message.content ? (
-              message.content
-            ) : (
-              <span className="inline-flex items-center gap-1.5 py-1 text-black/40">
-                <span className="size-1.5 rounded-full bg-[#04714a] animate-bounce [animation-delay:-0.3s]" />
-                <span className="size-1.5 rounded-full bg-[#04714a] animate-bounce [animation-delay:-0.15s]" />
-                <span className="size-1.5 rounded-full bg-[#04714a] animate-bounce" />
-              </span>
+          {/* User messages: plain text with whitespace preserved */}
+          {isUser ? (
+            <div
+              className={`whitespace-pre-wrap [overflow-wrap:anywhere] ${
+                !expanded ? "line-clamp-3" : ""
+              }`}
+            >
+              {message.content}
+            </div>
+          ) : /* AI messages: SafeMarkdown (no images, no dangerous HTML, safe links) */
+          message.content ? (
+            <SafeMarkdown
+              content={message.content}
+              className="min-w-0 [overflow-wrap:anywhere]"
+            />
+          ) : (
+            <span className="inline-flex items-center gap-1.5 py-1 text-black/40">
+              <span className="size-1.5 rounded-full bg-[#04714a] animate-bounce [animation-delay:-0.3s]" />
+              <span className="size-1.5 rounded-full bg-[#04714a] animate-bounce [animation-delay:-0.15s]" />
+              <span className="size-1.5 rounded-full bg-[#04714a] animate-bounce" />
+            </span>
+          )}
+
+          {!isUser &&
+            message.status &&
+            message.status !== "completed" &&
+            message.status !== "idle" &&
+            message.status !== "error" && (
+              <div className="mt-1 flex items-center gap-2 text-xs font-medium text-amber-600">
+                {message.status === "thinking" && "Đang suy nghĩ..."}
+                {message.status === "searching" && "Đang tìm kiếm..."}
+                {message.status === "generating" && "Đang tổng hợp..."}
+              </div>
             )}
-          </div>
 
-          {!isUser && (message.status && message.status !== 'completed' && message.status !== 'idle' && message.status !== 'error') && (
-            <div className="mt-1 flex items-center gap-2 text-xs font-medium text-amber-600">
-              {message.status === 'thinking' && 'Đang suy nghĩ...'}
-              {message.status === 'searching' && 'Đang tìm kiếm...'}
-              {message.status === 'generating' && 'Đang tổng hợp...'}
-            </div>
-          )}
+          {!isUser &&
+            (onLike || onDislike || onRegenerate) &&
+            (!message.status ||
+              message.status === "completed" ||
+              message.status === "error") && (
+              <div className="mt-2 flex items-center gap-1 text-black/40">
+                <button
+                  type="button"
+                  title="Hữu ích"
+                  onClick={onLike}
+                  className={`rounded-md p-1.5 transition-colors hover:bg-black/5 hover:text-black ${
+                    reaction === "like" ? "bg-black/5 text-[#00a86b]" : ""
+                  }`}
+                >
+                  <ThumbsUp size={14} />
+                </button>
 
-          {!isUser && (onLike || onDislike || onRegenerate) && (!message.status || message.status === 'completed' || message.status === 'error') && (
-            <div className="mt-2 flex items-center gap-1 text-black/40">
-              <button
-                type="button"
-                title="Hữu ích"
-                onClick={onLike}
-                className={`rounded-md p-1.5 transition-colors hover:bg-black/5 hover:text-black ${
-                  reaction === "like" ? "bg-black/5 text-[#00a86b]" : ""
-                }`}
-              >
-                <ThumbsUp size={14} />
-              </button>
+                <button
+                  type="button"
+                  title="Chưa tốt"
+                  onClick={onDislike}
+                  className={`rounded-md p-1.5 transition-colors hover:bg-black/5 hover:text-black ${
+                    reaction === "dislike" ? "bg-black/5 text-red-500" : ""
+                  }`}
+                >
+                  <ThumbsDown size={14} />
+                </button>
 
-              <button
-                type="button"
-                title="Chưa tốt"
-                onClick={onDislike}
-                className={`rounded-md p-1.5 transition-colors hover:bg-black/5 hover:text-black ${
-                  reaction === "dislike" ? "bg-black/5 text-red-500" : ""
-                }`}
-              >
-                <ThumbsDown size={14} />
-              </button>
-
-              <button
-                type="button"
-                title="Tạo lại câu trả lời"
-                onClick={onRegenerate}
-                disabled={regenerateDisabled}
-                className="rounded-md p-1.5 transition-colors hover:bg-black/5 hover:text-black disabled:opacity-30"
-              >
-                <RotateCcw size={14} />
-              </button>
-            </div>
-          )}
+                <button
+                  type="button"
+                  title="Tạo lại câu trả lời"
+                  onClick={onRegenerate}
+                  disabled={regenerateDisabled}
+                  className="rounded-md p-1.5 transition-colors hover:bg-black/5 hover:text-black disabled:opacity-30"
+                >
+                  <RotateCcw size={14} />
+                </button>
+              </div>
+            )}
         </div>
       </div>
     );
