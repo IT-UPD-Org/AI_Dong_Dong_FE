@@ -1,20 +1,28 @@
-import { FormEvent, KeyboardEvent, useEffect, useRef, useState, ChangeEvent } from "react";
-import { Plus, Paperclip, FileText, X } from "lucide-react";
+import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
+import { Paperclip, X } from "lucide-react";
 import {
   AgentLevel,
   AGENT_LEVEL_CONFIGS,
   AgentEffortModal,
 } from "./AgentEffortModal";
+import { DocumentUploadPopup } from "./DocumentUploadPopup";
+import { documentApi } from "../../api/document.api";
+import type { Document } from "../../api/types";
 
 interface ModifiedPromptInputProps {
   value: string;
   onChange: (value: string) => void;
-  onSubmit: (e?: FormEvent, files?: File[]) => void;
+  onSubmit: (e?: FormEvent) => void;
   loading?: boolean;
   level: AgentLevel;
   onLevelChange: (level: AgentLevel) => void;
   placeholder?: string;
   onVoiceResult?: (text: string) => void;
+  mentionedDocumentIds?: string[];
+  onMentionChange?: (ids: string[]) => void;
+  attachmentIds?: string[];
+  onAttachmentChange?: (ids: string[]) => void;
+  onUploadError?: (error: string) => void;
 }
 
 function useVoiceInput(onResult: (text: string) => void) {
@@ -80,58 +88,72 @@ export function ModifiedPromptInput({
   onLevelChange,
   placeholder = "Hãy hỏi bất cứ điều gì...",
   onVoiceResult,
+  mentionedDocumentIds = [],
+  onMentionChange,
+  attachmentIds = [],
+  onAttachmentChange,
+  onUploadError,
 }: ModifiedPromptInputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const plusButtonRef = useRef<HTMLButtonElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [files, setFiles] = useState<File[]>([]);
+  const [isUploadOpen, setIsUploadOpen] = useState(false);
+
+  // Mentions
+  const [showMentions, setShowMentions] = useState(false);
+  const [mentionQuery, setMentionQuery] = useState("");
+  const [allDocs, setAllDocs] = useState<Document[]>([]);
+  const [mentionCursorIdx, setMentionCursorIdx] = useState(-1);
+
+  // Attachments UI
+  const [attachedDocs, setAttachedDocs] = useState<Document[]>([]);
 
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        menuRef.current &&
-        !menuRef.current.contains(event.target as Node) &&
-        plusButtonRef.current &&
-        !plusButtonRef.current.contains(event.target as Node)
-      ) {
-        setIsMenuOpen(false);
+    documentApi.listDocuments().then(setAllDocs);
+  }, []);
+
+  useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      if (e.clipboardData && e.clipboardData.files.length > 0) {
+        e.preventDefault();
+        const files = Array.from(e.clipboardData.files);
+        // Only accept if they are files. Not just text.
+        for (const file of files) {
+          documentApi
+            .uploadDocument(file)
+            .then((doc) => {
+              setAttachedDocs((prev) => [...prev, doc]);
+              if (onAttachmentChange)
+                onAttachmentChange([...attachmentIds, doc.document_id]);
+            })
+            .catch((err) => {
+              if (onUploadError) onUploadError(err.message);
+            });
+        }
       }
-    }
-    if (isMenuOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isMenuOpen]);
 
-  function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
-    if (!e.target.files?.length) return;
-    const selected = Array.from(e.target.files);
-    setFiles((prev) => [...prev, ...selected]);
-    e.target.value = "";
-  }
+    const textarea = textareaRef.current;
+    if (textarea) textarea.addEventListener("paste", handlePaste);
+    return () => {
+      if (textarea) textarea.removeEventListener("paste", handlePaste);
+    };
+  }, [attachmentIds, onAttachmentChange, onUploadError]);
 
-  function removeFile(index: number) {
-    setFiles((prev) => prev.filter((_, i) => i !== index));
-  }
-
-  function formatFileSize(bytes: number): string {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  }
-
-  function handleFormSubmit(e?: FormEvent) {
-    e?.preventDefault();
-    if ((!value.trim() && files.length === 0) || loading) return;
-    const currentFiles = [...files];
-    setFiles([]);
-    onSubmit(e, currentFiles);
-  }
+  // Subscribe to newly uploaded docs that might have been uploaded by drag & drop
+  useEffect(() => {
+    const unsub = documentApi.subscribe((doc) => {
+      setAllDocs((prev) => {
+        if (!prev.find((d) => d.document_id === doc.document_id))
+          return [doc, ...prev];
+        return prev;
+      });
+      // also update attachedDocs if they changed status
+      setAttachedDocs((prev) =>
+        prev.map((d) => (d.document_id === doc.document_id ? doc : d)),
+      );
+    });
+    return () => unsub();
+  }, []);
 
   function appendVoiceText(text: string) {
     if (!text.trim()) return;
@@ -142,11 +164,72 @@ export function ModifiedPromptInput({
     onVoiceResult ?? appendVoiceText,
   );
 
+  function insertMention(doc: Document) {
+    if (mentionCursorIdx === -1) return;
+    const before = value.slice(0, mentionCursorIdx);
+    const after = value.slice(mentionCursorIdx + mentionQuery.length + 1);
+    onChange(`${before}@${doc.filename} ${after}`);
+
+    if (onMentionChange && !mentionedDocumentIds.includes(doc.document_id)) {
+      onMentionChange([...mentionedDocumentIds, doc.document_id]);
+    }
+
+    setShowMentions(false);
+    setMentionQuery("");
+    setMentionCursorIdx(-1);
+    textareaRef.current?.focus();
+  }
+
   function handleKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
+    if (showMentions) {
+      if (e.key === "Escape") {
+        setShowMentions(false);
+        e.preventDefault();
+        return;
+      }
+      if (e.key === "Enter") {
+        const filteredDocs = allDocs.filter((d) =>
+          d.filename.toLowerCase().includes(mentionQuery.toLowerCase()),
+        );
+        if (filteredDocs.length > 0) {
+          insertMention(filteredDocs[0]); // For simplicity, pick first
+          e.preventDefault();
+          return;
+        }
+      }
+    }
+
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleFormSubmit();
+      onSubmit();
     }
+  }
+
+  function handleTextChange(val: string) {
+    onChange(val);
+
+    // Check for @mention
+    const cursor = textareaRef.current?.selectionStart || 0;
+    const textBeforeCursor = val.slice(0, cursor);
+    const lastAtIdx = textBeforeCursor.lastIndexOf("@");
+
+    if (lastAtIdx !== -1) {
+      // make sure @ is at start of string or preceded by space
+      if (
+        lastAtIdx === 0 ||
+        textBeforeCursor[lastAtIdx - 1] === " " ||
+        textBeforeCursor[lastAtIdx - 1] === "\n"
+      ) {
+        const query = textBeforeCursor.slice(lastAtIdx + 1);
+        if (!query.includes(" ") && !query.includes("\n")) {
+          setShowMentions(true);
+          setMentionQuery(query);
+          setMentionCursorIdx(lastAtIdx);
+          return;
+        }
+      }
+    }
+    setShowMentions(false);
   }
 
   useEffect(() => {
@@ -158,149 +241,139 @@ export function ModifiedPromptInput({
 
   const currentConfig = AGENT_LEVEL_CONFIGS[level];
 
+  const mentionFilteredDocs = allDocs.filter((d) =>
+    d.filename.toLowerCase().includes(mentionQuery.toLowerCase()),
+  );
+
   return (
-    <>
+    <div className="relative">
+      {/* Upload Popup */}
+      {isUploadOpen && (
+        <DocumentUploadPopup
+          onClose={() => setIsUploadOpen(false)}
+          onUploadError={onUploadError || console.error}
+        />
+      )}
+
+      {/* Mention Dropdown */}
+      {showMentions && mentionFilteredDocs.length > 0 && (
+        <div className="absolute bottom-full left-4 mb-2 max-h-60 w-80 overflow-y-auto rounded-xl border border-black/10 bg-white p-2 shadow-lg z-50 animate-in fade-in slide-in-from-bottom-2 duration-150">
+          <p className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">
+            Gợi ý tài liệu
+          </p>
+          {mentionFilteredDocs.map((doc) => (
+            <button
+              key={doc.document_id}
+              type="button"
+              className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm hover:bg-gray-100 transition-colors"
+              onClick={() => insertMention(doc)}
+            >
+              <Paperclip size={14} className="text-gray-400" />
+              <span className="truncate">{doc.filename}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
       <form
-        onSubmit={handleFormSubmit}
-        onDragOver={(e) => e.preventDefault()}
-        onDrop={(e) => {
-          e.preventDefault();
-          if (e.dataTransfer.files?.length) {
-            setFiles((prev) => [...prev, ...Array.from(e.dataTransfer.files)]);
-          }
-        }}
+        onSubmit={onSubmit}
         className="shrink-0 border-t border-black/10 bg-white px-3 py-2"
       >
-        <div className="mx-auto flex w-full max-w-4xl flex-col">
-          {/* Ô nhập — chứa chip tệp đính kèm, nút +, Effort, Mic, Textarea, Send */}
-          <div className="relative flex flex-col gap-1.5 rounded-2xl border border-black/10 bg-white p-1.5 shadow-sm transition-all focus-within:border-[#04714a]/40 focus-within:shadow-[0_0_0_2px_rgba(4,113,74,0.06)]">
-            {/* Popup Menu đồng bộ phong cách trang web IT UPD */}
-            {isMenuOpen && (
-              <div
-                ref={menuRef}
-                className="absolute bottom-full left-0 mb-3 z-50 w-48 rounded-2xl bg-white text-[#11130f] p-1.5 shadow-[0_12px_36px_rgba(0,40,25,0.12)] border border-black/10 animate-in fade-in-0 zoom-in-95 duration-150 select-none"
-              >
-                {/* Tải tệp lên */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    fileInputRef.current?.click();
-                  }}
-                  className="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-semibold text-[#11130f] hover:bg-[#e8f7ef] hover:text-[#04714a] transition-colors cursor-pointer text-left"
+        <div className="mx-auto flex w-full max-w-4xl flex-col gap-2">
+          {/* Attachments Display */}
+          {attachedDocs.length > 0 && (
+            <div className="flex flex-wrap gap-2 px-1">
+              {attachedDocs.map((doc) => (
+                <div
+                  key={doc.document_id}
+                  className="flex items-center gap-2 rounded-lg bg-gray-100 px-3 py-1.5 text-sm"
                 >
-                  <Paperclip size={16} className="text-[#04714a] shrink-0 transition-transform group-hover:scale-110" />
-                  <span>Tải tệp lên</span>
-                </button>
-              </div>
-            )}
-
-            {/* Danh sách tệp đính kèm */}
-            {files.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 px-2 pt-1 pb-1">
-                {files.map((file, idx) => (
-                  <div
-                    key={`${file.name}-${idx}`}
-                    className="flex items-center gap-1.5 rounded-xl border border-black/10 bg-[#f8faf9] px-2.5 py-1 text-xs text-[#11130f] transition-all"
+                  <Paperclip size={14} className="text-gray-500" />
+                  <span className="max-w-[150px] truncate">{doc.filename}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAttachedDocs((prev) =>
+                        prev.filter((d) => d.document_id !== doc.document_id),
+                      );
+                      if (onAttachmentChange)
+                        onAttachmentChange(
+                          attachmentIds.filter((id) => id !== doc.document_id),
+                        );
+                    }}
+                    className="ml-1 rounded-full p-0.5 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
                   >
-                    <FileText size={13} className="shrink-0 text-[#04714a]" />
-                    <span className="max-w-[140px] truncate font-medium">{file.name}</span>
-                    <span className="text-[10px] text-black/40 font-mono">
-                      ({formatFileSize(file.size)})
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => removeFile(idx)}
-                      title="Gỡ tệp"
-                      className="cursor-pointer rounded-full p-0.5 text-black/40 transition-colors hover:bg-black/10 hover:text-black/80"
-                    >
-                      <X size={12} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <div className="flex items-end gap-1.5 w-full">
-              {/* Nút Dấu cộng (+) mở menu lựa chọn — nằm bên trái nút Standard */}
-              <button
-                ref={plusButtonRef}
-                type="button"
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                disabled={loading}
-                title={isMenuOpen ? "Đóng menu" : "Thêm tệp hoặc công cụ"}
-                className={`flex size-8 shrink-0 items-center justify-center rounded-full transition-all duration-200 cursor-pointer disabled:opacity-30 ${
-                  isMenuOpen
-                    ? "bg-[#e8f7ef] text-[#04714a] rotate-45"
-                    : "text-black/50 hover:bg-[#e8f7ef] hover:text-[#04714a]"
-                }`}
-              >
-                <Plus size={18} strokeWidth={2.2} />
-              </button>
-
-              <input
-                ref={fileInputRef}
-                type="file"
-                multiple
-                onChange={handleFileChange}
-                accept=".pdf,.doc,.docx,.txt,.md,.xlsx,.xls,.png,.jpg,.jpeg,.webp"
-                className="hidden"
-              />
-
-              {/* Nút Effort lồng trong Input Bar */}
-              <button
-                type="button"
-                onClick={() => setIsModalOpen(true)}
-                title={`Cấu hình Effort (${currentConfig.label})`}
-                className="flex h-8 shrink-0 items-center gap-1 rounded-xl bg-black/5 px-2.5 text-xs font-semibold text-[#04714a] transition-colors hover:bg-black/10 cursor-pointer"
-              >
-                <SlidersIcon />
-                <span>{currentConfig.label}</span>
-              </button>
-
-              {/* Nút Giọng nói */}
-              <button
-                type="button"
-                onClick={toggle}
-                disabled={!supported || loading}
-                title={
-                  supported
-                    ? listening
-                      ? "Dừng ghi âm"
-                      : "Nói để nhập"
-                    : "Trình duyệt không hỗ trợ giọng nói"
-                }
-                className={`flex size-8 shrink-0 items-center justify-center rounded-full transition-colors disabled:opacity-30 cursor-pointer ${
-                  listening
-                    ? "bg-red-500 text-white"
-                    : "text-black/40 hover:bg-black/5 hover:text-black/70"
-                }`}
-              >
-                <MicIcon />
-              </button>
-
-              {/* Input Textarea */}
-              <textarea
-                ref={textareaRef}
-                rows={1}
-                value={value}
-                placeholder={placeholder}
-                onChange={(e) => onChange(e.target.value)}
-                onKeyDown={handleKeyDown}
-                disabled={loading}
-                className="max-h-[120px] flex-1 resize-none bg-transparent py-1.5 text-sm text-[#11130f] outline-none placeholder:text-black/35"
-              />
-
-              {/* Nút Gửi */}
-              <button
-                type="submit"
-                disabled={loading || (!value.trim() && files.length === 0)}
-                title="Gửi"
-                className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#04714a] text-white transition-opacity disabled:opacity-30 cursor-pointer"
-              >
-                <SendIcon />
-              </button>
+                    <X size={14} />
+                  </button>
+                </div>
+              ))}
             </div>
+          )}
+
+          {/* Ô nhập — chứa nút Effort, Mic, Textarea, Send */}
+          <div className="flex items-end gap-1.5 rounded-2xl border border-black/10 bg-white p-1.5 shadow-sm focus-within:border-[#04714a]/30 focus-within:ring-2 focus-within:ring-[#04714a]/10 transition-all">
+            <button
+              type="button"
+              onClick={() => setIsUploadOpen(!isUploadOpen)}
+              className="flex size-8 shrink-0 items-center justify-center rounded-full text-black/50 hover:bg-black/5 hover:text-black/80 transition-colors"
+              title="Tải lên tài liệu"
+            >
+              <PlusIcon />
+            </button>
+
+            {/* Nút Effort lồng trong Input Bar */}
+            <button
+              type="button"
+              onClick={() => setIsModalOpen(true)}
+              title={`Cấu hình Effort (${currentConfig.label})`}
+              className="flex h-8 shrink-0 items-center gap-1 rounded-xl bg-black/5 px-2.5 text-xs font-semibold text-[#04714a] transition-colors hover:bg-black/10"
+            >
+              <SlidersIcon />
+              <span>{currentConfig.label}</span>
+            </button>
+
+            {/* Input Textarea */}
+            <textarea
+              ref={textareaRef}
+              rows={1}
+              value={value}
+              placeholder={placeholder}
+              onChange={(e) => handleTextChange(e.target.value)}
+              onKeyDown={handleKeyDown}
+              disabled={loading}
+              className="max-h-[120px] flex-1 resize-none bg-transparent py-1.5 text-sm text-[#11130f] outline-none placeholder:text-black/35 px-1"
+            />
+
+            {/* Nút Giọng nói */}
+            <button
+              type="button"
+              onClick={toggle}
+              disabled={!supported || loading}
+              title={
+                supported
+                  ? listening
+                    ? "Dừng ghi âm"
+                    : "Nói để nhập"
+                  : "Trình duyệt không hỗ trợ giọng nói"
+              }
+              className={`flex size-8 shrink-0 items-center justify-center rounded-full transition-colors disabled:opacity-30 ${
+                listening
+                  ? "bg-red-500 text-white"
+                  : "text-black/40 hover:bg-black/5 hover:text-black/70"
+              }`}
+            >
+              <MicIcon />
+            </button>
+
+            {/* Nút Gửi */}
+            <button
+              type="submit"
+              disabled={loading || (!value.trim() && attachedDocs.length === 0)}
+              title="Gửi"
+              className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#04714a] text-white transition-opacity disabled:opacity-30 hover:bg-[#035e3f]"
+            >
+              <SendIcon />
+            </button>
           </div>
         </div>
       </form>
@@ -312,7 +385,24 @@ export function ModifiedPromptInput({
         level={level}
         onLevelChange={onLevelChange}
       />
-    </>
+    </div>
+  );
+}
+
+function PlusIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M12 5v14M5 12h14" />
+    </svg>
   );
 }
 

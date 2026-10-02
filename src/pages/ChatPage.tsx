@@ -1,5 +1,4 @@
 import { FormEvent, Fragment, useEffect, useState } from "react";
-
 import { messages as initial } from "../mocks/data";
 import { streamChatMessage } from "../services/chat.service";
 import {
@@ -11,26 +10,22 @@ import { ConversationScrollbar } from "../components/chat/ConversationScrollbar"
 import { useConversationNav } from "../components/chat/useConversationNav";
 import { MessageBubble } from "../components/chat/MessageBubble";
 import { MessageFeedbackPanel } from "../components/chat/MessageFeedbackPanel";
+import type { ChatMessage, ChatStreamChunk } from "../api/types";
 
 type Reaction = "like" | "dislike";
 
 function EmptyStatePrompt() {
   const [shown, setShown] = useState(false);
-
   useEffect(() => {
     const frame = requestAnimationFrame(() => setShown(true));
     return () => cancelAnimationFrame(frame);
   }, []);
-
   return (
     <div className="flex justify-center px-2 pb-3">
       <div
-        className={`
-          rounded-full border border-black/10 bg-white px-5 py-2.5
-          text-sm font-medium text-[#11130f] shadow-sm
-          transition-all duration-500 ease-out
-          ${shown ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0"}
-        `}
+        className={`rounded-full border border-black/10 bg-white px-5 py-2.5 text-sm font-medium text-[#11130f] shadow-sm transition-all duration-500 ease-out ${
+          shown ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0"
+        }`}
       >
         Hãy hỏi bất cứ điều gì
       </div>
@@ -39,17 +34,23 @@ function EmptyStatePrompt() {
 }
 
 export function ChatPage() {
-  const [msgs, setMsgs] = useState(initial);
+  const [msgs, setMsgs] = useState<ChatMessage[]>(initial);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [level, setLevel] = useState<AgentLevel>("L2");
   const [reactions, setReactions] = useState<Record<string, Reaction>>({});
-  const [closedFeedbackId, setClosedFeedbackId] = useState<string | null>(null);
 
-  const isEmpty = msgs.length === 0;
+  const [attachmentIds, setAttachmentIds] = useState<string[]>([]);
+  const [mentionedDocumentIds, setMentionedDocumentIds] = useState<string[]>(
+    [],
+  );
+
+  const [closedFeedbackId, setClosedFeedbackId] = useState<string | null>(null);
   const latestAssistantId = [...msgs]
     .reverse()
     .find((message) => message.role === "assistant")?.id;
+
+  const isEmpty = msgs.length === 0;
 
   const {
     scrollRef,
@@ -64,73 +65,115 @@ export function ChatPage() {
     markNearBottom,
   } = useConversationNav(msgs, loading);
 
-  function formatFileSize(bytes: number): string {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  }
-
-  async function submit(e?: FormEvent, attachedFiles?: File[]) {
-    e?.preventDefault();
-    const hasText = input.trim().length > 0;
-    const hasFiles = Boolean(attachedFiles && attachedFiles.length > 0);
-    if ((!hasText && !hasFiles) || loading) return;
-
-    const text = input.trim();
-    setInput("");
-
-    const assistantMsgId = crypto.randomUUID();
-
-    const formattedAttachments = attachedFiles?.map((file) => ({
-      name: file.name,
-      size: formatFileSize(file.size),
-      type: file.type,
-    }));
-
-    setMsgs((m) => [
-      ...m,
-      {
-        id: crypto.randomUUID(),
-        role: "user",
-        content: text,
-        attachments: formattedAttachments,
-      },
-      {
-        id: assistantMsgId,
-        role: "assistant",
-        content: "",
-      },
-    ]);
-
+  async function processStream(
+    payload: {
+      message: string;
+      attachmentIds?: string[];
+      mentionedDocumentIds?: string[];
+    },
+    assistantMsgId: string,
+  ) {
     markNearBottom();
     setLoading(true);
-
     try {
-      const promptToSend = text || (formattedAttachments?.length ? `[Đã gửi ${formattedAttachments.length} tệp: ${formattedAttachments.map(f => f.name).join(", ")}]` : "");
       await streamChatMessage(
-        promptToSend,
-        (chunk) => {
+        payload,
+        (chunk: ChatStreamChunk) => {
           setMsgs((prev) =>
             prev.map((msg) =>
               msg.id === assistantMsgId
-                ? { ...msg, content: msg.content + chunk }
-                : msg
-            )
+                ? {
+                    ...msg,
+                    content:
+                      chunk.delta !== undefined
+                        ? msg.content + chunk.delta
+                        : msg.content,
+                    status: chunk.status || msg.status,
+                  }
+                : msg,
+            ),
           );
         },
         (finalMsg) => {
           setMsgs((prev) =>
             prev.map((msg) =>
               msg.id === assistantMsgId
-                ? { ...msg, content: finalMsg.content, sources: finalMsg.sources }
-                : msg
-            )
+                ? {
+                    ...msg,
+                    content: finalMsg.content,
+                    sources: finalMsg.sources,
+                    status: finalMsg.status,
+                  }
+                : msg,
+            ),
           );
-        }
+        },
       );
     } finally {
       setLoading(false);
     }
+  }
+
+  async function submit(e?: FormEvent) {
+    e?.preventDefault();
+    if ((!input.trim() && attachmentIds.length === 0) || loading) return;
+
+    const text = input.trim();
+    setInput("");
+
+    const currentAttachments = [...attachmentIds];
+    const currentMentions = [...mentionedDocumentIds];
+    setAttachmentIds([]);
+    setMentionedDocumentIds([]);
+
+    const assistantMsgId = crypto.randomUUID();
+
+    setMsgs((m) => [
+      ...m,
+      { id: crypto.randomUUID(), role: "user", content: text },
+      { id: assistantMsgId, role: "assistant", content: "", status: "idle" },
+    ]);
+
+    await processStream(
+      {
+        message: text,
+        attachmentIds: currentAttachments,
+        mentionedDocumentIds: currentMentions,
+      },
+      assistantMsgId,
+    );
+  }
+
+  async function handleEdit(index: number, newContent: string) {
+    if (loading) return;
+    const assistantMsgId = crypto.randomUUID();
+
+    // Replace the user message at `index`, then truncate any assistant responses that followed it,
+    // and add a new assistant placeholder.
+    setMsgs((m) => [
+      ...m.slice(0, index),
+      { ...m[index], content: newContent },
+      { id: assistantMsgId, role: "assistant", content: "", status: "idle" },
+    ]);
+
+    await processStream({ message: newContent }, assistantMsgId);
+  }
+
+  async function handleRegenerate(index: number) {
+    if (loading) return;
+    const prevUserMsg = msgs
+      .slice(0, index)
+      .reverse()
+      .find((m) => m.role === "user");
+    if (!prevUserMsg) return;
+
+    const assistantMsgId = crypto.randomUUID();
+    setMsgs((m) => [
+      ...m.slice(0, index),
+      { id: assistantMsgId, role: "assistant", content: "", status: "idle" },
+    ]);
+
+    await processStream({ message: prevUserMsg.content }, assistantMsgId);
   }
 
   function handleReaction(id: string, type: Reaction) {
@@ -140,96 +183,26 @@ export function ChatPage() {
         delete next[id];
         return next;
       }
-
-      return {
-        ...prev,
-        [id]: type,
-      };
+      return { ...prev, [id]: type };
     });
-  }
-
-  async function handleRegenerate(index: number) {
-    if (loading) return;
-    const prevUserMsg = msgs
-      .slice(0, index)
-      .reverse()
-      .find((m) => m.role === "user");
-
-    if (!prevUserMsg) return;
-
-    const assistantMsgId = crypto.randomUUID();
-
-    // Giữ lại các tin nhắn trước index và thêm assistant placeholder
-    setMsgs((m) => [
-      ...m.slice(0, index),
-      {
-        id: assistantMsgId,
-        role: "assistant",
-        content: "",
-      },
-    ]);
-
-    markNearBottom();
-    setLoading(true);
-
-    try {
-      await streamChatMessage(
-        prevUserMsg.content,
-        (chunk) => {
-          setMsgs((prev) =>
-            prev.map((msg) =>
-              msg.id === assistantMsgId
-                ? { ...msg, content: msg.content + chunk }
-                : msg
-            )
-          );
-        },
-        (finalMsg) => {
-          setMsgs((prev) =>
-            prev.map((msg) =>
-              msg.id === assistantMsgId
-                ? { ...msg, content: finalMsg.content, sources: finalMsg.sources }
-                : msg
-            )
-          );
-        }
-      );
-    } finally {
-      setLoading(false);
-    }
   }
 
   return (
     <div className="flex h-full min-w-0 flex-col overflow-hidden">
-      {/* Header */}
-      <header className="flex shrink-0 items-center justify-between border-b border-black/10">
+      {/* <header className="flex shrink-0 items-center justify-between border-b border-black/10">
         <div className="min-w-0">
-          <h1 className=" truncate text-xl font-semibold text-[#11130f]">
-            IT UPD GenAI
-          </h1>
+          <h1 className="truncate text-xl font-semibold text-[#11130f]">IT UPD GenAI</h1>
         </div>
-
-        <span
-          className="
-            ml-4 flex shrink-0
-            items-center gap-2
-            text-xs text-black/45
-          "
-        >
-          <span className="size-2 rounded-full bg-[#00a86b]" />
-          Trực tuyến
+        <span className="ml-4 flex shrink-0 items-center gap-2 text-xs text-black/45">
+          <span className="size-2 rounded-full bg-[#00a86b]" /> Trực tuyến
         </span>
-      </header>
+      </header> */}
 
       <div className="relative min-h-0 flex-1">
         <div
           ref={scrollRef}
           onScroll={handleScroll}
-          className="
-            h-full overflow-y-auto py-8
-            [scrollbar-width:none]
-            [&::-webkit-scrollbar]:hidden
-          "
+          className="h-full overflow-y-auto py-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           <div className="mx-auto w-full max-w-4xl px-2 md:pr-8">
             <div className="flex flex-col gap-5">
@@ -258,32 +231,22 @@ export function ChatPage() {
                         ? () => handleRegenerate(idx)
                         : undefined
                     }
+                    onEdit={
+                      message.role === "user"
+                        ? (newContent) => handleEdit(idx, newContent)
+                        : undefined
+                    }
                     regenerateDisabled={loading}
                   />
-
-                  {message.id === latestAssistantId &&
-                    message.content &&
-                    !loading &&
-                    closedFeedbackId !== message.id && (
-                      <MessageFeedbackPanel
-                        onClose={() => setClosedFeedbackId(message.id)}
-                      />
-                    )}
+                  {message.id === latestAssistantId && message.content && !loading && closedFeedbackId !== message.id && (
+                    <MessageFeedbackPanel onClose={() => setClosedFeedbackId(message.id)} />
+                  )}
                 </Fragment>
               ))}
-
-              {loading && (
-                <div className="flex animate-pulse items-center gap-2 px-2 py-2 text-sm font-medium text-[#04714a]">
-                  <span className="size-2 rounded-full bg-[#00a86b]" />
-                  Đang suy nghĩ...
-                </div>
-              )}
-
               <div ref={bottomRef} />
             </div>
           </div>
         </div>
-
         {!isEmpty && (
           <>
             <ConversationScrollbar
@@ -291,7 +254,6 @@ export function ChatPage() {
               activeId={activeId}
               onSelect={scrollToMessage}
             />
-
             <ScrollToLatestButton
               visible={showJumpToLatest}
               onClick={() => scrollToBottom()}
@@ -309,6 +271,11 @@ export function ChatPage() {
         loading={loading}
         level={level}
         onLevelChange={setLevel}
+        attachmentIds={attachmentIds}
+        onAttachmentChange={setAttachmentIds}
+        mentionedDocumentIds={mentionedDocumentIds}
+        onMentionChange={setMentionedDocumentIds}
+        onUploadError={(err) => alert(err)}
       />
     </div>
   );

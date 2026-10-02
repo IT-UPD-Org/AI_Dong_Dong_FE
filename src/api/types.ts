@@ -31,13 +31,25 @@ export interface AuthResponse {
 
 export type MessageRole = 'user' | 'assistant' | 'system';
 
+export type ChatStatus = 'idle' | 'thinking' | 'searching' | 'generating' | 'completed' | 'error';
+
+export interface ChatSource {
+  document_id?: string;
+  title: string;
+  page?: number;
+  chunk_id?: string;
+  url?: string;
+}
+
 export interface ChatMessage {
   id: string;
   role: MessageRole;
   content: string;
-  sources?: string[];
+  sources?: ChatSource[];
   createdAt?: string;
   attachments?: { name: string; size: string; type?: string }[];
+  status?: ChatStatus;
+
 }
 
 export interface SendMessagePayload {
@@ -50,6 +62,50 @@ export interface ChatStreamChunk {
   delta?: string;
   done?: boolean;
   messageId?: string;
-  sources?: string[];
+  sources?: ChatSource[];
   error?: string;
+  status?: ChatStatus;
+}
+
+// New API Contracts for BE Integration
+
+export interface Document {
+  document_id: string;
+  user_id: string;
+  filename: string;
+  mime_type: string;
+  size_bytes: number;
+  storage_id?: string;
+  status: 'uploading' | 'processing' | 'ready' | 'error';
+  created_at: string;
+}
+
+export interface StorageUsage {
+  total_bytes: number;
+  used_bytes: number;
+  free_bytes: number;
+}
+
+export interface ChatRequest {
+  request_id: string;
+  user_id: string;
+  conversation_id?: string;
+  prompt: string;
+  attachment_ids?: string[];
+  mentioned_document_ids?: string[];
+  mode?: 'chat';
+}
+
+export interface ChatResponse {
+  request_id: string;
+  conversation_id: string;
+  content: string;
+  model?: string;
+  used_knowledge?: boolean;
+  sources?: ChatSource[];
+}
+
+export interface ChatEvent {
+  event: 'status' | 'token' | 'source' | 'done' | 'error';
+  data: any;
 }

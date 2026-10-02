@@ -11,8 +11,8 @@ export const conversations: Conversation[] = [
   { id: "3", title: "Library opening hours", date: "Aug 22" },
 ];
 
-// Không còn tin nhắn chào mặc định — màn hình chat sẽ trống,
-// modal "Hãy hỏi bất cứ điều gì" trong ChatPage sẽ đảm nhiệm phần chào.
+// TODO: Xoá file mock này sau khi merge BE xong (messages đã trả về empty).
+// Mock messages tạm thời để test SafeMarkdown đã được xoá theo yêu cầu chuẩn bị merge.
 export const messages: ChatMessage[] = [];
 
 export const contributors: Contributor[] = [

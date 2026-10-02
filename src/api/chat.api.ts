@@ -1,15 +1,12 @@
 import { getStoredToken } from './client';
-import type { ChatMessage, SendMessagePayload } from './types';
+import type { ChatMessage, SendMessagePayload, ChatStreamChunk } from './types';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 export const chatApi = {
-  /**
-   * Gửi tin nhắn và nhận stream token-by-token (SSE / fetch ReadableStream)
-   */
   async streamMessage(
     payload: SendMessagePayload,
-    onChunk: (text: string) => void,
+    onChunk: (chunk: ChatStreamChunk) => void,
     onFinish: (completeMessage: ChatMessage) => void,
     onError?: (error: Error) => void
   ): Promise<void> {
@@ -33,13 +30,13 @@ export const chatApi = {
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let fullText = '';
+      let currentStatus: any = 'generating';
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
         const chunk = decoder.decode(value, { stream: true });
-        // Hỗ trợ cả định dạng SSE data: {...} hoặc raw text stream
         const lines = chunk.split('\n');
         for (const line of lines) {
           if (line.startsWith('data: ')) {
@@ -47,16 +44,21 @@ export const chatApi = {
             if (dataStr === '[DONE]') break;
             try {
               const parsed = JSON.parse(dataStr);
-              const textDelta = parsed.delta || parsed.content || '';
-              fullText += textDelta;
-              onChunk(textDelta);
+              if (parsed.status) {
+                currentStatus = parsed.status;
+                onChunk({ status: parsed.status });
+              } else {
+                const textDelta = parsed.delta || parsed.content || '';
+                fullText += textDelta;
+                onChunk({ delta: textDelta, status: currentStatus });
+              }
             } catch {
               fullText += dataStr;
-              onChunk(dataStr);
+              onChunk({ delta: dataStr, status: currentStatus });
             }
           } else if (line.trim()) {
             fullText += line;
-            onChunk(line);
+            onChunk({ delta: line, status: currentStatus });
           }
         }
       }
@@ -65,47 +67,51 @@ export const chatApi = {
         id: crypto.randomUUID(),
         role: 'assistant',
         content: fullText,
-        sources: ['Hệ thống tri thức Đại học Phương Đông'],
+        sources: [],
+        status: 'completed',
       });
     } catch (err: any) {
       console.warn('[chatApi] BE streaming chưa sẵn sàng, kích hoạt Mock Stream fallback:', err.message);
-      // Giả lập stream từng token để giao diện VITE hiển thị mượt mà
       await mockStreamResponse(payload.message, onChunk, onFinish);
     }
   },
 };
 
-/**
- * Giả lập streaming phản hồi thông minh trong lúc BE chưa code xong
- */
 async function mockStreamResponse(
   userPrompt: string,
-  onChunk: (text: string) => void,
+  onChunk: (chunk: ChatStreamChunk) => void,
   onFinish: (completeMessage: ChatMessage) => void
 ) {
-  const answerTemplate = `Chào bạn, mình là IT UPD GenAI. Về câu hỏi của bạn: "${userPrompt}":
+  // Simulate thinking -> searching (optional) -> generating -> token stream
+  const needsSearch = /tìm|search|link|nguồn|internet|tra cứu/i.test(userPrompt);
 
-1. **Thông tin quy chế & đào tạo**: Mọi tài liệu và thời khóa biểu được cập nhật chính thức trên cổng thông tin Đại học Phương Đông.
-2. **Hỗ trợ học tập**: Bạn có thể tham khảo thêm các giáo trình trong mục "Kho tri thức" hoặc hỏi chi tiết về các môn học ngành CNTT.
-3. **Lưu ý**: Hãy chắc chắn theo dõi thông báo từ giảng viên bộ môn và văn phòng khoa để không bỏ lỡ các mốc quan trọng.
+  onChunk({ status: 'thinking' });
+  await new Promise((r) => setTimeout(r, 1000));
 
-Bạn có cần mình giải thích thêm phần nào không?`;
+  if (needsSearch) {
+    onChunk({ status: 'searching' });
+    await new Promise((r) => setTimeout(r, 1500));
+  }
 
+  onChunk({ status: 'generating' });
+  await new Promise((r) => setTimeout(r, 800));
+
+  const answerTemplate = `Chào bạn, mình là IT UPD GenAI. Về yêu cầu của bạn: "${userPrompt}":\n\n1. Mình đã tiếp nhận thông tin và xử lý.\n2. Cần thêm chi tiết, bạn cứ hỏi nhé.`;
   const words = answerTemplate.split(' ');
   let accumulated = '';
 
   for (let i = 0; i < words.length; i++) {
     const word = (i === 0 ? '' : ' ') + words[i];
     accumulated += word;
-    onChunk(word);
-    // Độ trễ tự nhiên giữa các token (20ms - 40ms)
-    await new Promise((r) => setTimeout(r, 25));
+    onChunk({ delta: word, status: 'generating' });
+    await new Promise((r) => setTimeout(r, 30));
   }
 
   onFinish({
     id: crypto.randomUUID(),
     role: 'assistant',
     content: accumulated,
-    sources: ['Kho tri thức ĐH Phương Đông', 'Quy chế đào tạo tín chỉ'],
+    sources: [],
+    status: 'completed'
   });
 }

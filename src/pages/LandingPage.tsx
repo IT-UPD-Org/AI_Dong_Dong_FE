@@ -12,6 +12,7 @@ const gems = [
   { id: "gem-large", size: "32%", top: "50%", left: "62%", center: true, delay: 0 },
   { id: "gem-small-top", size: "14%", top: "13%", right: "12%", delay: 120 },
   { id: "gem-small-bottom", size: "13%", bottom: "16%", right: "15%", delay: 220 },
+
 ];
 
 export function LandingPage() {
@@ -187,6 +188,7 @@ export function LandingPage() {
                     ? `translate(-50%, -50%) ${isLogoHovered ? "scale(1)" : "scale(0.7)"}`
                     : `${isLogoHovered ? "scale(1)" : "scale(0.7)"}`,
                   transitionDelay: `${g.delay}ms`,
+
                 }}
               >
                 <img
