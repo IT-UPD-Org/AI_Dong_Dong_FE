@@ -1,5 +1,5 @@
 import { FormEvent, Fragment, useEffect, useState } from "react";
-import { messages as initial } from "../mocks/data";
+import { messages as initialMessages } from "../mocks/data";
 import { streamChatMessage } from "../services/chat.service";
 import {
   AgentLevel,
@@ -34,7 +34,7 @@ function EmptyStatePrompt() {
 }
 
 export function ChatPage() {
-  const [msgs, setMsgs] = useState<ChatMessage[]>(initial);
+  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [level, setLevel] = useState<AgentLevel>("L2");
@@ -46,11 +46,11 @@ export function ChatPage() {
   );
 
   const [closedFeedbackId, setClosedFeedbackId] = useState<string | null>(null);
-  const latestAssistantId = [...msgs]
+  const latestAssistantId = [...messages]
     .reverse()
     .find((message) => message.role === "assistant")?.id;
 
-  const isEmpty = msgs.length === 0;
+  const isEmpty = messages.length === 0;
 
   const {
     scrollRef,
@@ -63,7 +63,7 @@ export function ChatPage() {
     scrollToBottom,
     scrollToMessage,
     markNearBottom,
-  } = useConversationNav(msgs, loading);
+  } = useConversationNav(messages, loading);
 
   async function processStream(
     payload: {
@@ -79,7 +79,7 @@ export function ChatPage() {
       await streamChatMessage(
         payload,
         (chunk: ChatStreamChunk) => {
-          setMsgs((prev) =>
+          setMessages((prev) =>
             prev.map((msg) =>
               msg.id === assistantMsgId
                 ? {
@@ -95,7 +95,7 @@ export function ChatPage() {
           );
         },
         (finalMsg) => {
-          setMsgs((prev) =>
+          setMessages((prev) =>
             prev.map((msg) =>
               msg.id === assistantMsgId
                 ? {
@@ -128,7 +128,7 @@ export function ChatPage() {
 
     const assistantMsgId = crypto.randomUUID();
 
-    setMsgs((m) => [
+    setMessages((m) => [
       ...m,
       { id: crypto.randomUUID(), role: "user", content: text },
       { id: assistantMsgId, role: "assistant", content: "", status: "idle" },
@@ -150,7 +150,7 @@ export function ChatPage() {
 
     // Replace the user message at `index`, then truncate any assistant responses that followed it,
     // and add a new assistant placeholder.
-    setMsgs((m) => [
+    setMessages((m) => [
       ...m.slice(0, index),
       { ...m[index], content: newContent },
       { id: assistantMsgId, role: "assistant", content: "", status: "idle" },
@@ -161,14 +161,14 @@ export function ChatPage() {
 
   async function handleRegenerate(index: number) {
     if (loading) return;
-    const prevUserMsg = msgs
+    const prevUserMsg = messages
       .slice(0, index)
       .reverse()
       .find((m) => m.role === "user");
     if (!prevUserMsg) return;
 
     const assistantMsgId = crypto.randomUUID();
-    setMsgs((m) => [
+    setMessages((m) => [
       ...m.slice(0, index),
       { id: assistantMsgId, role: "assistant", content: "", status: "idle" },
     ]);
@@ -206,7 +206,7 @@ export function ChatPage() {
         >
           <div className="mx-auto w-full max-w-4xl px-2 md:pr-8">
             <div className="flex flex-col gap-5">
-              {msgs.map((message, idx) => (
+              {messages.map((message, idx) => (
                 <Fragment key={message.id}>
                   <MessageBubble
                     message={message}

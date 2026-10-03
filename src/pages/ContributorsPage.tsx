@@ -1,4 +1,5 @@
 import { contributors } from "../mocks/data";
+
 export function ContributorsPage() {
   return (
     <main>
@@ -12,24 +13,24 @@ export function ContributorsPage() {
         A shared project grows through many kinds of care.
       </p>
       <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {contributors.map((c) => (
+        {contributors.map((contributor) => (
           <article
-            key={c.id}
+            key={contributor.id}
             className="group rounded-3xl border border-black/10 bg-white p-6 transition hover:-translate-y-1 hover:shadow-lg"
           >
             <div
               className="flex size-16 items-center justify-center rounded-full text-sm font-bold text-black"
-              style={{ background: c.color }}
+              style={{ background: contributor.color }}
             >
-              {c.initials}
+              {contributor.initials}
             </div>
-            <h2 className="mt-8 font-semibold">{c.name}</h2>
-            <p className="mt-1 text-sm text-[#04714a]">{c.role}</p>
+            <h2 className="mt-8 font-semibold">{contributor.name}</h2>
+            <p className="mt-1 text-sm text-[#04714a]">{contributor.role}</p>
             <p className="mt-5 text-sm leading-6 text-black/50">
-              {c.contribution}
+              {contributor.contribution}
             </p>
             <span className="mt-8 inline-block rounded-full bg-[#f5f4ef] px-3 py-1 text-xs text-black/45">
-              {c.team}
+              {contributor.team}
             </span>
           </article>
         ))}
