@@ -27,9 +27,10 @@ export async function streamChatMessage(
   payload: SendMessagePayload,
   onChunk: (chunk: ChatStreamChunk) => void,
   onFinish: (message: ChatMessage) => void,
-  onError?: (error: Error) => void
+  onError?: (error: Error) => void,
+  signal?: AbortSignal,
 ): Promise<void> {
-  return await chatApi.streamMessage(payload, onChunk, onFinish, onError);
+  return await chatApi.streamMessage(payload, onChunk, onFinish, onError, signal);
 }
 
 export async function sendChatMessage(
@@ -48,6 +49,6 @@ export async function sendChatMessage(
       () => {},
       (msg) => resolve(msg),
       (err) => reject(err)
-    );
+    ).catch(reject);
   });
 }

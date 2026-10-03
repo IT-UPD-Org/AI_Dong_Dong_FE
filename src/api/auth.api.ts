@@ -1,8 +1,9 @@
-import { apiClient, removeStoredToken, setStoredToken } from './client';
+import { apiClient, removeStoredToken } from './client';
 import type { AuthResponse, MagicLinkRequest, MagicLinkResponse, User } from './types';
 import { mockSendMagicLink, mockVerifyToken } from '../mocks/auth.mock';
 
-const USE_MOCK_FALLBACK = true;
+// Mock authentication is a development aid, never a production login fallback.
+const USE_MOCK_FALLBACK = import.meta.env.DEV && import.meta.env.VITE_MS_AUTH_MODE !== 'real';
 
 function isMockToken(token: string): boolean {
   return token.endsWith('.mock_signature');
@@ -57,13 +58,11 @@ export const authApi = {
         method: 'POST',
         body: JSON.stringify({ token }),
       });
-      if (res.access_token) setStoredToken(res.access_token);
       return res;
     } catch (err: any) {
       if (USE_MOCK_FALLBACK && (err.status === 404 || err.status === 0 || err.status >= 500)) {
         console.warn('[authApi] Fallback mock: verifyMagicLink');
         const res = await mockVerifyToken(token);
-        if (res.access_token) setStoredToken(res.access_token);
         return res;
       }
       throw err;
@@ -76,6 +75,9 @@ export const authApi = {
   async getCurrentUser(): Promise<User | null> {
     const storedToken = localStorage.getItem('access_token');
     if (!storedToken) return null;
+    if (USE_MOCK_FALLBACK && isMockToken(storedToken)) {
+      return decodeMockToken(storedToken);
+    }
 
     try {
       // Gọi BE endpoint /users/@me (hoặc qua proxy /api/users/@me)
@@ -94,23 +96,10 @@ export const authApi = {
       return null;
     } catch (err: any) {
       if (USE_MOCK_FALLBACK && (err.status === 404 || err.status === 0 || err.status >= 500)) {
-        if (isMockToken(storedToken)) {
-          const user = decodeMockToken(storedToken);
-          if (user) {
-            return user;
-          }
-        }
-        // Fallback default mock user if in dev
-        return {
-          id: 'usr_mock',
-          email: 'user@pduni.edu.vn',
-          name: 'SINH VIEN TEST',
-          role: 'student',
-          credits: 1000,
-          storage_used: 0,
-        };
+        // An arbitrary or expired token must not create an authenticated mock user.
+        return null;
       }
-      removeStoredToken();
+      if (localStorage.getItem('access_token') === storedToken) removeStoredToken();
       return null;
     }
   },
@@ -119,13 +108,16 @@ export const authApi = {
    * Đăng xuất
    */
   async logout(): Promise<void> {
+    const token = localStorage.getItem('access_token');
+    removeStoredToken();
+    localStorage.removeItem('user_info');
     try {
-      await apiClient('/auth/logout', { method: 'POST' });
+      await apiClient('/auth/logout', {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
     } catch {
       // Ignored if BE offline
-    } finally {
-      removeStoredToken();
-      localStorage.removeItem('user_info');
     }
   },
 };

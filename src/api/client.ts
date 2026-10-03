@@ -58,7 +58,11 @@ export async function apiClient<T>(
       headers,
     });
 
-    if (response.status === 401) {
+    // An old request must not log out a newer session. This also prevents a
+    // rejected logout request from repeatedly triggering another logout.
+    const requestAuthorization = headers.get('Authorization');
+    const currentToken = getStoredToken();
+    if (response.status === 401 && currentToken && requestAuthorization === `Bearer ${currentToken}`) {
       removeStoredToken();
       window.dispatchEvent(new CustomEvent('auth:unauthorized'));
     }

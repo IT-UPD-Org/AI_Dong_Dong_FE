@@ -51,74 +51,92 @@ export function ModifiedPromptInput({
   const [allDocs, setAllDocs] = useState<Document[]>([]);
   const [mentionCursorIdx, setMentionCursorIdx] = useState(-1);
 
-  // Attachments UI
-  const [attachedDocs, setAttachedDocs] = useState<Document[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const mountedRef = useRef(false);
+  const uploadingRef = useRef(false);
+  const attachmentIdsRef = useRef(attachmentIds);
 
   useEffect(() => {
+    attachmentIdsRef.current = attachmentIds;
+  }, [attachmentIds]);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    const unsubscribe = documentApi.subscribe((doc) => {
+      setAllDocs((current) => [
+        doc,
+        ...current.filter((item) => item.document_id !== doc.document_id),
+      ]);
+    });
+
     documentApi.listDocuments().then((docs) => {
-      setAllDocs(docs);
-      const ids = new Set([...attachmentIds, ...mentionedDocumentIds]);
-      if (ids.size > 0) {
-        setAttachedDocs(docs.filter((d) => ids.has(d.document_id)));
+      if (!mountedRef.current) return;
+      setAllDocs((current) => [
+        ...current,
+        ...docs.filter((doc) => !current.some((item) => item.document_id === doc.document_id)),
+      ]);
+    }).catch((error: unknown) => {
+      if (mountedRef.current) {
+        onUploadError?.(error instanceof Error ? error.message : "Không thể tải danh sách tài liệu.");
       }
     });
+
+    return () => {
+      mountedRef.current = false;
+      unsubscribe();
+    };
   }, []);
 
-  // Sync attachedDocs when reset after submit
-  useEffect(() => {
-    if (attachmentIds.length === 0 && mentionedDocumentIds.length === 0) {
-      setAttachedDocs([]);
-    }
-  }, [attachmentIds, mentionedDocumentIds]);
+  const selectedIds = [...new Set([...attachmentIds, ...mentionedDocumentIds])];
+  const attachedDocs = selectedIds.flatMap((id) => {
+    const doc = allDocs.find((item) => item.document_id === id);
+    return doc ? [doc] : [];
+  });
+  const processing = attachedDocs.some((doc) => doc.status === "uploading" || doc.status === "processing");
+  const documentFailed = attachedDocs.some((doc) => doc.status === "error");
+  const submitDisabled = loading || uploading || processing || documentFailed ||
+    (!value.trim() && attachmentIds.length === 0 && mentionedDocumentIds.length === 0);
 
-  useEffect(() => {
-    const handlePaste = (e: ClipboardEvent) => {
-      if (e.clipboardData && e.clipboardData.files.length > 0) {
-        e.preventDefault();
-        const files = Array.from(e.clipboardData.files);
-        for (const file of files) {
-          documentApi
-            .uploadDocument(file)
-            .then((doc) => {
-              setAttachedDocs((prev) => [...prev, doc]);
-              if (onAttachmentChange)
-                onAttachmentChange([...attachmentIds, doc.document_id]);
-            })
-            .catch((err) => {
-              if (onUploadError) onUploadError(err.message);
-            });
+  function attachDocument(doc: Document) {
+    setAllDocs((current) => [
+      doc,
+      ...current.filter((item) => item.document_id !== doc.document_id),
+    ]);
+    const ids = [...new Set([...attachmentIdsRef.current, doc.document_id])];
+    attachmentIdsRef.current = ids;
+    onAttachmentChange?.(ids);
+  }
+
+  async function uploadFiles(files: File[]) {
+    if (loading || uploadingRef.current || files.length === 0) return;
+    uploadingRef.current = true;
+    setUploading(true);
+    for (const file of files) {
+      if (!mountedRef.current) break;
+      try {
+        const doc = await documentApi.uploadDocument(file);
+        if (mountedRef.current) attachDocument(doc);
+      } catch (error: unknown) {
+        if (mountedRef.current) {
+          onUploadError?.(error instanceof Error ? error.message : "Không thể tải tài liệu lên.");
         }
       }
-    };
+    }
+    uploadingRef.current = false;
+    if (mountedRef.current) setUploading(false);
+  }
 
-    const textarea = textareaRef.current;
-    if (textarea) textarea.addEventListener("paste", handlePaste);
-    return () => {
-      if (textarea) textarea.removeEventListener("paste", handlePaste);
-    };
-  }, [attachmentIds, onAttachmentChange, onUploadError]);
-
-  // Subscribe to newly uploaded docs
-  useEffect(() => {
-    const unsub = documentApi.subscribe((doc) => {
-      setAllDocs((prev) => {
-        if (!prev.find((d) => d.document_id === doc.document_id))
-          return [doc, ...prev];
-        return prev;
-      });
-      setAttachedDocs((prev) =>
-        prev.map((d) => (d.document_id === doc.document_id ? doc : d)),
-      );
-    });
-    return () => unsub();
-  }, []);
+  function handleSubmit(event?: FormEvent) {
+    event?.preventDefault();
+    if (!submitDisabled) onSubmit(event);
+  }
 
   function appendVoiceText(text: string) {
     if (!text.trim()) return;
     onChange(value ? `${value} ${text}` : text);
   }
 
-  const { listening, supported, toggle } = useVoiceInput(
+  const { listening, supported, toggle, error: voiceError } = useVoiceInput(
     onVoiceResult ?? appendVoiceText,
   );
 
@@ -131,12 +149,7 @@ export function ModifiedPromptInput({
     onChange(cleanedText);
 
     // Chèn document vào danh sách đính kèm có nút X xóa
-    if (!attachedDocs.some((d) => d.document_id === doc.document_id)) {
-      setAttachedDocs((prev) => [...prev, doc]);
-    }
-    if (onAttachmentChange && !attachmentIds.includes(doc.document_id)) {
-      onAttachmentChange([...attachmentIds, doc.document_id]);
-    }
+    attachDocument(doc);
     if (onMentionChange && !mentionedDocumentIds.includes(doc.document_id)) {
       onMentionChange([...mentionedDocumentIds, doc.document_id]);
     }
@@ -148,6 +161,8 @@ export function ModifiedPromptInput({
   }
 
   function handleKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.nativeEvent.isComposing || e.keyCode === 229) return;
+    if (loading || uploading || processing || documentFailed) return;
     if (showMentions) {
       if (e.key === "Escape") {
         setShowMentions(false);
@@ -168,7 +183,7 @@ export function ModifiedPromptInput({
 
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      onSubmit();
+      handleSubmit();
     }
   }
 
@@ -212,18 +227,18 @@ export function ModifiedPromptInput({
   );
 
   return (
-    <div className="relative">
+    <div className="relative shrink-0">
       {/* Upload Popup */}
       {isUploadOpen && (
         <DocumentUploadPopup
           onClose={() => setIsUploadOpen(false)}
-          onUploadError={onUploadError || console.error}
+          onUploadFiles={uploadFiles}
         />
       )}
 
       {/* Mention Dropdown */}
       {showMentions && mentionFilteredDocs.length > 0 && (
-        <div className="absolute bottom-full left-4 mb-2 max-h-60 w-80 overflow-y-auto rounded-xl border border-black/10 bg-white p-2 shadow-lg z-50 animate-in fade-in slide-in-from-bottom-2 duration-150">
+        <div className="absolute bottom-full left-4 mb-2 max-h-60 w-80 max-w-[calc(100%_-_2rem)] overflow-y-auto rounded-xl border border-black/10 bg-white p-2 shadow-lg z-50 animate-in fade-in slide-in-from-bottom-2 duration-150">
           <p className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">
             Gợi ý tài liệu
           </p>
@@ -242,7 +257,7 @@ export function ModifiedPromptInput({
       )}
 
       <form
-        onSubmit={onSubmit}
+        onSubmit={handleSubmit}
         className="shrink-0 border-t border-black/10 bg-white px-3 py-2"
       >
         <div className="mx-auto flex w-full max-w-4xl flex-col gap-2">
@@ -260,10 +275,9 @@ export function ModifiedPromptInput({
                   </span>
                   <button
                     type="button"
+                    disabled={loading || uploading}
                     onClick={() => {
-                      setAttachedDocs((prev) =>
-                        prev.filter((d) => d.document_id !== doc.document_id),
-                      );
+                      attachmentIdsRef.current = attachmentIds.filter((id) => id !== doc.document_id);
                       if (onAttachmentChange)
                         onAttachmentChange(
                           attachmentIds.filter((id) => id !== doc.document_id),
@@ -291,6 +305,7 @@ export function ModifiedPromptInput({
             <button
               type="button"
               onClick={() => setIsUploadOpen(!isUploadOpen)}
+              disabled={loading || uploading}
               className="flex size-8 shrink-0 items-center justify-center rounded-full text-black/50 hover:bg-black/5 hover:text-black/80 transition-colors cursor-pointer focus:outline-none"
               title="Tải lên tài liệu"
             >
@@ -311,6 +326,14 @@ export function ModifiedPromptInput({
             {/* Input Textarea — Đã thêm triệt để các class xóa ring / outline / border */}
             <textarea
               ref={textareaRef}
+              aria-label="Nội dung câu hỏi"
+              onPaste={(event) => {
+                const files = Array.from(event.clipboardData.files);
+                if (files.length > 0) {
+                  event.preventDefault();
+                  void uploadFiles(files);
+                }
+              }}
               rows={1}
               value={value}
               placeholder={placeholder}
@@ -318,7 +341,7 @@ export function ModifiedPromptInput({
               onKeyDown={handleKeyDown}
               disabled={loading}
               style={{ outline: "none", boxShadow: "none" }}
-              className="max-h-[120px] flex-1 resize-none bg-transparent py-1.5 text-sm text-[#11130f] border-0 outline-none ring-0 focus:border-0 focus:outline-none focus:ring-0 focus:shadow-none focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-black/35 px-1"
+              className="max-h-[120px] min-w-0 flex-1 resize-none bg-transparent py-1.5 text-sm text-[#11130f] border-0 outline-none ring-0 focus:border-0 focus:outline-none focus:ring-0 focus:shadow-none focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-black/35 px-1"
             />
 
             {/* Nút Giọng nói */}
@@ -345,7 +368,7 @@ export function ModifiedPromptInput({
             {/* Nút Gửi */}
             <button
               type="submit"
-              disabled={loading || (!value.trim() && attachedDocs.length === 0)}
+              disabled={submitDisabled}
               title="Gửi"
               className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#04714a] text-white transition-opacity disabled:opacity-30 hover:bg-[#035e3f] cursor-pointer focus:outline-none"
             >
@@ -354,6 +377,10 @@ export function ModifiedPromptInput({
           </div>
         </div>
       </form>
+
+      {(uploading || processing) && <p role="status" className="px-4 pb-2 text-xs text-black/50">Đang xử lý tài liệu, vui lòng đợi trước khi gửi.</p>}
+      {documentFailed && <p role="alert" className="px-4 pb-2 text-xs text-red-600">Tài liệu xử lý không thành công. Hãy xóa tài liệu lỗi và thử tải lại.</p>}
+      {voiceError && <p role="alert" className="px-4 pb-2 text-xs text-red-600">{voiceError}</p>}
 
       <AgentEffortModal
         isOpen={isModalOpen}

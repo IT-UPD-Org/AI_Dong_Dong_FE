@@ -23,6 +23,7 @@ type SpeechWindow = Window & {
 export function useVoiceInput(onResult: (text: string) => void) {
   const [listening, setListening] = useState(false);
   const [supported, setSupported] = useState(true);
+  const [error, setError] = useState("");
   const recognitionRef = useRef<SpeechRecognizer | null>(null);
   const onResultRef = useRef(onResult);
 
@@ -52,14 +53,17 @@ export function useVoiceInput(onResult: (text: string) => void) {
       onResultRef.current(transcript);
     };
     recognition.onend = () => setListening(false);
-    recognition.onerror = () => setListening(false);
+    recognition.onerror = () => {
+      setListening(false);
+      setError("Không thể ghi âm. Hãy kiểm tra quyền micro hoặc nhập câu hỏi bằng bàn phím.");
+    };
     recognitionRef.current = recognition;
 
     return () => {
       recognition.onresult = null;
       recognition.onend = null;
       recognition.onerror = null;
-      recognition.stop();
+      try { recognition.stop(); } catch { /* Already stopped. */ }
       recognitionRef.current = null;
     };
   }, []);
@@ -68,14 +72,20 @@ export function useVoiceInput(onResult: (text: string) => void) {
     const recognition = recognitionRef.current;
     if (!recognition) return;
 
-    if (listening) {
-      recognition.stop();
+    setError("");
+    try {
+      if (listening) {
+        recognition.stop();
+        setListening(false);
+      } else {
+        recognition.start();
+        setListening(true);
+      }
+    } catch {
       setListening(false);
-    } else {
-      recognition.start();
-      setListening(true);
+      setError("Không thể bắt đầu ghi âm. Vui lòng thử lại hoặc nhập câu hỏi bằng bàn phím.");
     }
   }
 
-  return { listening, supported, toggle };
+  return { listening, supported, toggle, error };
 }
