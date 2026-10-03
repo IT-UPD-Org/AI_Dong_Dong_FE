@@ -1,5 +1,5 @@
 import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
-import { Paperclip, X } from "lucide-react";
+import { Paperclip, X, FileText } from "lucide-react";
 import {
   AgentLevel,
   AGENT_LEVEL_CONFIGS,
@@ -8,6 +8,7 @@ import {
 import { DocumentUploadPopup } from "./DocumentUploadPopup";
 import { documentApi } from "../../api/document.api";
 import type { Document } from "../../api/types";
+import { useVoiceInput } from "../../hooks/useVoiceInput";
 
 interface ModifiedPromptInputProps {
   value: string;
@@ -23,60 +24,6 @@ interface ModifiedPromptInputProps {
   attachmentIds?: string[];
   onAttachmentChange?: (ids: string[]) => void;
   onUploadError?: (error: string) => void;
-}
-
-function useVoiceInput(onResult: (text: string) => void) {
-  const [listening, setListening] = useState(false);
-  const [supported, setSupported] = useState(true);
-  const recognitionRef = useRef<any>(null);
-
-  useEffect(() => {
-    const SpeechRecognitionCtor =
-      (window as any).SpeechRecognition ||
-      (window as any).webkitSpeechRecognition;
-
-    if (!SpeechRecognitionCtor) {
-      setSupported(false);
-      return;
-    }
-
-    const recognition = new SpeechRecognitionCtor();
-    recognition.lang = "vi-VN";
-    recognition.interimResults = false;
-    recognition.continuous = false;
-
-    recognition.onresult = (event: any) => {
-      const transcript = Array.from(event.results)
-        .map((r: any) => r[0].transcript)
-        .join(" ");
-      onResult(transcript);
-    };
-    recognition.onend = () => setListening(false);
-    recognition.onerror = () => setListening(false);
-
-    recognitionRef.current = recognition;
-
-    return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.onresult = null;
-        recognitionRef.current.onend = null;
-        recognitionRef.current.onerror = null;
-      }
-    };
-  }, [onResult]);
-
-  function toggle() {
-    if (!recognitionRef.current) return;
-    if (listening) {
-      recognitionRef.current.stop();
-      setListening(false);
-    } else {
-      recognitionRef.current.start();
-      setListening(true);
-    }
-  }
-
-  return { listening, supported, toggle };
 }
 
 export function ModifiedPromptInput({
@@ -108,15 +55,27 @@ export function ModifiedPromptInput({
   const [attachedDocs, setAttachedDocs] = useState<Document[]>([]);
 
   useEffect(() => {
-    documentApi.listDocuments().then(setAllDocs);
+    documentApi.listDocuments().then((docs) => {
+      setAllDocs(docs);
+      const ids = new Set([...attachmentIds, ...mentionedDocumentIds]);
+      if (ids.size > 0) {
+        setAttachedDocs(docs.filter((d) => ids.has(d.document_id)));
+      }
+    });
   }, []);
+
+  // Sync attachedDocs when reset after submit
+  useEffect(() => {
+    if (attachmentIds.length === 0 && mentionedDocumentIds.length === 0) {
+      setAttachedDocs([]);
+    }
+  }, [attachmentIds, mentionedDocumentIds]);
 
   useEffect(() => {
     const handlePaste = (e: ClipboardEvent) => {
       if (e.clipboardData && e.clipboardData.files.length > 0) {
         e.preventDefault();
         const files = Array.from(e.clipboardData.files);
-        // Only accept if they are files. Not just text.
         for (const file of files) {
           documentApi
             .uploadDocument(file)
@@ -139,7 +98,7 @@ export function ModifiedPromptInput({
     };
   }, [attachmentIds, onAttachmentChange, onUploadError]);
 
-  // Subscribe to newly uploaded docs that might have been uploaded by drag & drop
+  // Subscribe to newly uploaded docs
   useEffect(() => {
     const unsub = documentApi.subscribe((doc) => {
       setAllDocs((prev) => {
@@ -147,7 +106,6 @@ export function ModifiedPromptInput({
           return [doc, ...prev];
         return prev;
       });
-      // also update attachedDocs if they changed status
       setAttachedDocs((prev) =>
         prev.map((d) => (d.document_id === doc.document_id ? doc : d)),
       );
@@ -168,8 +126,17 @@ export function ModifiedPromptInput({
     if (mentionCursorIdx === -1) return;
     const before = value.slice(0, mentionCursorIdx);
     const after = value.slice(mentionCursorIdx + mentionQuery.length + 1);
-    onChange(`${before}@${doc.filename} ${after}`);
+    const cleanedText =
+      `${before.trimEnd()}${before && !before.endsWith(" ") ? " " : ""}${after.trimStart()}`.trim();
+    onChange(cleanedText);
 
+    // Chèn document vào danh sách đính kèm có nút X xóa
+    if (!attachedDocs.some((d) => d.document_id === doc.document_id)) {
+      setAttachedDocs((prev) => [...prev, doc]);
+    }
+    if (onAttachmentChange && !attachmentIds.includes(doc.document_id)) {
+      onAttachmentChange([...attachmentIds, doc.document_id]);
+    }
     if (onMentionChange && !mentionedDocumentIds.includes(doc.document_id)) {
       onMentionChange([...mentionedDocumentIds, doc.document_id]);
     }
@@ -192,7 +159,7 @@ export function ModifiedPromptInput({
           d.filename.toLowerCase().includes(mentionQuery.toLowerCase()),
         );
         if (filteredDocs.length > 0) {
-          insertMention(filteredDocs[0]); // For simplicity, pick first
+          insertMention(filteredDocs[0]);
           e.preventDefault();
           return;
         }
@@ -214,7 +181,6 @@ export function ModifiedPromptInput({
     const lastAtIdx = textBeforeCursor.lastIndexOf("@");
 
     if (lastAtIdx !== -1) {
-      // make sure @ is at start of string or preceded by space
       if (
         lastAtIdx === 0 ||
         textBeforeCursor[lastAtIdx - 1] === " " ||
@@ -265,11 +231,11 @@ export function ModifiedPromptInput({
             <button
               key={doc.document_id}
               type="button"
-              className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm hover:bg-gray-100 transition-colors"
+              className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm hover:bg-gray-100 transition-colors cursor-pointer"
               onClick={() => insertMention(doc)}
             >
-              <Paperclip size={14} className="text-gray-400" />
-              <span className="truncate">{doc.filename}</span>
+              <Paperclip size={14} className="text-gray-400 shrink-0" />
+              <span className="truncate flex-1">{doc.filename}</span>
             </button>
           ))}
         </div>
@@ -280,16 +246,18 @@ export function ModifiedPromptInput({
         className="shrink-0 border-t border-black/10 bg-white px-3 py-2"
       >
         <div className="mx-auto flex w-full max-w-4xl flex-col gap-2">
-          {/* Attachments Display */}
+          {/* Attachments Display with X to remove */}
           {attachedDocs.length > 0 && (
             <div className="flex flex-wrap gap-2 px-1">
               {attachedDocs.map((doc) => (
                 <div
                   key={doc.document_id}
-                  className="flex items-center gap-2 rounded-lg bg-gray-100 px-3 py-1.5 text-sm"
+                  className="flex items-center gap-2 rounded-xl border border-[#04714a]/20 bg-[#e8f7ef] px-3 py-1.5 text-xs text-[#013422] shadow-xs"
                 >
-                  <Paperclip size={14} className="text-gray-500" />
-                  <span className="max-w-[150px] truncate">{doc.filename}</span>
+                  <FileText size={14} className="text-[#04714a] shrink-0" />
+                  <span className="max-w-[200px] truncate font-medium">
+                    {doc.filename}
+                  </span>
                   <button
                     type="button"
                     onClick={() => {
@@ -300,10 +268,17 @@ export function ModifiedPromptInput({
                         onAttachmentChange(
                           attachmentIds.filter((id) => id !== doc.document_id),
                         );
+                      if (onMentionChange)
+                        onMentionChange(
+                          mentionedDocumentIds.filter(
+                            (id) => id !== doc.document_id,
+                          ),
+                        );
                     }}
-                    className="ml-1 rounded-full p-0.5 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
+                    className="ml-1 rounded-full p-0.5 text-black/40 hover:bg-black/10 hover:text-black transition-colors cursor-pointer"
+                    title="Xóa tài liệu đính kèm"
                   >
-                    <X size={14} />
+                    <X size={13} />
                   </button>
                 </div>
               ))}
@@ -311,11 +286,12 @@ export function ModifiedPromptInput({
           )}
 
           {/* Ô nhập — chứa nút Effort, Mic, Textarea, Send */}
-          <div className="flex items-end gap-1.5 rounded-2xl border border-black/10 bg-white p-1.5 shadow-sm focus-within:border-[#04714a]/30 focus-within:ring-2 focus-within:ring-[#04714a]/10 transition-all">
+          {/* Đã xóa focus-within:ring-2 và focus-within:border-[#04714a]/30 ở div cha */}
+          <div className="flex items-end gap-1.5 rounded-2xl border border-black/10 bg-white p-1.5 shadow-sm transition-all">
             <button
               type="button"
               onClick={() => setIsUploadOpen(!isUploadOpen)}
-              className="flex size-8 shrink-0 items-center justify-center rounded-full text-black/50 hover:bg-black/5 hover:text-black/80 transition-colors"
+              className="flex size-8 shrink-0 items-center justify-center rounded-full text-black/50 hover:bg-black/5 hover:text-black/80 transition-colors cursor-pointer focus:outline-none"
               title="Tải lên tài liệu"
             >
               <PlusIcon />
@@ -326,13 +302,13 @@ export function ModifiedPromptInput({
               type="button"
               onClick={() => setIsModalOpen(true)}
               title={`Cấu hình Effort (${currentConfig.label})`}
-              className="flex h-8 shrink-0 items-center gap-1 rounded-xl bg-black/5 px-2.5 text-xs font-semibold text-[#04714a] transition-colors hover:bg-black/10"
+              className="flex h-8 shrink-0 items-center gap-1 rounded-xl bg-black/5 px-2.5 text-xs font-semibold text-[#04714a] transition-colors hover:bg-black/10 cursor-pointer focus:outline-none"
             >
               <SlidersIcon />
               <span>{currentConfig.label}</span>
             </button>
 
-            {/* Input Textarea */}
+            {/* Input Textarea — Đã thêm triệt để các class xóa ring / outline / border */}
             <textarea
               ref={textareaRef}
               rows={1}
@@ -341,7 +317,8 @@ export function ModifiedPromptInput({
               onChange={(e) => handleTextChange(e.target.value)}
               onKeyDown={handleKeyDown}
               disabled={loading}
-              className="max-h-[120px] flex-1 resize-none bg-transparent py-1.5 text-sm text-[#11130f] outline-none placeholder:text-black/35 px-1"
+              style={{ outline: "none", boxShadow: "none" }}
+              className="max-h-[120px] flex-1 resize-none bg-transparent py-1.5 text-sm text-[#11130f] border-0 outline-none ring-0 focus:border-0 focus:outline-none focus:ring-0 focus:shadow-none focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-black/35 px-1"
             />
 
             {/* Nút Giọng nói */}
@@ -356,9 +333,9 @@ export function ModifiedPromptInput({
                     : "Nói để nhập"
                   : "Trình duyệt không hỗ trợ giọng nói"
               }
-              className={`flex size-8 shrink-0 items-center justify-center rounded-full transition-colors disabled:opacity-30 ${
+              className={`flex size-8 shrink-0 items-center justify-center rounded-full transition-colors disabled:opacity-30 cursor-pointer focus:outline-none ${
                 listening
-                  ? "bg-red-500 text-white"
+                  ? "bg-red-500 text-white animate-pulse"
                   : "text-black/40 hover:bg-black/5 hover:text-black/70"
               }`}
             >
@@ -370,7 +347,7 @@ export function ModifiedPromptInput({
               type="submit"
               disabled={loading || (!value.trim() && attachedDocs.length === 0)}
               title="Gửi"
-              className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#04714a] text-white transition-opacity disabled:opacity-30 hover:bg-[#035e3f]"
+              className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#04714a] text-white transition-opacity disabled:opacity-30 hover:bg-[#035e3f] cursor-pointer focus:outline-none"
             >
               <SendIcon />
             </button>
@@ -378,7 +355,6 @@ export function ModifiedPromptInput({
         </div>
       </form>
 
-      {/* Modal giữ nguyên */}
       <AgentEffortModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState, useRef } from "react";
+import { FormEvent, useEffect, useState, useRef, Fragment } from "react";
 import { useSearchParams } from "react-router-dom";
 import { streamChatMessage, getConversationMessages } from "../services/chat.service";
 import {
@@ -9,6 +9,7 @@ import { ScrollToLatestButton } from "../components/chat/ScrollToLatestButton";
 import { ConversationScrollbar } from "../components/chat/ConversationScrollbar";
 import { useConversationNav } from "../components/chat/useConversationNav";
 import { MessageBubble } from "../components/chat/MessageBubble";
+import { MessageFeedbackPanel } from "../components/chat/MessageFeedbackPanel";
 import type { ChatMessage, ChatStreamChunk } from "../api/types";
 
 type Reaction = "like" | "dislike";
@@ -42,6 +43,7 @@ export function ChatPage() {
   const [loading, setLoading] = useState(false);
   const [level, setLevel] = useState<AgentLevel>("L2");
   const [reactions, setReactions] = useState<Record<string, Reaction>>({});
+  const [closedFeedbackId, setClosedFeedbackId] = useState<string | null>(null);
 
   const [attachmentIds, setAttachmentIds] = useState<string[]>([]);
   const [mentionedDocumentIds, setMentionedDocumentIds] = useState<string[]>([]);
@@ -81,6 +83,10 @@ export function ChatPage() {
 
   const isEmpty = msgs.length === 0;
 
+  const latestAssistantId = [...msgs]
+    .reverse()
+    .find((message) => message.role === "assistant")?.id;
+
   const {
     scrollRef,
     bottomRef,
@@ -112,7 +118,6 @@ export function ChatPage() {
           modelLevel: level,
         },
         (chunk: ChatStreamChunk) => {
-          // If a new conversation was created on BE, update conversation ID in URL and notify sidebar
           if (chunk.conversationId && !conversationIdRef.current) {
             conversationIdRef.current = chunk.conversationId;
             setSearchParams({ id: chunk.conversationId }, { replace: true });
@@ -251,37 +256,48 @@ export function ChatPage() {
           <div className="mx-auto w-full max-w-4xl px-2 md:pr-8">
             <div className="flex flex-col gap-5">
               {msgs.map((message, idx) => (
-                <MessageBubble
-                  key={message.id}
-                  message={message}
-                  ref={
-                    message.role === "user"
-                      ? registerMessageRef(message.id)
-                      : undefined
-                  }
-                  reaction={reactions[message.id]}
-                  onLike={
-                    message.role !== "user"
-                      ? () => handleReaction(message.id, "like")
-                      : undefined
-                  }
-                  onDislike={
-                    message.role !== "user"
-                      ? () => handleReaction(message.id, "dislike")
-                      : undefined
-                  }
-                  onRegenerate={
-                    message.role !== "user"
-                      ? () => handleRegenerate(idx)
-                      : undefined
-                  }
-                  onEdit={
-                    message.role === "user"
-                      ? (newContent) => handleEdit(idx, newContent)
-                      : undefined
-                  }
-                  regenerateDisabled={loading}
-                />
+                <Fragment key={message.id}>
+                  <MessageBubble
+                    message={message}
+                    ref={
+                      message.role === "user"
+                        ? registerMessageRef(message.id)
+                        : undefined
+                    }
+                    reaction={reactions[message.id]}
+                    onLike={
+                      message.role !== "user"
+                        ? () => handleReaction(message.id, "like")
+                        : undefined
+                    }
+                    onDislike={
+                      message.role !== "user"
+                        ? () => handleReaction(message.id, "dislike")
+                        : undefined
+                    }
+                    onRegenerate={
+                      message.role !== "user"
+                        ? () => handleRegenerate(idx)
+                        : undefined
+                    }
+                    onEdit={
+                      message.role === "user"
+                        ? (newContent) => handleEdit(idx, newContent)
+                        : undefined
+                    }
+                    regenerateDisabled={loading}
+                  />
+
+                  {/* Hiển thị Feedback Panel ngay dưới câu trả lời mới nhất sau khi AI hoàn tất */}
+                  {message.id === latestAssistantId &&
+                    message.content &&
+                    !loading &&
+                    closedFeedbackId !== message.id && (
+                      <MessageFeedbackPanel
+                        onClose={() => setClosedFeedbackId(message.id)}
+                      />
+                    )}
+                </Fragment>
               ))}
               <div ref={bottomRef} />
             </div>
