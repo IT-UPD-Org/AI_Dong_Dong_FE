@@ -1,4 +1,5 @@
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { NavLink, Outlet, useNavigate, useSearchParams } from "react-router-dom";
 import {
   BookOpen,
   FileText,
@@ -11,8 +12,9 @@ import {
   LogOut,
 } from "lucide-react";
 
-import { conversations } from "../../mocks/data";
 import { useAuth } from "../../contexts/AuthContext";
+import { chatApi } from "../../api/chat.api";
+import type { Conversation } from "../../api/types";
 import { DocumentProcessingNotifications } from "./DocumentProcessingNotifications";
 
 const links = [
@@ -25,11 +27,38 @@ const links = [
 
 export function AppShell() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const currentChatId = searchParams.get("id");
   const { user, logout } = useAuth();
+  const [recentChats, setRecentChats] = useState<Conversation[]>([]);
+
+  const loadRecentChats = async () => {
+    try {
+      const chats = await chatApi.getConversations(1);
+      setRecentChats(chats);
+    } catch {
+      setRecentChats([]);
+    }
+  };
+
+  useEffect(() => {
+    loadRecentChats();
+
+    const handleChatsUpdated = () => {
+      loadRecentChats();
+    };
+
+    window.addEventListener("chats:updated", handleChatsUpdated);
+    return () => window.removeEventListener("chats:updated", handleChatsUpdated);
+  }, []);
 
   const handleLogout = () => {
     logout();
     navigate("/login", { replace: true });
+  };
+
+  const handleNewChat = () => {
+    navigate("/chat");
   };
 
   return (
@@ -40,7 +69,7 @@ export function AppShell() {
         </NavLink>
         <button
           type="button"
-          onClick={() => navigate("/chat")}
+          onClick={handleNewChat}
           className="
             mb-6 flex w-full shrink-0 items-center gap-2
             rounded-full
@@ -61,9 +90,10 @@ export function AppShell() {
             <NavLink
               key={to}
               to={to}
+              end={to === "/chat"}
               className={({ isActive }) =>
                 `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${
-                  isActive
+                  isActive && (to !== "/chat" || !currentChatId)
                     ? "bg-[#e8f7ef] font-semibold text-[#013422]"
                     : "text-black/55 hover:bg-[#e8f7ef] hover:text-[#04714a]"
                 }`
@@ -88,25 +118,36 @@ export function AppShell() {
           </p>
 
           <div className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto">
-            {conversations.map((conversation) => (
-              <NavLink
-                key={conversation.id}
-                to="/chat"
-                className="
-                  w-full min-w-0
-                  truncate
-                  rounded-lg
-                  px-2.5 py-2
-                  text-left text-xs
-                  text-black/55
-                  transition-colors
-                  hover:bg-[#e8f7ef]
-                  hover:text-[#04714a]
-                "
-              >
-                {conversation.title}
-              </NavLink>
-            ))}
+            {recentChats.length === 0 ? (
+              <p className="px-2 py-3 text-xs text-black/40 italic">
+                Chưa có cuộc trò chuyện
+              </p>
+            ) : (
+              recentChats.map((conversation) => {
+                const isCurrent = currentChatId === conversation.id;
+                return (
+                  <NavLink
+                    key={conversation.id}
+                    to={`/chat?id=${conversation.id}`}
+                    className={`
+                      w-full min-w-0
+                      truncate
+                      rounded-lg
+                      px-2.5 py-2
+                      text-left text-xs
+                      transition-colors
+                      ${
+                        isCurrent
+                          ? "bg-[#e8f7ef] font-semibold text-[#013422]"
+                          : "text-black/55 hover:bg-[#e8f7ef] hover:text-[#04714a]"
+                      }
+                    `}
+                  >
+                    {conversation.title}
+                  </NavLink>
+                );
+              })
+            )}
           </div>
         </div>
 
@@ -122,7 +163,7 @@ export function AppShell() {
                   {user.name || user.email}
                 </span>
                 <span className="truncate text-[10px] text-black/45">
-                  {user.role === 'teacher' ? 'Giảng viên' : 'Sinh viên'}
+                  {user.role === 'teacher' ? 'Giảng viên' : user.role === 'admin' ? 'Quản trị viên' : 'Sinh viên'}
                 </span>
               </div>
             </div>
@@ -162,6 +203,14 @@ export function AppShell() {
               IT UPD GenAI<span className="text-[#00a86b]">.</span>
             </NavLink>
             <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={handleNewChat}
+                className="p-1 text-black/70 hover:text-black"
+                title="Cuộc trò chuyện mới"
+              >
+                <Plus size={20} />
+              </button>
               <NavLink to="/settings">
                 <Settings size={18} />
               </NavLink>

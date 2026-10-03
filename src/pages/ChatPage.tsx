@@ -1,6 +1,6 @@
-import { FormEvent, useEffect, useState } from "react";
-import { messages as initial } from "../mocks/data";
-import { streamChatMessage } from "../services/chat.service";
+import { FormEvent, useEffect, useState, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
+import { streamChatMessage, getConversationMessages } from "../services/chat.service";
 import {
   AgentLevel,
   ModifiedPromptInput,
@@ -33,16 +33,51 @@ function EmptyStatePrompt() {
 }
 
 export function ChatPage() {
-  const [msgs, setMsgs] = useState<ChatMessage[]>(initial);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const conversationId = searchParams.get("id") || undefined;
+  const conversationIdRef = useRef<string | undefined>(conversationId);
+
+  const [msgs, setMsgs] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [level, setLevel] = useState<AgentLevel>("L2");
   const [reactions, setReactions] = useState<Record<string, Reaction>>({});
 
   const [attachmentIds, setAttachmentIds] = useState<string[]>([]);
-  const [mentionedDocumentIds, setMentionedDocumentIds] = useState<string[]>(
-    [],
-  );
+  const [mentionedDocumentIds, setMentionedDocumentIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    conversationIdRef.current = conversationId;
+  }, [conversationId]);
+
+  // Load conversation messages when conversationId changes
+  useEffect(() => {
+    let isCancelled = false;
+    async function loadConversation() {
+      if (conversationId) {
+        setLoading(true);
+        try {
+          const loadedMsgs = await getConversationMessages(conversationId);
+          if (!isCancelled) {
+            setMsgs(loadedMsgs);
+          }
+        } catch (err) {
+          console.error("Failed to load conversation:", err);
+        } finally {
+          if (!isCancelled) {
+            setLoading(false);
+          }
+        }
+      } else {
+        setMsgs([]);
+      }
+    }
+
+    loadConversation();
+    return () => {
+      isCancelled = true;
+    };
+  }, [conversationId]);
 
   const isEmpty = msgs.length === 0;
 
@@ -62,6 +97,7 @@ export function ChatPage() {
   async function processStream(
     payload: {
       message: string;
+      conversationId?: string;
       attachmentIds?: string[];
       mentionedDocumentIds?: string[];
     },
@@ -71,8 +107,18 @@ export function ChatPage() {
     setLoading(true);
     try {
       await streamChatMessage(
-        payload,
+        {
+          ...payload,
+          modelLevel: level,
+        },
         (chunk: ChatStreamChunk) => {
+          // If a new conversation was created on BE, update conversation ID in URL and notify sidebar
+          if (chunk.conversationId && !conversationIdRef.current) {
+            conversationIdRef.current = chunk.conversationId;
+            setSearchParams({ id: chunk.conversationId }, { replace: true });
+            window.dispatchEvent(new CustomEvent("chats:updated"));
+          }
+
           setMsgs((prev) =>
             prev.map((msg) =>
               msg.id === assistantMsgId
@@ -94,6 +140,7 @@ export function ChatPage() {
               msg.id === assistantMsgId
                 ? {
                     ...msg,
+                    id: finalMsg.id || assistantMsgId,
                     content: finalMsg.content,
                     sources: finalMsg.sources,
                     status: finalMsg.status,
@@ -101,6 +148,7 @@ export function ChatPage() {
                 : msg,
             ),
           );
+          window.dispatchEvent(new CustomEvent("chats:updated"));
         },
       );
     } finally {
@@ -131,6 +179,7 @@ export function ChatPage() {
     await processStream(
       {
         message: text,
+        conversationId: conversationIdRef.current,
         attachmentIds: currentAttachments,
         mentionedDocumentIds: currentMentions,
       },
@@ -142,15 +191,19 @@ export function ChatPage() {
     if (loading) return;
     const assistantMsgId = crypto.randomUUID();
 
-    // Replace the user message at `index`, then truncate any assistant responses that followed it,
-    // and add a new assistant placeholder.
     setMsgs((m) => [
       ...m.slice(0, index),
       { ...m[index], content: newContent },
       { id: assistantMsgId, role: "assistant", content: "", status: "idle" },
     ]);
 
-    await processStream({ message: newContent }, assistantMsgId);
+    await processStream(
+      {
+        message: newContent,
+        conversationId: conversationIdRef.current,
+      },
+      assistantMsgId,
+    );
   }
 
   async function handleRegenerate(index: number) {
@@ -167,7 +220,13 @@ export function ChatPage() {
       { id: assistantMsgId, role: "assistant", content: "", status: "idle" },
     ]);
 
-    await processStream({ message: prevUserMsg.content }, assistantMsgId);
+    await processStream(
+      {
+        message: prevUserMsg.content,
+        conversationId: conversationIdRef.current,
+      },
+      assistantMsgId,
+    );
   }
 
   function handleReaction(id: string, type: Reaction) {
@@ -183,15 +242,6 @@ export function ChatPage() {
 
   return (
     <div className="flex h-full min-w-0 flex-col overflow-hidden">
-      {/* <header className="flex shrink-0 items-center justify-between border-b border-black/10">
-        <div className="min-w-0">
-          <h1 className="truncate text-xl font-semibold text-[#11130f]">IT UPD GenAI</h1>
-        </div>
-        <span className="ml-4 flex shrink-0 items-center gap-2 text-xs text-black/45">
-          <span className="size-2 rounded-full bg-[#00a86b]" /> Trực tuyến
-        </span>
-      </header> */}
-
       <div className="relative min-h-0 flex-1">
         <div
           ref={scrollRef}

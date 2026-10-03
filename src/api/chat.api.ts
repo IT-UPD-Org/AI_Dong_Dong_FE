@@ -1,9 +1,106 @@
-import { getStoredToken } from './client';
-import type { ChatMessage, SendMessagePayload, ChatStreamChunk } from './types';
+import { buildApiUrl, getStoredToken } from './client';
+import type {
+  AgentLevel,
+  BEMessage,
+  ChatMessage,
+  ChatStreamChunk,
+  ChatConversationModel,
+  Conversation,
+  ModelTypeEnum,
+  SendMessagePayload,
+} from './types';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+export function mapLevelToModelType(level?: AgentLevel): ModelTypeEnum {
+  switch (level) {
+    case 'L1':
+      return 'instant';
+    case 'L3':
+      return 'detailed';
+    case 'L2':
+    default:
+      return 'standard';
+  }
+}
+
+export function convertBEMessageToChatMessage(msg: BEMessage): ChatMessage {
+  const item = 'root' in msg ? msg.root : msg;
+  const role = item.type === 'agent' ? 'assistant' : item.type === 'system' ? 'system' : 'user';
+  const content = (item as any).content || '';
+  const isComplete = (item as any).complete ?? true;
+  const id: string = 'id' in item && item.id ? String(item.id) : crypto.randomUUID();
+
+  return {
+    id,
+    role,
+    content,
+    status: role === 'assistant' ? (isComplete ? 'completed' : 'generating') : 'idle',
+    toolCalls: (item as any).tool_calls,
+  };
+}
 
 export const chatApi = {
+  /**
+   * Lấy danh sách các cuộc trò chuyện của user từ BE
+   */
+  async getConversations(page: number = 1, allChats: boolean = false): Promise<Conversation[]> {
+    const token = getStoredToken();
+    const url = buildApiUrl(`/chats?page=${page}&all_chats=${allChats}`);
+
+    try {
+      const res = await fetch(url, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error(`Failed to fetch chats: ${res.status}`);
+      }
+
+      const data: ChatConversationModel[] = await res.json();
+      return data.map((c) => ({
+        id: String(c.id),
+        title: c.title || 'Cuộc trò chuyện mới',
+        messageCount: c.messages?.length || 0,
+      }));
+    } catch (err) {
+      console.warn('[chatApi] Fallback: Không thể tải danh sách chats từ BE, trả về mảng rỗng:', err);
+      return [];
+    }
+  },
+
+  /**
+   * Lấy chi tiết một cuộc trò chuyện bao gồm toàn bộ tin nhắn
+   */
+  async getConversation(conversationId: string): Promise<ChatConversationModel | null> {
+    const token = getStoredToken();
+    const url = buildApiUrl(`/chats/${conversationId}`);
+
+    try {
+      const res = await fetch(url, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error(`Failed to fetch conversation ${conversationId}: ${res.status}`);
+      }
+
+      return await res.json();
+    } catch (err) {
+      console.warn(`[chatApi] Không thể tải chi tiết cuộc trò chuyện ${conversationId}:`, err);
+      return null;
+    }
+  },
+
+  /**
+   * Stream tin nhắn qua SSE:
+   * - Nếu chưa có conversationId: Gọi POST /chats/create
+   * - Nếu đã có conversationId: Gọi POST /chats/{conversationId}/send
+   */
   async streamMessage(
     payload: SendMessagePayload,
     onChunk: (chunk: ChatStreamChunk) => void,
@@ -11,7 +108,13 @@ export const chatApi = {
     onError?: (error: Error) => void
   ): Promise<void> {
     const token = getStoredToken();
-    const url = `${API_BASE_URL}/api/chat/stream`;
+    const modelType = payload.modelType || mapLevelToModelType(payload.modelLevel);
+    const hasConversation = !!payload.conversationId;
+
+    const endpoint = hasConversation
+      ? `/chats/${payload.conversationId}/send`
+      : '/chats/create';
+    const url = buildApiUrl(endpoint);
 
     try {
       const response = await fetch(url, {
@@ -20,7 +123,10 @@ export const chatApi = {
           'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          content: payload.message,
+          model_type: modelType,
+        }),
       });
 
       if (!response.ok || !response.body) {
@@ -29,49 +135,125 @@ export const chatApi = {
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
+      let buffer = '';
       let fullText = '';
-      let currentStatus: any = 'generating';
+      let currentEvent = '';
+      let assistantMsgId: string = crypto.randomUUID();
+      let conversationId = payload.conversationId;
+      let conversationTitle = '';
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n');
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
         for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const dataStr = line.replace('data: ', '').trim();
+          const trimmed = line.trim();
+          if (!trimmed) {
+            currentEvent = '';
+            continue;
+          }
+
+          if (trimmed.startsWith('event:')) {
+            currentEvent = trimmed.replace('event:', '').trim();
+            continue;
+          }
+
+          if (trimmed.startsWith('data:')) {
+            const dataStr = trimmed.replace('data:', '').trim();
             if (dataStr === '[DONE]') break;
+
+            let parsed: any = null;
             try {
-              const parsed = JSON.parse(dataStr);
-              if (parsed.status) {
-                currentStatus = parsed.status;
-                onChunk({ status: parsed.status });
-              } else {
-                const textDelta = parsed.delta || parsed.content || '';
-                fullText += textDelta;
-                onChunk({ delta: textDelta, status: currentStatus });
-              }
+              parsed = JSON.parse(dataStr);
             } catch {
-              fullText += dataStr;
-              onChunk({ delta: dataStr, status: currentStatus });
+              parsed = dataStr;
             }
-          } else if (line.trim()) {
-            fullText += line;
-            onChunk({ delta: line, status: currentStatus });
+
+            // Xử lý các loại SSE event từ BE
+            if (currentEvent === 'conversation_created' || (parsed && parsed.id && parsed.title)) {
+              conversationId = String(parsed.id);
+              conversationTitle = parsed.title || 'Cuộc trò chuyện mới';
+              if (parsed.message_id) {
+                assistantMsgId = String(parsed.message_id);
+              }
+              onChunk({
+                conversationId,
+                title: conversationTitle,
+                status: 'generating',
+              });
+            } else if (currentEvent === 'user_message_id' || (parsed && parsed.id && !parsed.title && !parsed.root)) {
+              // Message id từ user
+              if (parsed.id) {
+                // Keep track
+              }
+            } else if (currentEvent === 'content' || (parsed && (parsed.type === 'content' || parsed.root?.type === 'content'))) {
+              const contentData = parsed.root || parsed;
+              const delta = contentData.content || '';
+              fullText += delta;
+              if (contentData.message_id) {
+                assistantMsgId = String(contentData.message_id);
+              }
+              onChunk({
+                delta,
+                status: 'generating',
+                conversationId,
+              });
+            } else if (currentEvent === 'tool_calls' || (parsed && (parsed.type === 'tool_calls' || parsed.root?.type === 'tool_calls'))) {
+              onChunk({
+                status: 'searching',
+                conversationId,
+              });
+            } else if (currentEvent === 'agent' || (parsed && (parsed.type === 'agent' || parsed.root?.type === 'agent'))) {
+              const agentData = parsed.root || parsed;
+              if (agentData.content) {
+                // Agent message có thể mang toàn bộ content
+                if (!fullText) {
+                  fullText = agentData.content;
+                }
+              }
+              if (agentData.id) {
+                assistantMsgId = String(agentData.id);
+              }
+              if (agentData.complete) {
+                onChunk({
+                  status: 'completed',
+                  conversationId,
+                });
+              }
+            } else if (parsed && typeof parsed === 'object') {
+              // Fallback parsed status/content
+              if (parsed.status) {
+                onChunk({ status: parsed.status, conversationId });
+              }
+              const delta = parsed.delta || parsed.content || '';
+              if (delta) {
+                fullText += delta;
+                onChunk({ delta, status: 'generating', conversationId });
+              }
+            } else if (typeof parsed === 'string' && parsed) {
+              fullText += parsed;
+              onChunk({ delta: parsed, status: 'generating', conversationId });
+            }
           }
         }
       }
 
       onFinish({
-        id: crypto.randomUUID(),
+        id: assistantMsgId,
         role: 'assistant',
         content: fullText,
         sources: [],
         status: 'completed',
       });
     } catch (err: any) {
-      console.warn('[chatApi] BE streaming chưa sẵn sàng, kích hoạt Mock Stream fallback:', err.message);
+      console.warn('[chatApi] BE streaming chưa kết nối được hoặc trả về lỗi, kích hoạt Mock Stream fallback:', err.message);
+      if (onError) {
+        onError(err);
+      }
       await mockStreamResponse(payload.message, onChunk, onFinish);
     }
   },
@@ -82,21 +264,20 @@ async function mockStreamResponse(
   onChunk: (chunk: ChatStreamChunk) => void,
   onFinish: (completeMessage: ChatMessage) => void
 ) {
-  // Simulate thinking -> searching (optional) -> generating -> token stream
   const needsSearch = /tìm|search|link|nguồn|internet|tra cứu/i.test(userPrompt);
 
   onChunk({ status: 'thinking' });
-  await new Promise((r) => setTimeout(r, 1000));
+  await new Promise((r) => setTimeout(r, 600));
 
   if (needsSearch) {
     onChunk({ status: 'searching' });
-    await new Promise((r) => setTimeout(r, 1500));
+    await new Promise((r) => setTimeout(r, 800));
   }
 
   onChunk({ status: 'generating' });
-  await new Promise((r) => setTimeout(r, 800));
+  await new Promise((r) => setTimeout(r, 400));
 
-  const answerTemplate = `Chào bạn, mình là IT UPD GenAI. Về yêu cầu của bạn: "${userPrompt}":\n\n1. Mình đã tiếp nhận thông tin và xử lý.\n2. Cần thêm chi tiết, bạn cứ hỏi nhé.`;
+  const answerTemplate = `Chào bạn, mình là trợ lý ảo IT UPD GenAI của Trường Đại học Phương Đông.\n\nVề câu hỏi của bạn: "${userPrompt}":\n\n- Mình đã tiếp nhận và đang đồng bộ dữ liệu với máy chủ.\n- Bạn có thể đặt thêm câu hỏi về môn học, tài liệu hoặc thông tin đào tạo nhé!`;
   const words = answerTemplate.split(' ');
   let accumulated = '';
 
@@ -104,7 +285,7 @@ async function mockStreamResponse(
     const word = (i === 0 ? '' : ' ') + words[i];
     accumulated += word;
     onChunk({ delta: word, status: 'generating' });
-    await new Promise((r) => setTimeout(r, 30));
+    await new Promise((r) => setTimeout(r, 20));
   }
 
   onFinish({
@@ -112,6 +293,6 @@ async function mockStreamResponse(
     role: 'assistant',
     content: accumulated,
     sources: [],
-    status: 'completed'
+    status: 'completed',
   });
 }
