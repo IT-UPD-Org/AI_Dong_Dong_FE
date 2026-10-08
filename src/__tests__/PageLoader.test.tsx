@@ -31,6 +31,22 @@ async function advance(milliseconds: number) {
 function loader() { return screen.getByRole("dialog"); }
 
 describe("Figma PageLoader", () => {
+  it("does not schedule animation frames for caller-controlled progress", () => {
+    render(<PageLoader progress={76} />);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it("does not restart the reveal when a late progress report arrives", async () => {
+    const complete = vi.fn();
+    const view = render(<PageLoader loading={false} progress={90} onComplete={complete} />);
+    await advance(PAGE_LOADER_TIMING.complete + 16);
+    expect(loader()).toHaveAttribute("data-phase", "sweeping");
+    view.rerender(<PageLoader loading={false} progress={100} onComplete={complete} />);
+    expect(loader()).toHaveAttribute("data-phase", "sweeping");
+    await advance(PAGE_LOADER_TIMING.sweep + PAGE_LOADER_TIMING.hold + PAGE_LOADER_TIMING.exit);
+    expect(complete).toHaveBeenCalledOnce();
+  });
+
   it("provides a replayable development preview of the real loader", async () => {
     render(<PageLoaderPreview />);
     expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "76");

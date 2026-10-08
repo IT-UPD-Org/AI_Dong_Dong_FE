@@ -1,4 +1,4 @@
-import { useId, type CSSProperties } from "react";
+import { memo, useId, type CSSProperties } from "react";
 
 // These routes align with the static circuit artwork at the same viewBox size.
 const SIGNAL_ROUTES = [
@@ -37,7 +37,8 @@ const SIGNAL_NODES = [
   { x: 416, y: 593, delay: -600 },
 ] as const;
 
-export function PageLoaderCircuit() {
+// The circuit is static React markup; CSS drives its animation independently of progress.
+export const PageLoaderCircuit = memo(function PageLoaderCircuit() {
   const glowId = `loader-signal-${useId().replace(/:/g, "")}`;
 
   return (
@@ -84,4 +85,4 @@ export function PageLoaderCircuit() {
       </svg>
     </div>
   );
-}
+});

@@ -22,6 +22,7 @@ export function PageLoader({
   const containerRef = useRef<HTMLDivElement>(null);
   const counterRef = useRef<HTMLDivElement>(null);
   const [counterHeight, setCounterHeight] = useState(112);
+  const displayedPercentage = Math.round(percentage);
   const style = {
     "--loader-progress": percentage / 100,
     "--loader-counter-height": `${counterHeight}px`,
@@ -93,12 +94,12 @@ export function PageLoader({
         aria-label="Tiến độ tải ứng dụng"
         aria-valuemin={0}
         aria-valuemax={100}
-        aria-valuenow={Math.round(percentage)}
+        aria-valuenow={displayedPercentage}
       >
         <div className="page-loader__fill" />
         <div ref={counterRef} className="page-loader__counter" aria-hidden="true">
           <div className="page-loader__value">
-            <span>{Math.round(percentage)}</span>
+            <span>{displayedPercentage}</span>
             <span className="page-loader__percent">%</span>
           </div>
           <p className="page-loader__label">{label}</p>

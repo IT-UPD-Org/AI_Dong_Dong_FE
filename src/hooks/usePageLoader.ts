@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useReducedMotion } from "./useReducedMotion";
 
 type LoaderPhase = "loading" | "sweeping" | "holding" | "exiting" | "done";
 type LoaderState = {
@@ -19,6 +20,9 @@ export const PAGE_LOADER_TIMING = {
   exit: 650,
 } as const;
 
+const ESTIMATED_PROGRESS_LIMIT = 90;
+const ESTIMATED_PROGRESS_TIME = 1600;
+
 function clampProgress(value: number): number {
   return Number.isFinite(value) ? Math.max(0, Math.min(99, value)) : 0;
 }
@@ -31,34 +35,29 @@ export function usePageLoader({ loading, progress, onComplete }: PageLoaderOptio
   });
   const percentageRef = useRef(state.percentage);
   const completeRef = useRef(onComplete);
-  const [reducedMotion, setReducedMotion] = useState(false);
+  const reducedMotion = useReducedMotion();
+  // A late progress report must not restart a transition that is already ready.
+  const waitingProgress = loading ? progress : undefined;
 
   useEffect(() => {
     completeRef.current = onComplete;
   }, [onComplete]);
 
   useEffect(() => {
-    if (!window.matchMedia) return;
-    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const update = () => setReducedMotion(media.matches);
-    update();
-    media.addEventListener("change", update);
-    return () => media.removeEventListener("change", update);
-  }, []);
-
-  useEffect(() => {
     let cancelled = false;
     let frame = 0;
     const timers: ReturnType<typeof setTimeout>[] = [];
     const started = performance.now();
-    const initial = loading
-      ? progress === undefined ? 0 : clampProgress(progress)
-      : percentageRef.current;
+    const initial = loading ? clampProgress(waitingProgress ?? 0) : percentageRef.current;
 
     function update(percentage: number, phase: LoaderPhase = "loading") {
       if (cancelled) return;
       percentageRef.current = percentage;
-      setState({ percentage, phase });
+      setState((current) =>
+        current.percentage === percentage && current.phase === phase
+          ? current
+          : { percentage, phase },
+      );
     }
 
     function schedule(callback: () => void, delay: number) {
@@ -80,42 +79,46 @@ export function usePageLoader({ loading, progress, onComplete }: PageLoaderOptio
       }
 
       update(100, "sweeping");
-      schedule(() => {
-        update(100, "holding");
-        schedule(() => {
-          update(100, "exiting");
-          schedule(finish, PAGE_LOADER_TIMING.exit);
-        }, PAGE_LOADER_TIMING.hold);
-      }, PAGE_LOADER_TIMING.sweep);
+      const { sweep, hold, exit } = PAGE_LOADER_TIMING;
+      schedule(() => update(100, "holding"), sweep);
+      schedule(() => update(100, "exiting"), sweep + hold);
+      schedule(finish, sweep + hold + exit);
+    }
+
+    function estimateProgress(now: number) {
+      const elapsed = Math.max(0, now - started);
+      const percentage = ESTIMATED_PROGRESS_LIMIT *
+        (1 - Math.exp(-elapsed / ESTIMATED_PROGRESS_TIME));
+      update(percentage);
+      // Once the estimate stops changing, wait for readiness without idle frames.
+      if (percentage < ESTIMATED_PROGRESS_LIMIT) {
+        frame = requestAnimationFrame(estimateProgress);
+      }
+    }
+
+    function completeProgress(now: number) {
+      const elapsed = Math.max(0, now - started);
+      const fraction = Math.min(1, elapsed / PAGE_LOADER_TIMING.complete);
+      const eased = 1 - (1 - fraction) ** 2;
+      update(initial + (100 - initial) * eased);
+      if (fraction < 1) frame = requestAnimationFrame(completeProgress);
+      else reveal();
     }
 
     update(initial);
-    if (!loading && reducedMotion) {
+    if (loading) {
+      if (waitingProgress === undefined) frame = requestAnimationFrame(estimateProgress);
+    } else if (reducedMotion) {
       reveal();
-    } else if (!(loading && progress !== undefined)) {
-      function tick(now: number) {
-        const elapsed = Math.max(0, now - started);
-        if (loading) {
-          update(Math.min(90, 90 * (1 - Math.exp(-elapsed / 1600))));
-          frame = requestAnimationFrame(tick);
-        } else {
-          const fraction = Math.min(1, elapsed / PAGE_LOADER_TIMING.complete);
-          update(initial + (100 - initial) * (1 - Math.pow(1 - fraction, 2)));
-          if (fraction < 1) {
-            frame = requestAnimationFrame(tick);
-          } else {
-            reveal();
-          }
-        }
-      }
-      frame = requestAnimationFrame(tick);
+    } else {
+      frame = requestAnimationFrame(completeProgress);
     }
     return () => {
       cancelled = true;
       cancelAnimationFrame(frame);
       timers.forEach(clearTimeout);
     };
-  }, [loading, progress, reducedMotion]);
+  }, [loading, waitingProgress, reducedMotion]);
 
   return state;
 }
