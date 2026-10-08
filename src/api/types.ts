@@ -5,6 +5,10 @@ export interface User {
   email: string;
   name?: string;
   role: UserRole;
+  credits?: number;
+  storage_used?: number;
+  first_use?: string | null;
+  disable?: boolean;
   avatarUrl?: string;
 }
 
@@ -33,12 +37,58 @@ export type MessageRole = 'user' | 'assistant' | 'system';
 
 export type ChatStatus = 'idle' | 'thinking' | 'searching' | 'generating' | 'completed' | 'error';
 
+export type ModelTypeEnum = 'instant' | 'standard' | 'detailed';
+
+export type AgentLevel = 'L1' | 'L2' | 'L3';
+
+export type AsyncStatus = 'none' | 'pending' | 'in_progress' | 'completed';
+
 export interface ChatSource {
   document_id?: string;
   title: string;
   page?: number;
   chunk_id?: string;
   url?: string;
+}
+
+export interface BEToolCall {
+  id: string | number;
+  tool_name: string;
+  parameters: string;
+  response?: string | null;
+}
+
+export interface BEUserMessage {
+  type: 'user';
+  id: string | number;
+  content: string;
+  files?: (string | number)[];
+}
+
+export interface BEAgentMessage {
+  type: 'agent';
+  id: string | number;
+  content: string | null;
+  tool_calls?: BEToolCall[];
+  complete: boolean;
+}
+
+export interface BESystemMessage {
+  type: 'system';
+  content: string;
+}
+
+export type BEMessageItem = BEUserMessage | BEAgentMessage | BESystemMessage;
+
+export type BEMessage = BEMessageItem | { root: BEMessageItem };
+
+export interface ChatConversationModel {
+  id: string | number;
+  user_id: string | number;
+  title: string;
+  reason_disabled?: string | null;
+  messages: BEMessage[];
+  async_status: AsyncStatus;
 }
 
 export interface ChatMessage {
@@ -48,12 +98,16 @@ export interface ChatMessage {
   sources?: ChatSource[];
   createdAt?: string;
   status?: ChatStatus;
+  toolCalls?: BEToolCall[];
 }
 
 export interface SendMessagePayload {
   message: string;
   conversationId?: string;
-  modelLevel?: 'L1' | 'L2' | 'L3';
+  modelLevel?: AgentLevel;
+  modelType?: ModelTypeEnum;
+  attachmentIds?: string[];
+  mentionedDocumentIds?: string[];
 }
 
 export interface ChatStreamChunk {
@@ -63,10 +117,41 @@ export interface ChatStreamChunk {
   sources?: ChatSource[];
   error?: string;
   status?: ChatStatus;
+  conversationId?: string;
+  title?: string;
 }
 
-// New API Contracts for BE Integration
+// Conversation summary for lists/sidebar
+export interface Conversation {
+  id: string;
+  title: string;
+  date?: string;
+  messageCount?: number;
+}
 
+// Admin types
+export interface ModelInfoModel {
+  id: string | number;
+  model_id: string;
+  model_name: string;
+  model_type: ModelTypeEnum;
+  provider_id: string | number;
+}
+
+export interface ProviderInfoModel {
+  id: string | number;
+  provider_type: string;
+  provider_name: string;
+  config: Record<string, any>;
+}
+
+export interface ProviderTypeResponse {
+  provider_name: string;
+  provider_id: string;
+  config_schema: Record<string, any>;
+}
+
+// Document & Storage types
 export interface Document {
   document_id: string;
   user_id: string;

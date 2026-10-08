@@ -1,5 +1,5 @@
 import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
-import { Paperclip, X } from "lucide-react";
+import { Paperclip, X, FileText } from "lucide-react";
 import {
   AgentLevel,
   AGENT_LEVEL_CONFIGS,
@@ -8,6 +8,7 @@ import {
 import { DocumentUploadPopup } from "./DocumentUploadPopup";
 import { documentApi } from "../../api/document.api";
 import type { Document } from "../../api/types";
+import { useVoiceInput } from "../../hooks/useVoiceInput";
 
 interface ModifiedPromptInputProps {
   value: string;
@@ -23,60 +24,6 @@ interface ModifiedPromptInputProps {
   attachmentIds?: string[];
   onAttachmentChange?: (ids: string[]) => void;
   onUploadError?: (error: string) => void;
-}
-
-function useVoiceInput(onResult: (text: string) => void) {
-  const [listening, setListening] = useState(false);
-  const [supported, setSupported] = useState(true);
-  const recognitionRef = useRef<any>(null);
-
-  useEffect(() => {
-    const SpeechRecognitionCtor =
-      (window as any).SpeechRecognition ||
-      (window as any).webkitSpeechRecognition;
-
-    if (!SpeechRecognitionCtor) {
-      setSupported(false);
-      return;
-    }
-
-    const recognition = new SpeechRecognitionCtor();
-    recognition.lang = "vi-VN";
-    recognition.interimResults = false;
-    recognition.continuous = false;
-
-    recognition.onresult = (event: any) => {
-      const transcript = Array.from(event.results)
-        .map((r: any) => r[0].transcript)
-        .join(" ");
-      onResult(transcript);
-    };
-    recognition.onend = () => setListening(false);
-    recognition.onerror = () => setListening(false);
-
-    recognitionRef.current = recognition;
-
-    return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.onresult = null;
-        recognitionRef.current.onend = null;
-        recognitionRef.current.onerror = null;
-      }
-    };
-  }, [onResult]);
-
-  function toggle() {
-    if (!recognitionRef.current) return;
-    if (listening) {
-      recognitionRef.current.stop();
-      setListening(false);
-    } else {
-      recognitionRef.current.start();
-      setListening(true);
-    }
-  }
-
-  return { listening, supported, toggle };
 }
 
 export function ModifiedPromptInput({
@@ -104,63 +51,92 @@ export function ModifiedPromptInput({
   const [allDocs, setAllDocs] = useState<Document[]>([]);
   const [mentionCursorIdx, setMentionCursorIdx] = useState(-1);
 
-  // Attachments UI
-  const [attachedDocs, setAttachedDocs] = useState<Document[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const mountedRef = useRef(false);
+  const uploadingRef = useRef(false);
+  const attachmentIdsRef = useRef(attachmentIds);
 
   useEffect(() => {
-    documentApi.listDocuments().then(setAllDocs);
+    attachmentIdsRef.current = attachmentIds;
+  }, [attachmentIds]);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    const unsubscribe = documentApi.subscribe((doc) => {
+      setAllDocs((current) => [
+        doc,
+        ...current.filter((item) => item.document_id !== doc.document_id),
+      ]);
+    });
+
+    documentApi.listDocuments().then((docs) => {
+      if (!mountedRef.current) return;
+      setAllDocs((current) => [
+        ...current,
+        ...docs.filter((doc) => !current.some((item) => item.document_id === doc.document_id)),
+      ]);
+    }).catch((error: unknown) => {
+      if (mountedRef.current) {
+        onUploadError?.(error instanceof Error ? error.message : "Không thể tải danh sách tài liệu.");
+      }
+    });
+
+    return () => {
+      mountedRef.current = false;
+      unsubscribe();
+    };
   }, []);
 
-  useEffect(() => {
-    const handlePaste = (e: ClipboardEvent) => {
-      if (e.clipboardData && e.clipboardData.files.length > 0) {
-        e.preventDefault();
-        const files = Array.from(e.clipboardData.files);
-        // Only accept if they are files. Not just text.
-        for (const file of files) {
-          documentApi
-            .uploadDocument(file)
-            .then((doc) => {
-              setAttachedDocs((prev) => [...prev, doc]);
-              if (onAttachmentChange)
-                onAttachmentChange([...attachmentIds, doc.document_id]);
-            })
-            .catch((err) => {
-              if (onUploadError) onUploadError(err.message);
-            });
+  const selectedIds = [...new Set([...attachmentIds, ...mentionedDocumentIds])];
+  const attachedDocs = selectedIds.flatMap((id) => {
+    const doc = allDocs.find((item) => item.document_id === id);
+    return doc ? [doc] : [];
+  });
+  const processing = attachedDocs.some((doc) => doc.status === "uploading" || doc.status === "processing");
+  const documentFailed = attachedDocs.some((doc) => doc.status === "error");
+  const submitDisabled = loading || uploading || processing || documentFailed ||
+    (!value.trim() && attachmentIds.length === 0 && mentionedDocumentIds.length === 0);
+
+  function attachDocument(doc: Document) {
+    setAllDocs((current) => [
+      doc,
+      ...current.filter((item) => item.document_id !== doc.document_id),
+    ]);
+    const ids = [...new Set([...attachmentIdsRef.current, doc.document_id])];
+    attachmentIdsRef.current = ids;
+    onAttachmentChange?.(ids);
+  }
+
+  async function uploadFiles(files: File[]) {
+    if (loading || uploadingRef.current || files.length === 0) return;
+    uploadingRef.current = true;
+    setUploading(true);
+    for (const file of files) {
+      if (!mountedRef.current) break;
+      try {
+        const doc = await documentApi.uploadDocument(file);
+        if (mountedRef.current) attachDocument(doc);
+      } catch (error: unknown) {
+        if (mountedRef.current) {
+          onUploadError?.(error instanceof Error ? error.message : "Không thể tải tài liệu lên.");
         }
       }
-    };
+    }
+    uploadingRef.current = false;
+    if (mountedRef.current) setUploading(false);
+  }
 
-    const textarea = textareaRef.current;
-    if (textarea) textarea.addEventListener("paste", handlePaste);
-    return () => {
-      if (textarea) textarea.removeEventListener("paste", handlePaste);
-    };
-  }, [attachmentIds, onAttachmentChange, onUploadError]);
-
-  // Subscribe to newly uploaded docs that might have been uploaded by drag & drop
-  useEffect(() => {
-    const unsub = documentApi.subscribe((doc) => {
-      setAllDocs((prev) => {
-        if (!prev.find((d) => d.document_id === doc.document_id))
-          return [doc, ...prev];
-        return prev;
-      });
-      // also update attachedDocs if they changed status
-      setAttachedDocs((prev) =>
-        prev.map((d) => (d.document_id === doc.document_id ? doc : d)),
-      );
-    });
-    return () => unsub();
-  }, []);
+  function handleSubmit(event?: FormEvent) {
+    event?.preventDefault();
+    if (!submitDisabled) onSubmit(event);
+  }
 
   function appendVoiceText(text: string) {
     if (!text.trim()) return;
     onChange(value ? `${value} ${text}` : text);
   }
 
-  const { listening, supported, toggle } = useVoiceInput(
+  const { listening, supported, toggle, error: voiceError } = useVoiceInput(
     onVoiceResult ?? appendVoiceText,
   );
 
@@ -168,8 +144,12 @@ export function ModifiedPromptInput({
     if (mentionCursorIdx === -1) return;
     const before = value.slice(0, mentionCursorIdx);
     const after = value.slice(mentionCursorIdx + mentionQuery.length + 1);
-    onChange(`${before}@${doc.filename} ${after}`);
+    const cleanedText =
+      `${before.trimEnd()}${before && !before.endsWith(" ") ? " " : ""}${after.trimStart()}`.trim();
+    onChange(cleanedText);
 
+    // Chèn document vào danh sách đính kèm có nút X xóa
+    attachDocument(doc);
     if (onMentionChange && !mentionedDocumentIds.includes(doc.document_id)) {
       onMentionChange([...mentionedDocumentIds, doc.document_id]);
     }
@@ -181,6 +161,8 @@ export function ModifiedPromptInput({
   }
 
   function handleKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.nativeEvent.isComposing || e.keyCode === 229) return;
+    if (loading || uploading || processing || documentFailed) return;
     if (showMentions) {
       if (e.key === "Escape") {
         setShowMentions(false);
@@ -192,7 +174,7 @@ export function ModifiedPromptInput({
           d.filename.toLowerCase().includes(mentionQuery.toLowerCase()),
         );
         if (filteredDocs.length > 0) {
-          insertMention(filteredDocs[0]); // For simplicity, pick first
+          insertMention(filteredDocs[0]);
           e.preventDefault();
           return;
         }
@@ -201,7 +183,7 @@ export function ModifiedPromptInput({
 
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      onSubmit();
+      handleSubmit();
     }
   }
 
@@ -214,7 +196,6 @@ export function ModifiedPromptInput({
     const lastAtIdx = textBeforeCursor.lastIndexOf("@");
 
     if (lastAtIdx !== -1) {
-      // make sure @ is at start of string or preceded by space
       if (
         lastAtIdx === 0 ||
         textBeforeCursor[lastAtIdx - 1] === " " ||
@@ -246,18 +227,18 @@ export function ModifiedPromptInput({
   );
 
   return (
-    <div className="relative">
+    <div className="relative shrink-0">
       {/* Upload Popup */}
       {isUploadOpen && (
         <DocumentUploadPopup
           onClose={() => setIsUploadOpen(false)}
-          onUploadError={onUploadError || console.error}
+          onUploadFiles={uploadFiles}
         />
       )}
 
       {/* Mention Dropdown */}
       {showMentions && mentionFilteredDocs.length > 0 && (
-        <div className="absolute bottom-full left-4 mb-2 max-h-60 w-80 overflow-y-auto rounded-xl border border-black/10 bg-white p-2 shadow-lg z-50 animate-in fade-in slide-in-from-bottom-2 duration-150">
+        <div className="absolute bottom-full left-4 mb-2 max-h-60 w-80 max-w-[calc(100%_-_2rem)] overflow-y-auto rounded-xl border border-black/10 bg-white p-2 shadow-lg z-50 animate-in fade-in slide-in-from-bottom-2 duration-150">
           <p className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">
             Gợi ý tài liệu
           </p>
@@ -265,45 +246,53 @@ export function ModifiedPromptInput({
             <button
               key={doc.document_id}
               type="button"
-              className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm hover:bg-gray-100 transition-colors"
+              className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm hover:bg-gray-100 transition-colors cursor-pointer"
               onClick={() => insertMention(doc)}
             >
-              <Paperclip size={14} className="text-gray-400" />
-              <span className="truncate">{doc.filename}</span>
+              <Paperclip size={14} className="text-gray-400 shrink-0" />
+              <span className="truncate flex-1">{doc.filename}</span>
             </button>
           ))}
         </div>
       )}
 
       <form
-        onSubmit={onSubmit}
+        onSubmit={handleSubmit}
         className="shrink-0 border-t border-black/10 bg-white px-3 py-2"
       >
         <div className="mx-auto flex w-full max-w-4xl flex-col gap-2">
-          {/* Attachments Display */}
+          {/* Attachments Display with X to remove */}
           {attachedDocs.length > 0 && (
             <div className="flex flex-wrap gap-2 px-1">
               {attachedDocs.map((doc) => (
                 <div
                   key={doc.document_id}
-                  className="flex items-center gap-2 rounded-lg bg-gray-100 px-3 py-1.5 text-sm"
+                  className="flex items-center gap-2 rounded-xl border border-[#04714a]/20 bg-[#e8f7ef] px-3 py-1.5 text-xs text-[#013422] shadow-xs"
                 >
-                  <Paperclip size={14} className="text-gray-500" />
-                  <span className="max-w-[150px] truncate">{doc.filename}</span>
+                  <FileText size={14} className="text-[#04714a] shrink-0" />
+                  <span className="max-w-[200px] truncate font-medium">
+                    {doc.filename}
+                  </span>
                   <button
                     type="button"
+                    disabled={loading || uploading}
                     onClick={() => {
-                      setAttachedDocs((prev) =>
-                        prev.filter((d) => d.document_id !== doc.document_id),
-                      );
+                      attachmentIdsRef.current = attachmentIds.filter((id) => id !== doc.document_id);
                       if (onAttachmentChange)
                         onAttachmentChange(
                           attachmentIds.filter((id) => id !== doc.document_id),
                         );
+                      if (onMentionChange)
+                        onMentionChange(
+                          mentionedDocumentIds.filter(
+                            (id) => id !== doc.document_id,
+                          ),
+                        );
                     }}
-                    className="ml-1 rounded-full p-0.5 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
+                    className="ml-1 rounded-full p-0.5 text-black/40 hover:bg-black/10 hover:text-black transition-colors cursor-pointer"
+                    title="Xóa tài liệu đính kèm"
                   >
-                    <X size={14} />
+                    <X size={13} />
                   </button>
                 </div>
               ))}
@@ -311,11 +300,13 @@ export function ModifiedPromptInput({
           )}
 
           {/* Ô nhập — chứa nút Effort, Mic, Textarea, Send */}
-          <div className="flex items-end gap-1.5 rounded-2xl border border-black/10 bg-white p-1.5 shadow-sm focus-within:border-[#04714a]/30 focus-within:ring-2 focus-within:ring-[#04714a]/10 transition-all">
+          {/* Đã xóa focus-within:ring-2 và focus-within:border-[#04714a]/30 ở div cha */}
+          <div className="flex items-end gap-1.5 rounded-2xl border border-black/10 bg-white p-1.5 shadow-sm transition-all">
             <button
               type="button"
               onClick={() => setIsUploadOpen(!isUploadOpen)}
-              className="flex size-8 shrink-0 items-center justify-center rounded-full text-black/50 hover:bg-black/5 hover:text-black/80 transition-colors"
+              disabled={loading || uploading}
+              className="flex size-8 shrink-0 items-center justify-center rounded-full text-black/50 hover:bg-black/5 hover:text-black/80 transition-colors cursor-pointer focus:outline-none"
               title="Tải lên tài liệu"
             >
               <PlusIcon />
@@ -326,22 +317,31 @@ export function ModifiedPromptInput({
               type="button"
               onClick={() => setIsModalOpen(true)}
               title={`Cấu hình Effort (${currentConfig.label})`}
-              className="flex h-8 shrink-0 items-center gap-1 rounded-xl bg-black/5 px-2.5 text-xs font-semibold text-[#04714a] transition-colors hover:bg-black/10"
+              className="flex h-8 shrink-0 items-center gap-1 rounded-xl bg-black/5 px-2.5 text-xs font-semibold text-[#04714a] transition-colors hover:bg-black/10 cursor-pointer focus:outline-none"
             >
               <SlidersIcon />
               <span>{currentConfig.label}</span>
             </button>
 
-            {/* Input Textarea */}
+            {/* Input Textarea — Đã thêm triệt để các class xóa ring / outline / border */}
             <textarea
               ref={textareaRef}
+              aria-label="Nội dung câu hỏi"
+              onPaste={(event) => {
+                const files = Array.from(event.clipboardData.files);
+                if (files.length > 0) {
+                  event.preventDefault();
+                  void uploadFiles(files);
+                }
+              }}
               rows={1}
               value={value}
               placeholder={placeholder}
               onChange={(e) => handleTextChange(e.target.value)}
               onKeyDown={handleKeyDown}
               disabled={loading}
-              className="max-h-[120px] flex-1 resize-none bg-transparent py-1.5 text-sm text-[#11130f] outline-none placeholder:text-black/35 px-1"
+              style={{ outline: "none", boxShadow: "none" }}
+              className="max-h-[120px] min-w-0 flex-1 resize-none bg-transparent py-1.5 text-sm text-[#11130f] border-0 outline-none ring-0 focus:border-0 focus:outline-none focus:ring-0 focus:shadow-none focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-black/35 px-1"
             />
 
             {/* Nút Giọng nói */}
@@ -356,9 +356,9 @@ export function ModifiedPromptInput({
                     : "Nói để nhập"
                   : "Trình duyệt không hỗ trợ giọng nói"
               }
-              className={`flex size-8 shrink-0 items-center justify-center rounded-full transition-colors disabled:opacity-30 ${
+              className={`flex size-8 shrink-0 items-center justify-center rounded-full transition-colors disabled:opacity-30 cursor-pointer focus:outline-none ${
                 listening
-                  ? "bg-red-500 text-white"
+                  ? "bg-red-500 text-white animate-pulse"
                   : "text-black/40 hover:bg-black/5 hover:text-black/70"
               }`}
             >
@@ -368,9 +368,9 @@ export function ModifiedPromptInput({
             {/* Nút Gửi */}
             <button
               type="submit"
-              disabled={loading || (!value.trim() && attachedDocs.length === 0)}
+              disabled={submitDisabled}
               title="Gửi"
-              className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#04714a] text-white transition-opacity disabled:opacity-30 hover:bg-[#035e3f]"
+              className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#04714a] text-white transition-opacity disabled:opacity-30 hover:bg-[#035e3f] cursor-pointer focus:outline-none"
             >
               <SendIcon />
             </button>
@@ -378,7 +378,10 @@ export function ModifiedPromptInput({
         </div>
       </form>
 
-      {/* Modal giữ nguyên */}
+      {(uploading || processing) && <p role="status" className="px-4 pb-2 text-xs text-black/50">Đang xử lý tài liệu, vui lòng đợi trước khi gửi.</p>}
+      {documentFailed && <p role="alert" className="px-4 pb-2 text-xs text-red-600">Tài liệu xử lý không thành công. Hãy xóa tài liệu lỗi và thử tải lại.</p>}
+      {voiceError && <p role="alert" className="px-4 pb-2 text-xs text-red-600">{voiceError}</p>}
+
       <AgentEffortModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

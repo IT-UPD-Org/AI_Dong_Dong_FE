@@ -26,12 +26,15 @@ export function AuthVerifyPage() {
     }
 
     let isMounted = true;
+    let redirectTimer: ReturnType<typeof setTimeout> | undefined;
+    setStatus("verifying");
+    setErrorMessage("");
 
     verifyMagicLink(token)
       .then(() => {
         if (!isMounted) return;
         setStatus("success");
-        setTimeout(() => {
+        redirectTimer = setTimeout(() => {
           nav(redirectTo, { replace: true });
         }, 1200);
       })
@@ -43,7 +46,10 @@ export function AuthVerifyPage() {
         );
       });
 
-    return () => { isMounted = false; };
+    return () => {
+      isMounted = false;
+      clearTimeout(redirectTimer);
+    };
   }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (

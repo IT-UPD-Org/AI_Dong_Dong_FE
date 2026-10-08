@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/+$/, '');
 
 export class ApiError extends Error {
   status: number;
@@ -24,6 +24,17 @@ export function removeStoredToken(): void {
   localStorage.removeItem('access_token');
 }
 
+export function buildApiUrl(endpoint: string): string {
+  if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) {
+    return endpoint;
+  }
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  if (API_BASE_URL) {
+    return `${API_BASE_URL}${cleanEndpoint}`;
+  }
+  return cleanEndpoint;
+}
+
 export async function apiClient<T>(
   endpoint: string,
   options: RequestInit = {}
@@ -39,10 +50,7 @@ export async function apiClient<T>(
     headers.set('Authorization', `Bearer ${token}`);
   }
 
-  // Nếu endpoint đã có protocol (http...) thì giữ nguyên, ngược lại nối với API_BASE_URL
-  const url = endpoint.startsWith('http')
-    ? endpoint
-    : `${API_BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+  const url = buildApiUrl(endpoint);
 
   try {
     const response = await fetch(url, {
@@ -50,8 +58,11 @@ export async function apiClient<T>(
       headers,
     });
 
-    if (response.status === 401) {
-      // Token hết hạn hoặc không hợp lệ
+    // An old request must not log out a newer session. This also prevents a
+    // rejected logout request from repeatedly triggering another logout.
+    const requestAuthorization = headers.get('Authorization');
+    const currentToken = getStoredToken();
+    if (response.status === 401 && currentToken && requestAuthorization === `Bearer ${currentToken}`) {
       removeStoredToken();
       window.dispatchEvent(new CustomEvent('auth:unauthorized'));
     }
@@ -60,10 +71,9 @@ export async function apiClient<T>(
       const errorData = await response.json().catch(() => ({}));
       const message =
         errorData.detail || errorData.message || `Request failed with status ${response.status}`;
-      throw new ApiError(message, response.status, errorData);
+      throw new ApiError(typeof message === 'string' ? message : JSON.stringify(message), response.status, errorData);
     }
 
-    // Nếu response là 204 No Content
     if (response.status === 204) {
       return {} as T;
     }
@@ -73,6 +83,6 @@ export async function apiClient<T>(
     if (error instanceof ApiError) {
       throw error;
     }
-    throw new ApiError((error as Error).message || 'Lỗi kết nối mạng đến server.', 0);
+    throw new ApiError((error as Error).message || 'Lỗi kết nối mạng đến máy chủ.', 0);
   }
 }

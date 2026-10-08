@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { authApi } from '../api/auth.api';
 import { getStoredToken, removeStoredToken, setStoredToken } from '../api/client';
 import type { AuthResponse, MagicLinkResponse, User } from '../api/types';
@@ -19,14 +19,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(getStoredToken());
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const authVersionRef = useRef(0);
 
   // Khởi tạo và kiểm tra token khi load trang
   useEffect(() => {
+    let cancelled = false;
+    const version = authVersionRef.current;
+    const isCurrent = () => !cancelled && version === authVersionRef.current;
     async function initAuth() {
       const storedToken = getStoredToken();
       if (storedToken) {
         try {
           const currentUser = await authApi.getCurrentUser();
+          if (!isCurrent()) return;
           if (currentUser) {
             setUser(currentUser);
             setToken(storedToken);
@@ -37,12 +42,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setUser(null);
           }
         } catch {
+          if (!isCurrent()) return;
           removeStoredToken();
           setToken(null);
           setUser(null);
         }
       }
-      setIsLoading(false);
+      if (isCurrent()) setIsLoading(false);
     }
 
     initAuth();
@@ -52,7 +58,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       logout();
     };
     window.addEventListener('auth:unauthorized', handleUnauthorized);
-    return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
+    return () => {
+      cancelled = true;
+      window.removeEventListener('auth:unauthorized', handleUnauthorized);
+    };
   }, []);
 
   const requestMagicLink = async (email: string): Promise<MagicLinkResponse> => {
@@ -60,22 +69,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const verifyMagicLink = async (verifyToken: string): Promise<AuthResponse> => {
+    const version = ++authVersionRef.current;
     setIsLoading(true);
     try {
       const res = await authApi.verifyMagicLink(verifyToken);
+      if (version !== authVersionRef.current) {
+        throw new Error('Phiên đăng nhập đã thay đổi. Vui lòng thử lại.');
+      }
       setStoredToken(res.access_token);
       setToken(res.access_token);
       setUser(res.user);
       return res;
     } finally {
-      setIsLoading(false);
+      if (version === authVersionRef.current) setIsLoading(false);
     }
   };
 
   const logout = () => {
-    authApi.logout();
+    authVersionRef.current += 1;
+    void authApi.logout();
     setToken(null);
     setUser(null);
+    setIsLoading(false);
   };
 
   return (

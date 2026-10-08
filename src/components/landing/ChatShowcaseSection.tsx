@@ -31,10 +31,8 @@ export function ChatShowcaseSection() {
         <div className="absolute inset-0 flex items-center justify-center">
           <AiSphereIllustration
             className="
-                h-[470px]
                 w-[470px]
-                max-w-none
-                md:h-[650px]
+                max-w-full
                 md:w-[650px]
             "
           />
