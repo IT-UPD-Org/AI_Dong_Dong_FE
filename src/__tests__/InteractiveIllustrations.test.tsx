@@ -190,9 +190,20 @@ describe("3D SVG scenes", () => {
   it.each([
     ["sphere", AiSphereIllustration],
     ["repository", KnowledgeRepositoryIllustration],
-  ] as const)("reuses %s geometry when only data labels refresh", async (_, Illustration) => {
-    const projector = vi.spyOn(scene3d, "createProjector");
+  ] as const)("auto-rotates the %s when idle and motion is allowed", async (_, Illustration) => {
     render(<Illustration />);
+    const viewport = screen.getByRole("group");
+    const initialYaw = Number(viewport.dataset.yaw);
+    await advance(100);
+    expect(Number(viewport.dataset.yaw)).not.toBe(initialYaw);
+  });
+
+  it.each([
+    ["sphere", AiSphereIllustration],
+    ["repository", KnowledgeRepositoryIllustration],
+  ] as const)("reuses %s geometry when only data labels refresh without rotation", async (_, Illustration) => {
+    const projector = vi.spyOn(scene3d, "createProjector");
+    render(<Illustration autoRotate={false} />);
     const projectionsBeforeRefresh = projector.mock.calls.length;
     expect(projectionsBeforeRefresh).toBeGreaterThan(0);
     await advance(900);
@@ -228,7 +239,7 @@ describe("3D SVG scenes", () => {
   });
 
   it("does not start rotating from an empty corner outside the sphere", async () => {
-    render(<AiSphereIllustration />);
+    render(<AiSphereIllustration autoRotate={false} />);
     const viewport = screen.getByRole("group", { name: "Xoay quả cầu AI" });
     vi.spyOn(viewport, "getBoundingClientRect").mockReturnValue({
       left: 0, top: 0, right: 200, bottom: 200, width: 200, height: 200, x: 0, y: 0, toJSON: () => ({}),
@@ -254,12 +265,34 @@ describe("3D SVG scenes", () => {
     expect(path.getAttribute("d")).toBe(original);
   });
 
-  it("keeps particle positions stable when the data labels refresh", async () => {
-    render(<AiSphereIllustration />);
+  it("keeps particle positions stable when the data labels refresh without rotation", async () => {
+    render(<AiSphereIllustration autoRotate={false} />);
     const particle = document.querySelector(".interactive-sphere__pulse circle")!;
     const original = [particle.getAttribute("cx"), particle.getAttribute("cy")];
     await advance(900);
     expect([particle.getAttribute("cx"), particle.getAttribute("cy")]).toEqual(original);
+  });
+
+  it("follows drag and smoothly returns to initial state after release, then resumes rotation", async () => {
+    render(<AiSphereIllustration />);
+    const viewport = screen.getByRole("group", { name: "Xoay quả cầu AI" });
+    drag(viewport);
+    await advance();
+    expect(viewport).toHaveAttribute("data-dragging", "true");
+    const draggedPitch = Number(viewport.dataset.pitch);
+    expect(draggedPitch).toBeGreaterThan(0.22);
+
+    // Hold pointer for 500ms
+    await advance(500);
+    expect(Number(viewport.dataset.pitch)).toBe(draggedPitch);
+
+    // Release pointer after holding
+    fireEvent.pointerUp(viewport, { pointerId: 1 });
+    expect(viewport).toHaveAttribute("data-dragging", "false");
+
+    // Return animation finishes and resumes rotation
+    await advance(750);
+    expect(Number(viewport.dataset.pitch)).toBeCloseTo(0.22, 1);
   });
 
   it("changes repository face coordinates and restores the initial layout", async () => {

@@ -8,6 +8,10 @@ interface InteractiveIllustrationProps {
   className?: string;
   initialRotation: Rotation3D;
   shape?: "rectangle" | "circle";
+  autoRotate?: boolean;
+  autoRotateSpeed?: number;
+  returnOnRelease?: boolean;
+  returnDuration?: number;
   children: (rotation: Rotation3D, reducedMotion: boolean) => ReactNode;
 }
 
@@ -24,9 +28,18 @@ export function InteractiveIllustration({
   className = "",
   initialRotation,
   shape = "rectangle",
+  autoRotate = false,
+  autoRotateSpeed,
+  returnOnRelease = true,
+  returnDuration,
   children,
 }: InteractiveIllustrationProps) {
-  const scene = useIllustrationRotation(initialRotation);
+  const scene = useIllustrationRotation(initialRotation, {
+    autoRotate,
+    autoRotateSpeed,
+    returnOnRelease,
+    returnDuration,
+  });
   const isCircle = shape === "circle";
   const [keyboardFocused, setKeyboardFocused] = useState(false);
 

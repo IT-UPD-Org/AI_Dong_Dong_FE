@@ -2,9 +2,9 @@
 
 import { ArrowUpRight, BookOpen, FileText, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
-
+import { ProductDemoVideo } from "../components/landing/ProductDemoVideo";
 import { contributors } from "../mocks/data";
-import { PresentLPDongDong } from "../components/layout/PresentLPDongDong";
+import { HeroIntro } from "../components/landing/HeroIntro";
 import { ChatShowcaseSection } from "../components/landing/ChatShowcaseSection";
 import { KnowledgeRepositoryIllustration } from "../components/landing/KnowledgeRepositoryIllustration";
 const gems = [
@@ -21,168 +21,8 @@ const gems = [
 export function LandingPage() {
   return (
     <main>
-      {/* =========================================================
-          HERO SECTION
-      ========================================================= */}
-      <section className="grid min-h-[calc(100vh-80px)] items-center gap-12 px-6 py-16 md:grid-cols-[1.15fr_.85fr] md:px-12 md:py-24">
-        {/* LEFT — INTRO */}
-        <div>
-          <p className="mono mb-7 text-xs uppercase tracking-[.18em] text-[#04714a]">
-            University Artificial Intelligence / barcode : UAI-01
-          </p>
-
-          <h1 className="max-w-4xl text-6xl font-extrabold leading-[.94] tracking-[-.08em] text-[#04714a] md:text-8xl">
-            <div className="inline-block pb-10">IT UPD GenAI</div>
-
-            <br />
-
-            <span className="text-justify text-2xl leading-tight tracking-tighter text-black/35 md:text-6xl">
-              Đạt những thành tựu học tập với sự trợ giúp của trí tuệ nhân tạo.
-            </span>
-          </h1>
-
-          <p className="mt-8 max-w-2/3 text-justify text-lg leading-8 text-black/60">
-            IT UPD GenAI là một nền tảng trí tuệ nhân tạo được thiết kế để hỗ
-            trợ sinh viên và giảng viên trong việc tìm kiếm thông tin, giải đáp
-            thắc mắc và nâng cao trải nghiệm học tập tại Đại học Phương Đông.
-          </p>
-
-          <div className="mt-9 flex flex-wrap gap-3">
-            <Link
-              to="/login"
-              className="flex items-center justify-center rounded-full border border-[#00a86b] bg-[#11130f] px-6 py-3 text-sm font-semibold text-white transition-all duration-300 hover:scale-95 hover:bg-white/5 hover:text-[#00a86b]"
-            >
-              Thử Ngay
-              <ArrowUpRight className="ml-2 inline" size={16} />
-            </Link>
-
-            <Link
-              to="/approve"
-              className="rounded-full border border-black/15 px-6 py-3 text-sm transition-colors hover:border-[#00a86b] hover:text-[#04714a]"
-            >
-              Xin cấp phép ngoài
-            </Link>
-          </div>
-        </div>
-
-        <div className="group relative flex min-h-155 flex-col justify-between overflow-hidden rounded-[2rem] bg-[#f8faf9] p-6 text-white shadow-2xl">
-          {/* Background */}
-          <div className="pointer-events-none absolute inset-0 overflow-hidden">
-            {/* Base gradient — xanh trong → mint → trắng */}
-            <div
-              className="absolute inset-0"
-              style={{
-                background: `
-          radial-gradient(
-            circle at 38% 34%,
-            #00a86b 0%,
-            #12b47c 22%,
-            #4bc99d 42%,
-            #a9e3cf 63%,
-            #e8f6f1 82%,
-            #f8faf9 100%
-          )
-        `,
-              }}
-            />
-
-            {/* White light beam — sắc và sạch hơn */}
-            <div
-              className="absolute inset-0"
-              style={{
-                background: `
-          conic-gradient(
-            from 218deg at 30% 65%,
-            transparent 0deg,
-            transparent 25deg,
-            rgba(255,255,255,0.05) 32deg,
-            rgba(255,255,255,0.55) 43deg,
-            rgba(255,255,255,0.92) 58deg,
-            rgba(255,255,255,0.45) 68deg,
-            transparent 82deg,
-            transparent 360deg
-          )
-        `,
-              }}
-            />
-
-            {/* Clean white highlight */}
-            <div
-              className="absolute -right-16 -top-20 size-80 rounded-full"
-              style={{
-                background:
-                  "radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.45) 38%, rgba(255,255,255,0) 72%)",
-              }}
-            />
-
-            {/* Subtle green depth — KHÔNG blur mạnh */}
-            <div
-              className="absolute -left-32 top-12 size-96 rounded-full"
-              style={{
-                background:
-                  "radial-gradient(circle, rgba(0,168,107,0.22) 0%, rgba(0,168,107,0.08) 45%, transparent 72%)",
-              }}
-            />
-
-            {/* Very subtle glass highlight */}
-            <div
-              className="absolute inset-0"
-              style={{
-                background: `
-          linear-gradient(
-            115deg,
-            rgba(255,255,255,0.12) 0%,
-            transparent 28%,
-            transparent 72%,
-            rgba(255,255,255,0.22) 100%
-          )
-        `,
-              }}
-            />
-          </div>
-          <div className="absolute inset-0">
-            {gems.map((g, i) => (
-              <div
-                key={g.id}
-                className="absolute opacity-0 scale-50 drop-shadow-[0_10px_28px_rgba(0,80,55,0.5)] transition-all duration-700 ease-[cubic-bezier(.22,1,.36,1)] group-hover:opacity-100 group-hover:scale-100"
-                style={{
-                  width: g.size,
-                  aspectRatio: "1 / 1",
-                  top: g.top,
-                  left: g.left,
-                  transform: g.center ? "translate(-50%, -50%)" : undefined,
-                  transitionDelay: `${i * 90}ms`,
-                }}
-              >
-                <img
-                  src="/assets/UPD_Vertical Logo.png"
-                  alt=""
-                  className="h-full w-full object-contain"
-                />
-              </div>
-            ))}
-          </div>
-          {/* Header */}
-          <div className="relative z-10 flex justify-between text-xs text-black/45">
-            <span className="mono">UAI-series: IT UPD GenAI UAI01</span>
-
-            <span>Được xây dựng bởi IT UPD</span>
-          </div>
-
-          {/* Dong Dong Avatar */}
-          <PresentLPDongDong />
-
-          {/* Footer */}
-          <div className="relative z-10">
-            <p className="mono text-center text-xs text-black/45 md:text-left">
-              Version : UAI-01.0.0 / 2026-11-20. Tri thức nhân tạo tham khảo
-              theo các mô hình LLM phổ biến, huấn luyện và tối ưu hóa cho các
-              tác vụ học tập và hành chính nội bộ.
-            </p>
-          </div>
-        </div>
-      </section>
-
+      <HeroIntro />
+      <ProductDemoVideo />
       <section className="border-t border-black/10 px-6 py-20 md:px-12">
         <p className="mono text-xs uppercase tracking-[.18em] text-black/45">
           UAI-01 IT UPD GenAI sẽ làm được những gì
