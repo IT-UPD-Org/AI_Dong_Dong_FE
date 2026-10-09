@@ -1,0 +1,273 @@
+.hero-intro {
+  --hero-scroll-distance: 850px;
+  --hero-stage-height: max(40rem, calc(100svh - 5rem));
+  position: relative;
+  height: calc(var(--hero-stage-height) + var(--hero-scroll-distance));
+  background: #fff;
+  color: #11130f;
+}
+
+.hero-intro__stage {
+  position: sticky;
+  top: 5rem;
+  display: grid;
+  grid-template-columns: 1.16fr 1fr;
+  align-items: start;
+  gap: 2.2rem;
+  height: var(--hero-stage-height);
+  padding: clamp(3.25rem, 7vh, 6rem) 6.5% 5rem;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.hero-intro__copy {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  padding-top: 1.6rem;
+}
+
+.hero-intro__eyebrow {
+  margin: 0 0 1.6rem;
+  color: #04714a;
+  font-size: .75rem;
+  line-height: 1.9;
+  letter-spacing: .075em;
+  text-transform: uppercase;
+}
+
+.hero-intro__title {
+  margin: 0;
+  color: #04714a;
+  font-size: clamp(2.2rem, 4.7vw, 5rem);
+  font-weight: 800;
+  line-height: 1.13;
+  letter-spacing: -.045em;
+  white-space: nowrap;
+}
+
+.hero-intro__title span {
+  white-space: pre;
+}
+
+.hero-intro__reveal {
+  padding-block: 2px;
+  overflow: hidden;
+}
+
+.hero-intro__reveal > * {
+  margin: 0;
+}
+
+.hero-intro__subtitle {
+  margin-top: 1.6rem;
+}
+
+.hero-intro__subtitle h2 {
+  max-width: 38rem;
+  color: #92948f;
+  font-size: clamp(1.3rem, 1.8vw, 1.8rem);
+  font-weight: 500;
+  line-height: 1.45;
+  letter-spacing: -.025em;
+}
+
+.hero-intro__description {
+  margin-top: 1.5rem;
+}
+
+.hero-intro__description p {
+  max-width: 38rem;
+  color: #666;
+  font-size: clamp(.85rem, 1vw, 1rem);
+  line-height: 1.9;
+}
+
+.hero-intro__actions-mask {
+  margin-top: 1.8rem;
+  padding: 4px;
+}
+
+.hero-intro__actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .75rem;
+}
+
+.hero-intro__primary, .hero-intro__secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .9rem;
+  min-height: 46px;
+  padding: .9rem 1.4rem;
+  border-radius: 999px;
+  font-size: .875rem;
+  transition: color .2s, background .2s, border-color .2s;
+}
+
+.hero-intro__primary {
+  border: 1px solid #00a86b;
+  background: #11130f;
+  color: #fff;
+  font-weight: 600;
+}
+
+.hero-intro__primary:hover {
+  background: #fff;
+  color: #00a86b;
+}
+
+.hero-intro__secondary {
+  border: 1px solid rgb(0 0 0 / .15);
+  background: #fff;
+}
+
+.hero-intro__secondary:hover {
+  border-color: #00a86b;
+  color: #04714a;
+}
+
+.hero-intro__art {
+  position: relative;
+  min-width: 0;
+  height: clamp(25rem, 65svh, 38rem);
+}
+
+.hero-intro__art::before {
+  content: "";
+  position: absolute;
+  inset: 7% 0;
+  z-index: -1;
+  background: radial-gradient(ellipse, rgb(0 168 107 / .055), transparent 70%);
+}
+
+.hero-intro__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.hero-intro__scroll-hint {
+  position: absolute;
+  left: 6.5%;
+  bottom: 2.4rem;
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  margin: 0;
+  color: #666;
+  font-size: .75rem;
+  letter-spacing: .04em;
+}
+
+.hero-intro[data-scroll-animated] .hero-intro__copy,
+.hero-intro[data-scroll-animated] .hero-intro__title,
+.hero-intro[data-scroll-animated] .hero-intro__art {
+  will-change: transform;
+}
+
+.hero-intro[data-scroll-animated] .hero-intro__reveal > * {
+  will-change: transform, opacity;
+}
+
+@media (max-width: 800px) {
+
+  .hero-intro__stage {
+    gap: 1.2rem;
+    padding-inline: 5%;
+  }
+
+  .hero-intro__title {
+    font-size: clamp(1.9rem, 4.7vw, 2.5rem);
+  }
+}
+
+@media (max-width: 620px) {
+
+  .hero-intro {
+    --hero-stage-height: max(60rem, calc(100svh - 5rem));
+  }
+
+  .hero-intro__stage {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 2rem 1.5rem 5rem;
+  }
+
+  .hero-intro__copy {
+    width: 100%;
+    padding-top: 0;
+  }
+
+  .hero-intro__eyebrow {
+    font-size: .6875rem;
+    letter-spacing: .04em;
+  }
+
+  .hero-intro__title {
+    font-size: clamp(1.75rem, 8.6vw, 2.375rem);
+  }
+
+  .hero-intro__subtitle h2 {
+    font-size: 1.375rem;
+  }
+
+  .hero-intro__description p {
+    font-size: .875rem;
+    line-height: 1.8;
+  }
+
+  .hero-intro__primary, .hero-intro__secondary {
+    padding: .8rem 1.05rem;
+    font-size: .75rem;
+  }
+
+  .hero-intro__art {
+    align-self: center;
+    flex-shrink: 0;
+    width: 100%;
+    max-width: 25rem;
+    height: 22.5rem;
+  }
+
+  .hero-intro__scroll-hint {
+    left: 1.5rem;
+    top: calc(100svh - 7.5rem);
+    bottom: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .hero-intro {
+    height: auto;
+  }
+
+  .hero-intro__stage {
+    position: relative;
+    top: 0;
+    height: auto;
+    min-height: calc(100svh - 5rem);
+  }
+
+  .hero-intro .hero-intro__copy, .hero-intro .hero-intro__title, .hero-intro .hero-intro__art, .hero-intro .hero-intro__reveal > * {
+    transform: none !important;
+    opacity: 1 !important;
+    will-change: auto !important;
+  }
+
+  .hero-intro__title span {
+    color: #04714a !important;
+  }
+
+  .hero-intro__primary, .hero-intro__secondary {
+    transition: none;
+  }
+
+  .hero-intro__scroll-hint {
+    display: none;
+  }
+}

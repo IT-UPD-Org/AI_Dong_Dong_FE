@@ -1,101 +1,60 @@
-import { ArrowUpRight } from "lucide-react";
+import { ArrowDown, ArrowUpRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useHeroScroll } from "./useHeroScroll";
+import "./HeroIntro.css";
+
+const TITLE = "IT UPD GenAI";
 
 export function HeroIntro() {
+  const sectionRef = useHeroScroll();
+
   return (
-    <section className="relative isolate flex min-h-[calc(100vh-80px)] items-center justify-center overflow-hidden px-6 py-20 md:px-12 md:py-28">
-      {/* =========================================================
-          BLURRED BACKGROUND IMAGE
-          Thay đường dẫn ảnh tại đây
-      ========================================================= */}
-      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-        <img
-          src="/assets/images/hero-blur.png"
-          alt=""
-          aria-hidden="true"
-          className="
-            absolute
-            left-1/2
-            top-1/2
-            h-[520px]
-            w-[520px]
-            -translate-x-1/2
-            -translate-y-1/2
-            scale-125
-            object-cover
-            rounded-full
-            opacity-30
-            blur-[90px]
-          "
-        />
+    <section ref={sectionRef} className="hero-intro" aria-label="Giới thiệu IT UPD GenAI">
+      <div className="hero-intro__stage">
+        <div className="hero-intro__copy">
+          <p className="hero-intro__eyebrow mono">
+            University Artificial Intelligence
+            <br />
+            Barcode : UAI–01
+          </p>
 
-        {/* Lớp phủ nhẹ để chữ nổi bật hơn */}
-        <div className="absolute inset-0 bg-white/55" />
-      </div>
+          <h1 className="hero-intro__title" aria-label={TITLE}>
+            {Array.from(TITLE).map((letter, index) => (
+              <span key={index} data-title-letter aria-hidden="true">{letter}</span>
+            ))}
+          </h1>
 
-      {/* =========================================================
-          HERO CONTENT
-      ========================================================= */}
-      <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-center text-center">
-        {/* Barcode */}
-        <p className="mono mb-8 text-xs uppercase tracking-[.18em] text-[#04714a] md:text-sm">
-          University Artificial Intelligence / barcode : UAI-01
-        </p>
+          <div className="hero-intro__reveal hero-intro__subtitle" data-start="0.16" data-end="0.49">
+            <h2>Đạt những thành tựu học tập với sự trợ giúp của trí tuệ nhân tạo.</h2>
+          </div>
 
-        {/* Main title */}
-        <h1 className="font-extrabold leading-[0.95] tracking-[-0.055em] text-[#04714a]">
-          <span className="block text-6xl sm:text-7xl md:text-8xl lg:text-[7rem] xl:text-[8rem]">
-            IT UPD GenAI
-          </span>
+          <div className="hero-intro__reveal hero-intro__description" data-start="0.35" data-end="0.74">
+            <p>
+              IT UPD GenAI là một nền tảng trí tuệ nhân tạo được thiết kế để hỗ trợ
+              sinh viên và giảng viên trong việc tìm kiếm thông tin, giải đáp thắc
+              mắc và nâng cao trải nghiệm học tập tại Đại học Phương Đông.
+            </p>
+          </div>
 
-          <span className="mx-auto mt-8 block max-w-4xl text-xl font-medium leading-tight tracking-[-0.03em] text-black/40 sm:text-2xl md:text-4xl">
-            Đạt những thành tựu học tập với sự trợ giúp của trí tuệ nhân tạo.
-          </span>
-        </h1>
-
-        {/* Description */}
-        <p className="mx-auto mt-9 max-w-3xl text-center text-sm leading-7 text-black/60 md:text-lg md:leading-8">
-          IT UPD GenAI là một nền tảng trí tuệ nhân tạo được thiết kế để hỗ trợ
-          sinh viên và giảng viên trong việc tìm kiếm thông tin, giải đáp thắc
-          mắc và nâng cao trải nghiệm học tập tại Đại học Phương Đông.
-        </p>
-
-        {/* Buttons */}
-        <div className="mt-9 flex flex-wrap justify-center gap-3">
-          <Link
-            to="/login"
-            className="
-              flex items-center justify-center
-              rounded-full
-              border border-[#00a86b]
-              bg-[#11130f]
-              px-6 py-3
-              text-sm font-semibold text-white
-              transition-all duration-300
-              hover:scale-95
-              hover:bg-white
-              hover:text-[#00a86b]
-            "
-          >
-            Thử Ngay
-            <ArrowUpRight className="ml-2" size={16} />
-          </Link>
-
-          <Link
-            to="/approve"
-            className="
-              rounded-full
-              border border-black/15
-              px-6 py-3
-              text-sm
-              transition-colors
-              hover:border-[#00a86b]
-              hover:text-[#04714a]
-            "
-          >
-            Xin cấp phép ngoài
-          </Link>
+          <div className="hero-intro__reveal hero-intro__actions-mask" data-start="0.58" data-end="0.92">
+            <div className="hero-intro__actions">
+              <Link to="/login" className="hero-intro__primary">
+                Thử Ngay <ArrowUpRight size={16} aria-hidden="true" />
+              </Link>
+              <Link to="/approve" className="hero-intro__secondary">
+                Xin cấp phép ngoài
+              </Link>
+            </div>
+          </div>
         </div>
+
+        <div className="hero-intro__art" aria-hidden="true">
+          <canvas className="hero-intro__canvas" />
+        </div>
+
+        <p className="hero-intro__scroll-hint mono" aria-hidden="true">
+          <ArrowDown size={16} /> Cuộn để khám phá
+        </p>
       </div>
     </section>
   );
