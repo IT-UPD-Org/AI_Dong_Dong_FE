@@ -12,11 +12,6 @@ export function HeroIntro() {
     <section ref={sectionRef} className="hero-intro" aria-label="Giới thiệu IT UPD GenAI">
       <div className="hero-intro__stage">
         <div className="hero-intro__copy">
-          <p className="hero-intro__eyebrow mono">
-            University Artificial Intelligence
-            <br />
-            Barcode : UAI–01
-          </p>
 
           <h1 className="hero-intro__title" aria-label={TITLE}>
             {Array.from(TITLE).map((letter, index) => (
@@ -30,9 +25,9 @@ export function HeroIntro() {
 
           <div className="hero-intro__reveal hero-intro__description" data-start="0.35" data-end="0.74">
             <p>
-              IT UPD GenAI là một nền tảng trí tuệ nhân tạo được thiết kế để hỗ trợ
-              sinh viên và giảng viên trong việc tìm kiếm thông tin, giải đáp thắc
-              mắc và nâng cao trải nghiệm học tập tại Đại học Phương Đông.
+              IT UPD GenAI là nền tảng ứng dụng trí tuệ nhân tạo được phát triển nhằm hỗ trợ sinh viên và giảng viên Trường Đại học Phương Đông trong quá trình học tập, giảng dạy và nghiên cứu.<br></br><br></br>
+              Tiếp cận kiến thức dễ dàng hơn.Nền tảng hỗ trợ tìm kiếm thông tin, giải đáp thắc mắc và gợi mở những hướng tiếp cận mới, giúp việc học trở nên chủ động, thuận tiện và hiệu quả hơn.<br></br><br></br>
+              Không chỉ là một công cụ AI. IT UPD GenAI hướng đến việc trở thành người bạn đồng hành trong hành trình khám phá tri thức, phát triển kỹ năng và từng bước xây dựng môi trường học tập hiện đại.
             </p>
           </div>
 

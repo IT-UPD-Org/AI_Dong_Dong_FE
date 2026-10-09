@@ -19,31 +19,34 @@ export function PublicLayout() {
         </Link>
 
         {/* Menu Điều hướng */}
-        <nav className="hidden items-center gap-8 text-sm font-medium text-black/70 md:flex">
-          <Link
-            to="/"
-            className={`transition-colors hover:text-[#04714a] ${
-              location.pathname === "/" ? "font-semibold text-[#04714a]" : ""
-            }`}
-          >
-            Trang chủ
-          </Link>
-          <Link
-            to="/donate"
-            className={`transition-colors hover:text-[#04714a] ${
-              location.pathname === "/donate" ? "font-semibold text-[#04714a]" : ""
-            }`}
-          >
-            Đóng góp
-          </Link>
-          <Link
-            to="/approve"
-            className={`transition-colors hover:text-[#04714a] ${
-              location.pathname === "/approve" ? "font-semibold text-[#04714a]" : ""
-            }`}
-          >
-            Cấp phép ngoài trường
-          </Link>
+        <nav className="hidden items-center gap-8 text-sm font-medium md:flex">
+          {[
+            { path: "/", label: "Trang chủ" },
+            { path: "/donate", label: "Đóng góp" },
+            { path: "/approve", label: "Cấp phép ngoài trường" },
+          ].map((item) => {
+            const isActive = location.pathname === item.path;
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`group relative py-1 transition-colors duration-200 ${
+                  isActive
+                    ? "font-semibold text-[#04714a]"
+                    : "text-black/70 hover:text-[#04714a]"
+                }`}
+              >
+                {item.label}
+                <span
+                  className={`absolute -bottom-1 left-0 h-[2.5px] w-full rounded-full bg-[#04714a] transition-all duration-300 ease-out origin-left ${
+                    isActive
+                      ? "scale-x-100 opacity-100"
+                      : "scale-x-0 opacity-0 group-hover:scale-x-100 group-hover:opacity-100"
+                  }`}
+                />
+              </Link>
+            );
+          })}
         </nav>
 
         {/* Nút hành động: thay đổi theo trạng thái đăng nhập */}
