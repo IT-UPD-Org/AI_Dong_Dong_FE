@@ -1,5 +1,6 @@
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useState, type FormEvent } from "react";
 import { AlertTriangle, Lightbulb, Star, X } from "lucide-react";
+import { toast } from "sonner";
 
 import { IssueImagePicker } from "./IssueImagePicker";
 
@@ -9,19 +10,24 @@ interface MessageFeedbackPanelProps {
   onClose: () => void;
 }
 
-const issueTypes = [
+const ISSUE_TYPES = [
   "Thông tin sai",
   "Không đúng câu hỏi",
   "Lỗi hiển thị",
   "Khác",
 ];
 
-const ratingLabels = [
+const RATING_LABELS = [
   "Rất không hài lòng",
   "Chưa hài lòng",
   "Bình thường",
   "Hài lòng",
   "Rất hài lòng",
+];
+
+const FEEDBACK_MODES = [
+  { id: "suggestion" as const, label: "Góp ý", icon: Lightbulb },
+  { id: "issue" as const, label: "Báo lỗi", icon: AlertTriangle },
 ];
 
 export function MessageFeedbackPanel({ onClose }: MessageFeedbackPanelProps) {
@@ -32,22 +38,26 @@ export function MessageFeedbackPanel({ onClose }: MessageFeedbackPanelProps) {
   const [issueType, setIssueType] = useState("");
   const [issueDetail, setIssueDetail] = useState("");
   const [issueImage, setIssueImage] = useState<File | null>(null);
-  const [submitted, setSubmitted] = useState(false);
 
-  const canSubmit =
-    mode === "suggestion"
-      ? rating > 0
-      : issueType !== "" && issueDetail.trim() !== "";
-
-  function selectMode(nextMode: FeedbackMode) {
-    setMode(nextMode);
-    setSubmitted(false);
-  }
+  const isSuggestion = mode === "suggestion";
+  const canSubmit = isSuggestion
+    ? rating > 0
+    : issueType !== "" && issueDetail.trim() !== "";
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault();
     if (!canSubmit) return;
-    setSubmitted(true);
+
+    toast.success(
+      isSuggestion
+        ? "Cảm ơn bạn đã gửi góp ý!"
+        : "Cảm ơn bạn đã gửi báo lỗi!",
+      {
+        description: "Phản hồi đã được ghi nhận trên phiên làm việc này.",
+      }
+    );
+
+    onClose();
   }
 
   return (
@@ -75,255 +85,184 @@ export function MessageFeedbackPanel({ onClose }: MessageFeedbackPanelProps) {
         </button>
       </div>
 
+      {/* Tabs chọn Góp ý / Báo lỗi */}
       <div
         role="tablist"
         aria-label="Loại phản hồi"
         className="mt-4 grid grid-cols-2 gap-2 rounded-xl bg-black/[.04] p-1"
       >
-        <FeedbackTab
-          active={mode === "suggestion"}
-          icon={<Lightbulb size={15} />}
-          label="Góp ý"
-          onClick={() => selectMode("suggestion")}
-        />
-        <FeedbackTab
-          active={mode === "issue"}
-          icon={<AlertTriangle size={15} />}
-          label="Báo lỗi"
-          onClick={() => selectMode("issue")}
-        />
+        {FEEDBACK_MODES.map(({ id, label, icon: Icon }) => (
+          <button
+            key={id}
+            type="button"
+            role="tab"
+            aria-selected={mode === id}
+            onClick={() => setMode(id)}
+            className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-xs font-semibold transition-all duration-300 ${
+              mode === id
+                ? "bg-[#173b2b] text-white shadow-sm opacity-100"
+                : "text-black/55 opacity-55 hover:bg-white/70 hover:opacity-85"
+            }`}
+          >
+            <Icon size={15} />
+            {label}
+          </button>
+        ))}
       </div>
 
-      {submitted ? (
-        <div
-          role="status"
-          className="mt-4 grid min-h-[250px] place-content-center rounded-xl border border-[#9fc4b0]/60 bg-[#e8f2ed] px-4 py-5 text-center"
-        >
-          <p className="text-sm font-semibold text-[#04714a]">
-            Cảm ơn bạn đã gửi {mode === "suggestion" ? "góp ý" : "báo lỗi"}.
-          </p>
-          <p className="mt-1 text-xs text-black/50">
-            Phản hồi đã được ghi nhận trên phiên làm việc này.
-          </p>
-        </div>
-      ) : (
-        <form
-          onSubmit={handleSubmit}
-          className="mt-4 flex min-h-[250px] flex-col"
-        >
-          <div className="flex-1">
-            {mode === "suggestion" ? (
-              <SuggestionForm
-                rating={rating}
-                hoveredRating={hoveredRating}
-                suggestion={suggestion}
-                onRatingChange={setRating}
-                onRatingHover={setHoveredRating}
-                onSuggestionChange={setSuggestion}
-              />
-            ) : (
-              <IssueForm
-                issueType={issueType}
-                issueDetail={issueDetail}
-                issueImage={issueImage}
-                onIssueTypeChange={setIssueType}
-                onIssueDetailChange={setIssueDetail}
-                onImageChange={setIssueImage}
-              />
-            )}
-          </div>
+      <form
+        onSubmit={handleSubmit}
+        className="mt-4 flex min-h-[250px] flex-col"
+      >
+        <div className="flex-1">
+          {isSuggestion ? (
+            <div role="tabpanel">
+              <fieldset>
+                <legend className="text-xs font-medium text-black/60">
+                  Bạn hài lòng với câu trả lời này ở mức nào?
+                </legend>
+                <div
+                  className="mt-2 flex items-center gap-1"
+                  onMouseLeave={() => setHoveredRating(0)}
+                >
+                  {RATING_LABELS.map((label, index) => {
+                    const value = index + 1;
+                    const selected = value <= (hoveredRating || rating);
 
-          <div className="mt-4 flex justify-end">
-            <button
-              type="submit"
-              disabled={!canSubmit}
-              className="rounded-xl bg-[#04714a] px-5 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-[#035f3f] disabled:cursor-not-allowed disabled:opacity-35"
-            >
-              {mode === "suggestion" ? "Gửi góp ý" : "Gửi báo lỗi"}
-            </button>
-          </div>
-        </form>
-      )}
+                    return (
+                      <button
+                        key={label}
+                        type="button"
+                        aria-label={`${value} sao: ${label}`}
+                        aria-pressed={rating === value}
+                        title={label}
+                        onMouseEnter={() => setHoveredRating(value)}
+                        onFocus={() => setHoveredRating(value)}
+                        onBlur={() => setHoveredRating(0)}
+                        onClick={() => setRating(value)}
+                        className="rounded-md p-1 transition-transform duration-200 hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#04714a]"
+                      >
+                        <Star
+                          size={24}
+                          className={
+                            selected
+                              ? "fill-[#00a86b] text-[#00a86b]"
+                              : "fill-transparent text-black/20"
+                          }
+                        />
+                      </button>
+                    );
+                  })}
+                  {(hoveredRating || rating) > 0 && (
+                    <span className="ml-2 text-xs font-medium text-[#04714a]">
+                      {RATING_LABELS[(hoveredRating || rating) - 1]}
+                    </span>
+                  )}
+                </div>
+              </fieldset>
+
+              <FeedbackTextarea
+                label="Nhận xét của bạn"
+                value={suggestion}
+                onChange={setSuggestion}
+                placeholder="Câu trả lời có điểm nào tốt hoặc cần cải thiện?"
+                className="mt-4"
+              />
+            </div>
+          ) : (
+            <div role="tabpanel">
+              <fieldset>
+                <legend className="text-xs font-medium text-black/60">
+                  Bạn gặp vấn đề gì?
+                </legend>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {ISSUE_TYPES.map((type) => (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => setIssueType(type)}
+                      className={`rounded-full border px-3 py-1.5 text-xs transition-all duration-200 ${
+                        issueType === type
+                          ? "border-[#04714a] bg-[#e1efe8] font-medium text-[#04714a]"
+                          : "border-black/10 bg-white text-black/45 hover:border-black/20 hover:text-black/65"
+                      }`}
+                    >
+                      {type}
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+
+              <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_240px]">
+                <FeedbackTextarea
+                  label="Mô tả lỗi"
+                  value={issueDetail}
+                  onChange={setIssueDetail}
+                  placeholder="Hãy mô tả điều đã xảy ra để chúng tôi có thể kiểm tra."
+                  required
+                />
+
+                <div>
+                  <p className="mb-2 text-xs font-medium text-black/60">
+                    Ảnh lỗi <span className="font-normal text-black/35">(không bắt buộc)</span>
+                  </p>
+                  <IssueImagePicker file={issueImage} onChange={setIssueImage} />
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="mt-4 flex justify-end">
+          <button
+            type="submit"
+            disabled={!canSubmit}
+            className="rounded-xl bg-[#04714a] px-5 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-[#035f3f] disabled:cursor-not-allowed disabled:opacity-35"
+          >
+            {isSuggestion ? "Gửi góp ý" : "Gửi báo lỗi"}
+          </button>
+        </div>
+      </form>
     </section>
   );
 }
 
-interface FeedbackTabProps {
-  active: boolean;
-  icon: ReactNode;
+interface FeedbackTextareaProps {
   label: string;
-  onClick: () => void;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+  maxLength?: number;
+  required?: boolean;
+  className?: string;
 }
 
-function FeedbackTab({ active, icon, label, onClick }: FeedbackTabProps) {
+function FeedbackTextarea({
+  label,
+  value,
+  onChange,
+  placeholder,
+  maxLength = 500,
+  required = false,
+  className = "",
+}: FeedbackTextareaProps) {
   return (
-    <button
-      type="button"
-      role="tab"
-      aria-selected={active}
-      onClick={onClick}
-      className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-xs font-semibold transition-all duration-300 ${
-        active
-          ? "bg-[#173b2b] text-white shadow-sm opacity-100"
-          : "text-black/55 opacity-55 hover:bg-white/70 hover:opacity-85"
-      }`}
-    >
-      {icon}
-      {label}
-    </button>
-  );
-}
-
-interface SuggestionFormProps {
-  rating: number;
-  hoveredRating: number;
-  suggestion: string;
-  onRatingChange: (rating: number) => void;
-  onRatingHover: (rating: number) => void;
-  onSuggestionChange: (suggestion: string) => void;
-}
-
-function SuggestionForm({
-  rating,
-  hoveredRating,
-  suggestion,
-  onRatingChange,
-  onRatingHover,
-  onSuggestionChange,
-}: SuggestionFormProps) {
-  const visibleRating = hoveredRating || rating;
-
-  return (
-    <div role="tabpanel">
-      <fieldset>
-        <legend className="text-xs font-medium text-black/60">
-          Bạn hài lòng với câu trả lời này ở mức nào?
-        </legend>
-        <div
-          className="mt-2 flex items-center gap-1"
-          onMouseLeave={() => onRatingHover(0)}
-        >
-          {ratingLabels.map((label, index) => {
-            const value = index + 1;
-            const selected = value <= visibleRating;
-
-            return (
-              <button
-                key={label}
-                type="button"
-                aria-label={`${value} sao: ${label}`}
-                aria-pressed={rating === value}
-                title={label}
-                onMouseEnter={() => onRatingHover(value)}
-                onFocus={() => onRatingHover(value)}
-                onBlur={() => onRatingHover(0)}
-                onClick={() => onRatingChange(value)}
-                className="rounded-md p-1 transition-transform duration-200 hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#04714a]"
-              >
-                <Star
-                  size={24}
-                  className={
-                    selected
-                      ? "fill-[#00a86b] text-[#00a86b]"
-                      : "fill-transparent text-black/20"
-                  }
-                />
-              </button>
-            );
-          })}
-          {visibleRating > 0 && (
-            <span className="ml-2 text-xs font-medium text-[#04714a]">
-              {ratingLabels[visibleRating - 1]}
-            </span>
-          )}
-        </div>
-      </fieldset>
-
-      <label className="mt-4 block text-xs font-medium text-black/60">
-        Nhận xét của bạn
+    <div className={className}>
+      <label className="block text-xs font-medium text-black/60">
+        {label}
         <textarea
-          value={suggestion}
-          maxLength={500}
+          value={value}
+          maxLength={maxLength}
           rows={3}
-          onChange={(event) => onSuggestionChange(event.target.value)}
-          placeholder="Câu trả lời có điểm nào tốt hoặc cần cải thiện?"
-          className="mt-2 w-full resize-none rounded-xl border border-black/10 bg-white px-3.5 py-3 text-sm leading-6 text-[#11130f] outline-none transition-colors placeholder:text-black/30 focus:border-[#00a86b]/60"
+          required={required}
+          onChange={(event) => onChange(event.target.value)}
+          placeholder={placeholder}
+          className="mt-2 h-[108px] w-full resize-none rounded-xl border border-black/10 bg-white px-3.5 py-3 text-sm leading-6 text-[#11130f] outline-none transition-colors placeholder:text-black/30 focus:border-[#00a86b]/60"
         />
       </label>
       <p className="mt-1 text-right text-[10px] text-black/35">
-        {suggestion.length}/500
+        {value.length}/{maxLength}
       </p>
-    </div>
-  );
-}
-
-interface IssueFormProps {
-  issueType: string;
-  issueDetail: string;
-  issueImage: File | null;
-  onIssueTypeChange: (issueType: string) => void;
-  onIssueDetailChange: (issueDetail: string) => void;
-  onImageChange: (file: File | null) => void;
-}
-
-function IssueForm({
-  issueType,
-  issueDetail,
-  issueImage,
-  onIssueTypeChange,
-  onIssueDetailChange,
-  onImageChange,
-}: IssueFormProps) {
-  return (
-    <div role="tabpanel">
-      <fieldset>
-        <legend className="text-xs font-medium text-black/60">
-          Bạn gặp vấn đề gì?
-        </legend>
-        <div className="mt-2 flex flex-wrap gap-2">
-          {issueTypes.map((type) => (
-            <button
-              key={type}
-              type="button"
-              onClick={() => onIssueTypeChange(type)}
-              className={`rounded-full border px-3 py-1.5 text-xs transition-all duration-200 ${
-                issueType === type
-                  ? "border-[#04714a] bg-[#e1efe8] font-medium text-[#04714a]"
-                  : "border-black/10 bg-white text-black/45 hover:border-black/20 hover:text-black/65"
-              }`}
-            >
-              {type}
-            </button>
-          ))}
-        </div>
-      </fieldset>
-
-      <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_240px]">
-        <div>
-          <label className="block text-xs font-medium text-black/60">
-            Mô tả lỗi
-            <textarea
-              value={issueDetail}
-              maxLength={500}
-              rows={3}
-              required
-              onChange={(event) => onIssueDetailChange(event.target.value)}
-              placeholder="Hãy mô tả điều đã xảy ra để chúng tôi có thể kiểm tra."
-              className="mt-2 h-[108px] w-full resize-none rounded-xl border border-black/10 bg-white px-3.5 py-3 text-sm leading-6 text-[#11130f] outline-none transition-colors placeholder:text-black/30 focus:border-[#00a86b]/60"
-            />
-          </label>
-          <p className="mt-1.5 min-h-4 text-right text-[10px] text-black/35">
-            {issueDetail.length}/500
-          </p>
-        </div>
-
-        <div>
-          <p className="mb-2 text-xs font-medium text-black/60">
-            Ảnh lỗi <span className="font-normal text-black/35">(không bắt buộc)</span>
-          </p>
-          <IssueImagePicker file={issueImage} onChange={onImageChange} />
-        </div>
-      </div>
     </div>
   );
 }
