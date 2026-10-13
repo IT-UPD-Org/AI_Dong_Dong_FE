@@ -15,6 +15,7 @@ import { ContributorsPage } from "../pages/ContributorsPage";
 import { ProfilePage } from "../pages/ProfilePage";
 import { SettingsPage } from "../pages/SettingsPage";
 import { InfoPage } from "../pages/InfoPage";
+import { ProjectTeamPage } from "../pages/ProjectTeamPage";
 
 export function AppRouter() {
   return (
@@ -32,16 +33,7 @@ export function AppRouter() {
             />
           }
         />
-        <Route
-          path="/donate"
-          element={
-            <InfoPage
-              title="Keep knowledge open"
-              eyebrow="Donate"
-              body="Support the infrastructure that helps students find clearer answers."
-            />
-          }
-        />
+        <Route path="/donate" element={<ProjectTeamPage />} />
         <Route
           path="/approve"
           element={

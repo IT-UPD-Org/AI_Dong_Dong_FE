@@ -8,18 +8,18 @@ export function PublicLayout() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 flex h-20 items-center justify-between border-b border-black/10 bg-white/80 px-6 backdrop-blur-md md:px-12">
+      <header className="sticky top-0 z-50 flex h-20 items-center justify-between gap-x-3 border-b border-black/10 bg-white/80 px-5 backdrop-blur-md md:px-12">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3">
           <div className="flex flex-col">
-            <span className="font-bold leading-none text-[#04714a] text-lg">
+            <span className="text-base font-bold leading-none text-[#04714a] md:text-lg">
               IT UPD GenAI
             </span>
           </div>
         </Link>
 
         {/* Menu Điều hướng */}
-        <nav className="hidden items-center gap-8 text-sm font-medium md:flex">
+        <nav aria-label="Điều hướng chính" className="hidden items-center gap-8 text-sm font-medium md:flex">
           {[
             { path: "/", label: "Trang chủ" },
             { path: "/donate", label: "Đóng góp" },
@@ -30,6 +30,7 @@ export function PublicLayout() {
               <Link
                 key={item.path}
                 to={item.path}
+                aria-current={isActive ? "page" : undefined}
                 className={`group relative py-1 transition-colors duration-200 ${
                   isActive
                     ? "font-semibold text-[#04714a]"
@@ -54,7 +55,7 @@ export function PublicLayout() {
           {!isLoading && isAuthenticated ? (
             <Link
               to="/chat"
-              className="rounded-full bg-[#04714a] px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-[#035e3f] hover:shadow-md flex items-center justify-center gap-1.5"
+              className="flex min-h-11 items-center justify-center gap-1.5 rounded-full bg-[#04714a] px-4 py-2.5 text-xs font-semibold text-white transition-all hover:bg-[#035e3f] hover:shadow-md md:px-5 md:text-sm"
             >
               <MessageCircle size={15} />
               Vào phòng chat
@@ -62,7 +63,7 @@ export function PublicLayout() {
           ) : (
             <Link
               to="/login"
-              className="rounded-full bg-[#11130f] px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-[#04714a] hover:shadow-md flex items-center justify-center"
+              className="flex min-h-11 items-center justify-center rounded-full bg-[#11130f] px-4 py-2.5 text-xs font-semibold text-white transition-all hover:bg-[#04714a] hover:shadow-md md:px-5 md:text-sm"
             >
               Đăng nhập <ArrowUpRight className="ml-1 inline" size={16} />
             </Link>
