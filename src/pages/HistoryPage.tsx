@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { MessageSquare, ArrowRight, Clock } from "lucide-react";
 import { chatApi } from "../api/chat.api";
 import type { Conversation } from "../api/types";
+import { formatSnowflakeDate } from "../lib/snowflake";
 
 export function HistoryPage() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -73,19 +74,17 @@ export function HistoryPage() {
                   <span className="truncate font-semibold text-gray-900 group-hover:text-[#04714a] block text-sm">
                     {c.title}
                   </span>
-                  {c.messageCount !== undefined && c.messageCount > 0 && (
-                    <span className="text-xs text-black/45 mt-0.5 block">
-                      {c.messageCount} tin nhắn
-                    </span>
+                  {c.disabled && (
+                    <span className="text-xs text-red-600 mt-0.5 block">Đã bị khoá</span>
                   )}
                 </div>
               </div>
 
               <div className="flex items-center gap-2 text-xs text-black/40 group-hover:text-[#04714a] shrink-0">
-                {c.date && (
+                {formatSnowflakeDate(c.id) && (
                   <span className="flex items-center gap-1">
                     <Clock size={12} />
-                    {c.date}
+                    {formatSnowflakeDate(c.id)}
                   </span>
                 )}
                 <ArrowRight size={15} className="transition-transform group-hover:translate-x-1" />

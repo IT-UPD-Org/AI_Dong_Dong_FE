@@ -10,6 +10,7 @@ import {
   UserRound,
   Plus,
   LogOut,
+  ShieldCheck,
 } from "lucide-react";
 
 import { useAuth } from "../../contexts/AuthContext";
@@ -29,7 +30,7 @@ export function AppShell() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const currentChatId = searchParams.get("id");
-  const { user, logout } = useAuth();
+  const { user, isAdmin, logout } = useAuth();
   const [recentChats, setRecentChats] = useState<Conversation[]>([]);
 
   const loadRecentChats = async () => {
@@ -52,8 +53,8 @@ export function AppShell() {
     return () => window.removeEventListener("chats:updated", handleChatsUpdated);
   }, []);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     navigate("/login", { replace: true });
   };
 
@@ -103,6 +104,21 @@ export function AppShell() {
               {label}
             </NavLink>
           ))}
+          {isAdmin && (
+            <NavLink
+              to="/admin"
+              className={({ isActive }) =>
+                `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${
+                  isActive
+                    ? "bg-[#e8f7ef] font-semibold text-[#013422]"
+                    : "text-black/55 hover:bg-[#e8f7ef] hover:text-[#04714a]"
+                }`
+              }
+            >
+              <ShieldCheck size={17} />
+              Quản trị
+            </NavLink>
+          )}
         </nav>
 
         <div className="mt-6 flex min-h-0 flex-1 flex-col">

@@ -2,6 +2,8 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { AppShell } from "../components/layout/AppShell";
 import { PublicLayout } from "../components/layout/PublicLayout";
 import { ProtectedRoute } from "../components/auth/ProtectedRoute";
+import { AdminRoute } from "../components/auth/AdminRoute";
+import { AdminPage } from "../pages/admin/AdminPage";
 import { PublicRoute } from "../components/auth/PublicRoute";
 import { LandingPage } from "../pages/LandingPage";
 import { LoginPage } from "../pages/LoginPage";
@@ -53,8 +55,7 @@ export function AppRouter() {
           }
         />
 
-        {/* XÁC THỰC LINK TỪ EMAIL (MAGIC LINK CALLBACK) */}
-        <Route path="/auth/verify" element={<AuthVerifyPage />} />
+        {/* MICROSOFT OAUTH REDIRECT */}
         <Route path="/auth/callback" element={<AuthVerifyPage />} />
 
         {/* CÁC ROUTE CHỈ CHO NGƯỜI CHƯA ĐĂNG NHẬP */}
@@ -74,6 +75,9 @@ export function AppRouter() {
           <Route path="/contributors" element={<ContributorsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route element={<AdminRoute />}>
+            <Route path="/admin" element={<AdminPage />} />
+          </Route>
         </Route>
       </Route>
 

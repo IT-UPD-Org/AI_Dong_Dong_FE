@@ -1,131 +1,75 @@
 import { apiClient, removeStoredToken, setStoredToken } from './client';
-import type { AuthResponse, MagicLinkRequest, MagicLinkResponse, User } from './types';
-import { mockSendMagicLink, mockVerifyToken } from '../mocks/auth.mock';
+import type { BEUser, LoginResponse, Session, User } from './types';
 
-const USE_MOCK_FALLBACK = true;
-
-function isMockToken(token: string): boolean {
-  return token.endsWith('.mock_signature');
+export function toUser(user: BEUser): User {
+  return {
+    id: String(user.id),
+    email: user.email,
+    name: user.name || user.email.split('@')[0],
+    role: user.role,
+    credits: user.credits,
+    storage_used: user.storage_used,
+    first_use: user.first_use,
+    disable: user.disable,
+  };
 }
 
-function decodeMockToken(token: string): User | null {
-  try {
-    const parts = token.split('.');
-    if (parts.length !== 3) return null;
-    const payload = JSON.parse(atob(parts[1]));
-    if (payload.exp && Math.floor(Date.now() / 1000) > payload.exp) {
-      return null;
-    }
-    const email: string = payload.sub || '';
-    if (!email) return null;
-    return {
-      id: String(payload.id || 'usr_current'),
-      email,
-      name: email.split('@')[0].replace(/[._-]/g, ' ').toUpperCase(),
-      role: payload.perm || payload.role || (email.endsWith('@phuongdong.edu.vn') ? 'teacher' : 'student'),
-    };
-  } catch {
-    return null;
-  }
+async function completeLogin(request: Promise<LoginResponse>): Promise<User> {
+  const res = await request;
+  setStoredToken(res.access_token);
+  return toUser(res.user);
 }
 
 export const authApi = {
-  /**
-   * Bước 1: Gửi email lên BE — BE gửi magic link hoặc xử lý auth
-   */
-  async requestMagicLink(email: string): Promise<MagicLinkResponse> {
-    try {
-      return await apiClient<MagicLinkResponse>('/api/auth/magic-link', {
+  /** Development-only login; the backend returns 404 outside dev mode. */
+  devLogin(email: string, name: string): Promise<User> {
+    return completeLogin(
+      apiClient<LoginResponse>('/auth/fake-login', {
         method: 'POST',
-        body: JSON.stringify({ email } as MagicLinkRequest),
-      });
-    } catch (err: any) {
-      if (USE_MOCK_FALLBACK && (err.status === 404 || err.status === 0 || err.status >= 500)) {
-        console.warn('[authApi] Fallback mock: requestMagicLink');
-        return await mockSendMagicLink(email);
-      }
-      throw err;
-    }
+        body: JSON.stringify({ email, name }),
+      }),
+    );
   },
 
-  /**
-   * Bước 2: Xác thực token từ link email, nhận access_token + user
-   */
-  async verifyMagicLink(token: string): Promise<AuthResponse> {
-    try {
-      const res = await apiClient<AuthResponse>('/api/auth/verify', {
+  /** Exchange a Microsoft authorization code (PKCE) for an internal token. */
+  microsoftLogin(code: string, codeVerifier: string, nonce: string): Promise<User> {
+    return completeLogin(
+      apiClient<LoginResponse>('/auth/microsoft/callback', {
         method: 'POST',
-        body: JSON.stringify({ token }),
-      });
-      if (res.access_token) setStoredToken(res.access_token);
-      return res;
-    } catch (err: any) {
-      if (USE_MOCK_FALLBACK && (err.status === 404 || err.status === 0 || err.status >= 500)) {
-        console.warn('[authApi] Fallback mock: verifyMagicLink');
-        const res = await mockVerifyToken(token);
-        if (res.access_token) setStoredToken(res.access_token);
-        return res;
-      }
-      throw err;
-    }
+        body: JSON.stringify({ code, code_verifier: codeVerifier, nonce }),
+      }),
+    );
   },
 
-  /**
-   * Lấy thông tin user hiện tại từ BE (/users/@me hoặc /api/users/@me)
-   */
-  async getCurrentUser(): Promise<User | null> {
-    const storedToken = localStorage.getItem('access_token');
-    if (!storedToken) return null;
-
-    try {
-      // Gọi BE endpoint /users/@me (hoặc qua proxy /api/users/@me)
-      const res = await apiClient<any>('/users/@me');
-      if (res) {
-        return {
-          id: String(res.id),
-          email: res.email,
-          name: res.name || res.email.split('@')[0],
-          role: res.role || 'student',
-          credits: res.credits,
-          storage_used: res.storage_used,
-          disable: res.disable,
-        };
-      }
-      return null;
-    } catch (err: any) {
-      if (USE_MOCK_FALLBACK && (err.status === 404 || err.status === 0 || err.status >= 500)) {
-        if (isMockToken(storedToken)) {
-          const user = decodeMockToken(storedToken);
-          if (user) {
-            return user;
-          }
-        }
-        // Fallback default mock user if in dev
-        return {
-          id: 'usr_mock',
-          email: 'user@pduni.edu.vn',
-          name: 'SINH VIEN TEST',
-          role: 'student',
-          credits: 1000,
-          storage_used: 0,
-        };
-      }
-      removeStoredToken();
-      return null;
-    }
+  async getCurrentUser(): Promise<User> {
+    return toUser(await apiClient<BEUser>('/users/@me'));
   },
 
-  /**
-   * Đăng xuất
-   */
+  async updateProfile(changes: { name?: string; email?: string }): Promise<User> {
+    return toUser(
+      await apiClient<BEUser>('/users/@me', {
+        method: 'PATCH',
+        body: JSON.stringify(changes),
+      }),
+    );
+  },
+
+  async listSessions(): Promise<Session[]> {
+    const sessions = await apiClient<Session[]>('/users/@me/sessions');
+    return sessions.map((s) => ({ ...s, id: String(s.id) }));
+  },
+
+  revokeSession(sessionId: string): Promise<void> {
+    return apiClient<void>(`/users/@me/sessions/${sessionId}`, { method: 'DELETE' });
+  },
+
   async logout(): Promise<void> {
     try {
-      await apiClient('/auth/logout', { method: 'POST' });
+      await apiClient<void>('/auth/logout', { method: 'POST' });
     } catch {
-      // Ignored if BE offline
+      // The local session is cleared regardless of whether revocation succeeded.
     } finally {
       removeStoredToken();
-      localStorage.removeItem('user_info');
     }
   },
 };

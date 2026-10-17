@@ -1,37 +1,48 @@
-export type UserRole = 'student' | 'teacher' | 'admin' | 'guest';
+// ---------------------------------------------------------------------------
+// Users & auth
+// ---------------------------------------------------------------------------
+
+export type UserRole = 'student' | 'teacher' | 'admin';
+
+/** Shape of `UserModel` returned by the backend. */
+export interface BEUser {
+  id: string;
+  role: UserRole;
+  name: string;
+  email: string;
+  first_use: string | null;
+  disable: boolean;
+  credits: number;
+  storage_used: number;
+  microsoft_tenant_id?: string | null;
+  microsoft_object_id?: string | null;
+}
 
 export interface User {
   id: string;
   email: string;
-  name?: string;
+  name: string;
   role: UserRole;
-  credits?: number;
-  storage_used?: number;
-  first_use?: string | null;
-  disable?: boolean;
-  avatarUrl?: string;
+  credits: number;
+  storage_used: number;
+  first_use: string | null;
+  disable: boolean;
 }
 
-export interface MagicLinkRequest {
-  email: string;
-}
-
-export interface MagicLinkResponse {
-  status: 'ok' | 'error';
-  message: string;
-  mockVerifyUrl?: string; // Hỗ trợ dev test trực tiếp khi BE chưa xong
-}
-
-export interface VerifyMagicLinkRequest {
-  token: string;
-}
-
-export interface AuthResponse {
-  status: 'ok' | 'error';
+/** Response of `/auth/fake-login` and `/auth/microsoft/callback`. */
+export interface LoginResponse {
   access_token: string;
-  token_type?: string;
-  user: User;
+  user: BEUser;
 }
+
+export interface Session {
+  id: string;
+  expires_at: string;
+}
+
+// ---------------------------------------------------------------------------
+// Chat
+// ---------------------------------------------------------------------------
 
 export type MessageRole = 'user' | 'assistant' | 'system';
 
@@ -41,7 +52,7 @@ export type ModelTypeEnum = 'instant' | 'standard' | 'detailed';
 
 export type AgentLevel = 'L1' | 'L2' | 'L3';
 
-export type AsyncStatus = 'none' | 'pending' | 'in_progress' | 'completed';
+export type AsyncStatus = 'none' | 'pending' | 'in_progress';
 
 export interface ChatSource {
   document_id?: string;
@@ -52,7 +63,7 @@ export interface ChatSource {
 }
 
 export interface BEToolCall {
-  id: string | number;
+  id: string;
   tool_name: string;
   parameters: string;
   response?: string | null;
@@ -60,14 +71,14 @@ export interface BEToolCall {
 
 export interface BEUserMessage {
   type: 'user';
-  id: string | number;
+  id: string;
   content: string;
-  files?: (string | number)[];
+  files?: string[];
 }
 
 export interface BEAgentMessage {
   type: 'agent';
-  id: string | number;
+  id: string;
   content: string | null;
   tool_calls?: BEToolCall[];
   complete: boolean;
@@ -78,17 +89,19 @@ export interface BESystemMessage {
   content: string;
 }
 
-export type BEMessageItem = BEUserMessage | BEAgentMessage | BESystemMessage;
+export type BEMessage = BEUserMessage | BEAgentMessage | BESystemMessage;
 
-export type BEMessage = BEMessageItem | { root: BEMessageItem };
-
-export interface ChatConversationModel {
-  id: string | number;
-  user_id: string | number;
+/** `ChatConversationListResponse` from `GET /chats`. */
+export interface ConversationSummary {
+  id: string;
   title: string;
-  reason_disabled?: string | null;
-  messages: BEMessage[];
+  disabled: boolean;
   async_status: AsyncStatus;
+}
+
+/** `ChatConversationResponse` from `GET /chats/{id}`. */
+export interface ConversationDetail extends ConversationSummary {
+  messages: BEMessage[];
 }
 
 export interface ChatMessage {
@@ -99,6 +112,7 @@ export interface ChatMessage {
   createdAt?: string;
   status?: ChatStatus;
   toolCalls?: BEToolCall[];
+  files?: string[];
 }
 
 export interface SendMessagePayload {
@@ -107,60 +121,55 @@ export interface SendMessagePayload {
   modelLevel?: AgentLevel;
   modelType?: ModelTypeEnum;
   attachmentIds?: string[];
-  mentionedDocumentIds?: string[];
 }
 
 export interface ChatStreamChunk {
   delta?: string;
   done?: boolean;
   messageId?: string;
-  sources?: ChatSource[];
   error?: string;
   status?: ChatStatus;
   conversationId?: string;
   title?: string;
+  toolCalls?: BEToolCall[];
 }
 
-// Conversation summary for lists/sidebar
+/** Conversation summary for lists/sidebar. */
 export interface Conversation {
   id: string;
   title: string;
-  date?: string;
-  messageCount?: number;
+  disabled?: boolean;
+  asyncStatus?: AsyncStatus;
 }
 
-// Admin types
-export interface ModelInfoModel {
-  id: string | number;
-  model_id: string;
-  model_name: string;
-  model_type: ModelTypeEnum;
-  provider_id: string | number;
+// ---------------------------------------------------------------------------
+// Files
+// ---------------------------------------------------------------------------
+
+export type FileType = 'image' | 'docs';
+
+/** `FileListResponse` from the `/files` endpoints. */
+export interface BEFile {
+  id: string;
+  title: string;
+  size: number;
+  filename: string;
+  file_type: FileType;
+  file_url: string | null;
 }
 
-export interface ProviderInfoModel {
-  id: string | number;
-  provider_type: string;
-  provider_name: string;
-  config: Record<string, any>;
-}
+export type DocumentStatus = 'uploading' | 'converting' | 'processing' | 'ready' | 'error';
 
-export interface ProviderTypeResponse {
-  provider_name: string;
-  provider_id: string;
-  config_schema: Record<string, any>;
-}
-
-// Document & Storage types
+/** File as shown in the UI, including transient upload progress. */
 export interface Document {
   document_id: string;
-  user_id: string;
+  title: string;
   filename: string;
-  mime_type: string;
+  file_type: FileType;
   size_bytes: number;
-  storage_id?: string;
-  status: 'uploading' | 'processing' | 'ready' | 'error';
-  created_at: string;
+  file_url: string | null;
+  status: DocumentStatus;
+  error?: string;
 }
 
 export interface StorageUsage {
@@ -169,26 +178,52 @@ export interface StorageUsage {
   free_bytes: number;
 }
 
-export interface ChatRequest {
-  request_id: string;
+// ---------------------------------------------------------------------------
+// Admin
+// ---------------------------------------------------------------------------
+
+export interface ModelInfo {
+  id: string;
+  model_id: string;
+  model_name: string;
+  model_type: ModelTypeEnum;
+  provider_id: string;
+}
+
+export type ModelInput = Omit<ModelInfo, 'id'>;
+
+export interface ProviderInfo {
+  id: string;
+  provider_type: string;
+  provider_name: string;
+  config: Record<string, unknown>;
+}
+
+export interface ProviderInput {
+  provider_type: string;
+  provider_name: string;
+  config: Record<string, unknown>;
+}
+
+/** JSON Schema property as produced by Pydantic's `model_json_schema()`. */
+export interface JsonSchemaProperty {
+  type?: string;
+  title?: string;
+  description?: string;
+  default?: unknown;
+}
+
+export interface ProviderTypeResponse {
+  provider_name: string;
+  provider_id: string;
+  config_schema: {
+    properties?: Record<string, JsonSchemaProperty>;
+    required?: string[];
+  };
+}
+
+/** `AdminFileResponse` from `GET /admin/files`. */
+export interface AdminFile extends BEFile {
+  object_key: string;
   user_id: string;
-  conversation_id?: string;
-  prompt: string;
-  attachment_ids?: string[];
-  mentioned_document_ids?: string[];
-  mode?: 'chat';
-}
-
-export interface ChatResponse {
-  request_id: string;
-  conversation_id: string;
-  content: string;
-  model?: string;
-  used_knowledge?: boolean;
-  sources?: ChatSource[];
-}
-
-export interface ChatEvent {
-  event: 'status' | 'token' | 'source' | 'done' | 'error';
-  data: any;
 }

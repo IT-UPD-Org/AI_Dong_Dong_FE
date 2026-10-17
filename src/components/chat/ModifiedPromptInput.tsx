@@ -6,7 +6,7 @@ import {
   AgentEffortModal,
 } from "./AgentEffortModal";
 import { DocumentUploadPopup } from "./DocumentUploadPopup";
-import { documentApi } from "../../api/document.api";
+import { applyDocumentUpdate, documentApi } from "../../api/document.api";
 import type { Document } from "../../api/types";
 import { useVoiceInput } from "../../hooks/useVoiceInput";
 
@@ -55,13 +55,16 @@ export function ModifiedPromptInput({
   const [attachedDocs, setAttachedDocs] = useState<Document[]>([]);
 
   useEffect(() => {
-    documentApi.listDocuments().then((docs) => {
-      setAllDocs(docs);
-      const ids = new Set([...attachmentIds, ...mentionedDocumentIds]);
-      if (ids.size > 0) {
-        setAttachedDocs(docs.filter((d) => ids.has(d.document_id)));
-      }
-    });
+    documentApi
+      .listDocuments()
+      .then((docs) => {
+        setAllDocs(docs);
+        const ids = new Set([...attachmentIds, ...mentionedDocumentIds]);
+        if (ids.size > 0) {
+          setAttachedDocs(docs.filter((d) => ids.has(d.document_id)));
+        }
+      })
+      .catch(() => setAllDocs([]));
   }, []);
 
   // Sync attachedDocs when reset after submit
@@ -98,17 +101,11 @@ export function ModifiedPromptInput({
     };
   }, [attachmentIds, onAttachmentChange, onUploadError]);
 
-  // Subscribe to newly uploaded docs
+  // Only finished uploads exist on the server, so only those can be mentioned.
   useEffect(() => {
-    const unsub = documentApi.subscribe((doc) => {
-      setAllDocs((prev) => {
-        if (!prev.find((d) => d.document_id === doc.document_id))
-          return [doc, ...prev];
-        return prev;
-      });
-      setAttachedDocs((prev) =>
-        prev.map((d) => (d.document_id === doc.document_id ? doc : d)),
-      );
+    const unsub = documentApi.subscribe((update) => {
+      if (update.doc.status !== "ready") return;
+      setAllDocs((prev) => applyDocumentUpdate(prev, update));
     });
     return () => unsub();
   }, []);

@@ -1,80 +1,74 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { authApi } from '../api/auth.api';
-import { getStoredToken, removeStoredToken, setStoredToken } from '../api/client';
-import type { AuthResponse, MagicLinkResponse, User } from '../api/types';
+import { getStoredToken, removeStoredToken } from '../api/client';
+import type { User } from '../api/types';
 
 interface AuthContextType {
   user: User | null;
-  token: string | null;
   isAuthenticated: boolean;
+  isAdmin: boolean;
   isLoading: boolean;
-  requestMagicLink: (email: string) => Promise<MagicLinkResponse>;
-  verifyMagicLink: (token: string) => Promise<AuthResponse>;
-  logout: () => void;
+  devLogin: (email: string, name: string) => Promise<User>;
+  microsoftLogin: (code: string, codeVerifier: string, nonce: string) => Promise<User>;
+  refreshUser: () => Promise<void>;
+  setUser: (user: User) => void;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [token, setToken] = useState<string | null>(getStoredToken());
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Khởi tạo và kiểm tra token khi load trang
+  const clearSession = useCallback(() => {
+    removeStoredToken();
+    setUser(null);
+  }, []);
+
   useEffect(() => {
+    let cancelled = false;
+
     async function initAuth() {
-      const storedToken = getStoredToken();
-      if (storedToken) {
+      if (getStoredToken()) {
         try {
           const currentUser = await authApi.getCurrentUser();
-          if (currentUser) {
-            setUser(currentUser);
-            setToken(storedToken);
-          } else {
-            // Token không còn hợp lệ
-            removeStoredToken();
-            setToken(null);
-            setUser(null);
-          }
+          if (!cancelled) setUser(currentUser);
         } catch {
-          removeStoredToken();
-          setToken(null);
-          setUser(null);
+          if (!cancelled) clearSession();
         }
       }
-      setIsLoading(false);
+      if (!cancelled) setIsLoading(false);
     }
 
     initAuth();
 
-    // Lắng nghe sự kiện 401 tự động logout
-    const handleUnauthorized = () => {
-      logout();
+    // apiClient fires this on any 401 so an expired token signs the user out.
+    window.addEventListener('auth:unauthorized', clearSession);
+    return () => {
+      cancelled = true;
+      window.removeEventListener('auth:unauthorized', clearSession);
     };
-    window.addEventListener('auth:unauthorized', handleUnauthorized);
-    return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
-  }, []);
+  }, [clearSession]);
 
-  const requestMagicLink = async (email: string): Promise<MagicLinkResponse> => {
-    return await authApi.requestMagicLink(email);
+  const devLogin = async (email: string, name: string) => {
+    const loggedIn = await authApi.devLogin(email, name);
+    setUser(loggedIn);
+    return loggedIn;
   };
 
-  const verifyMagicLink = async (verifyToken: string): Promise<AuthResponse> => {
-    setIsLoading(true);
-    try {
-      const res = await authApi.verifyMagicLink(verifyToken);
-      setStoredToken(res.access_token);
-      setToken(res.access_token);
-      setUser(res.user);
-      return res;
-    } finally {
-      setIsLoading(false);
-    }
+  const microsoftLogin = async (code: string, codeVerifier: string, nonce: string) => {
+    const loggedIn = await authApi.microsoftLogin(code, codeVerifier, nonce);
+    setUser(loggedIn);
+    return loggedIn;
   };
 
-  const logout = () => {
-    authApi.logout();
-    setToken(null);
+  const refreshUser = async () => {
+    setUser(await authApi.getCurrentUser());
+  };
+
+  const logout = async () => {
+    await authApi.logout();
     setUser(null);
   };
 
@@ -82,11 +76,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
-        token,
-        isAuthenticated: !!token && !!user,
+        isAuthenticated: !!user,
+        isAdmin: user?.role === 'admin',
         isLoading,
-        requestMagicLink,
-        verifyMagicLink,
+        devLogin,
+        microsoftLogin,
+        refreshUser,
+        setUser,
         logout,
       }}
     >

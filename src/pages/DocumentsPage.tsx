@@ -1,7 +1,16 @@
 import { useEffect, useState, useRef } from 'react';
-import { FileText, UploadCloud, Trash2, File, FileSpreadsheet, FileIcon as FilePdf, MonitorPlay } from 'lucide-react';
-import { documentApi } from '../api/document.api';
-import type { Document, StorageUsage } from '../api/types';
+import { FileText, UploadCloud, Trash2, File, FileSpreadsheet, FileIcon as FilePdf, MonitorPlay, Image as ImageIcon } from 'lucide-react';
+import { toast } from 'sonner';
+import { applyDocumentUpdate, documentApi } from '../api/document.api';
+import type { Document, DocumentStatus, StorageUsage } from '../api/types';
+
+const STATUS_LABELS: Record<DocumentStatus, string> = {
+  uploading: 'Đang tải lên',
+  converting: 'Đang chuyển đổi...',
+  processing: 'Đang lập chỉ mục...',
+  ready: 'Sẵn sàng',
+  error: 'Lỗi',
+};
 
 function formatBytes(bytes: number, decimals = 1) {
   if (bytes === 0) return '0 Bytes';
@@ -12,7 +21,8 @@ function formatBytes(bytes: number, decimals = 1) {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
 
-function getFileIcon(filename: string) {
+function getFileIcon(filename: string, fileType: Document['file_type']) {
+  if (fileType === 'image') return <ImageIcon className="text-purple-500" />;
   const ext = filename.split('.').pop()?.toLowerCase();
   switch (ext) {
     case 'pdf': return <FilePdf className="text-red-500" />;
@@ -32,6 +42,8 @@ export function DocumentsPage() {
   const [loading, setLoading] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [loadError, setLoadError] = useState('');
+
   const fetchData = async () => {
     try {
       const [d, s] = await Promise.all([
@@ -40,8 +52,9 @@ export function DocumentsPage() {
       ]);
       setDocs(d);
       setStorage(s);
+      setLoadError('');
     } catch (e) {
-      console.error(e);
+      setLoadError((e as Error).message);
     } finally {
       setLoading(false);
     }
@@ -50,18 +63,12 @@ export function DocumentsPage() {
   useEffect(() => {
     fetchData();
 
-    // Subscribe to live updates
-    const unsub = documentApi.subscribe((updatedDoc) => {
-      setDocs(prev => {
-        const index = prev.findIndex(d => d.document_id === updatedDoc.document_id);
-        if (index > -1) {
-          const next = [...prev];
-          next[index] = updatedDoc;
-          return next;
-        }
-        return [updatedDoc, ...prev];
-      });
-      documentApi.getStorageUsage().then(setStorage);
+    const unsub = documentApi.subscribe((update) => {
+      setDocs(prev => applyDocumentUpdate(prev, update));
+      // Quota only changes once an upload has finished or rolled back.
+      if (update.doc.status === 'ready' || update.doc.status === 'error') {
+        documentApi.getStorageUsage().then(setStorage).catch(() => {});
+      }
     });
 
     return () => unsub();
@@ -69,23 +76,29 @@ export function DocumentsPage() {
 
   const handleUpload = async (files: FileList | null) => {
     if (!files) return;
-    for (let i = 0; i < files.length; i++) {
+    for (const file of Array.from(files)) {
       try {
-        await documentApi.uploadDocument(files[i]);
-      } catch (err: any) {
-        alert(err.message);
+        await documentApi.uploadDocument(file);
+      } catch (err) {
+        toast.error(`${file.name}: ${(err as Error).message}`);
       }
     }
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm('Bạn có chắc muốn xóa tài liệu này?')) {
-      try {
-        await documentApi.deleteDocument(id);
-        await fetchData(); // Refresh list & storage
-      } catch (e: any) {
-        alert(e.message);
-      }
+  const handleDelete = async (doc: Document) => {
+    // A failed upload never reached the server; just drop it from the list.
+    if (doc.status === 'error') {
+      setDocs(prev => prev.filter(d => d.document_id !== doc.document_id));
+      return;
+    }
+    if (!confirm('Bạn có chắc muốn xóa tài liệu này?')) return;
+    try {
+      await documentApi.deleteDocument(doc.document_id);
+      toast.success('Đã xóa tài liệu.');
+      await fetchData();
+    } catch (e) {
+      toast.error((e as Error).message);
     }
   };
 
@@ -150,7 +163,7 @@ export function DocumentsPage() {
       >
         <UploadCloud className="mx-auto text-[#00a86b]" size={30} />
         <h2 className="mt-4 font-semibold text-gray-900">Tải tài liệu lên</h2>
-        <p className="mt-2 text-sm text-black/50">PDF, DOCX, XLSX, PPTX và Markdown · Hỗ trợ MarkItDown</p>
+        <p className="mt-2 text-sm text-black/50">PDF, DOCX, XLSX, PPTX, Markdown và hình ảnh · Hỗ trợ MarkItDown</p>
         <button className="mt-6 rounded-xl bg-[#11130f] px-5 py-3 text-sm font-semibold text-white hover:bg-[#04714a] transition-colors">
           Chọn file
         </button>
@@ -159,44 +172,58 @@ export function DocumentsPage() {
           multiple 
           ref={fileInputRef} 
           className="hidden" 
-          accept=".doc,.docx,.xls,.xlsx,.pdf,.ppt,.pptx"
+          accept=".doc,.docx,.xls,.xlsx,.pdf,.ppt,.pptx,.md,.txt,.csv,image/*"
           onChange={(e) => handleUpload(e.target.files)}
         />
       </div>
 
       <div className="mt-8 flex flex-col gap-2">
         {loading && <p className="text-sm text-gray-500 text-center py-4">Đang tải tài liệu...</p>}
-        {!loading && docs.length === 0 && (
+        {!loading && loadError && (
+          <p className="text-sm text-red-600 text-center py-4">Không thể tải tài liệu: {loadError}</p>
+        )}
+        {!loading && !loadError && docs.length === 0 && (
           <p className="text-sm text-gray-500 text-center py-4">Chưa có tài liệu nào.</p>
         )}
         {docs.map(d => (
           <div key={d.document_id} className="flex items-center gap-4 rounded-2xl border border-black/10 bg-white p-4 shadow-sm">
             <div className="shrink-0 p-2 bg-gray-50 rounded-lg">
-              {getFileIcon(d.filename)}
+              {getFileIcon(d.filename, d.file_type)}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold text-gray-900">{d.filename}</p>
+              {d.file_url && d.status === 'ready' ? (
+                <a
+                  href={d.file_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="block truncate text-sm font-semibold text-gray-900 hover:text-[#04714a] hover:underline"
+                >
+                  {d.title}
+                </a>
+              ) : (
+                <p className="truncate text-sm font-semibold text-gray-900">{d.title}</p>
+              )}
               <p className="mt-1 flex items-center gap-2 text-xs text-black/45">
-                <span>{d.mime_type.split('/').pop()?.toUpperCase() || 'FILE'}</span>
+                <span className="truncate">{d.filename}</span>
+                <span>·</span>
+                <span>{d.file_type === 'image' ? 'Hình ảnh' : 'Tài liệu'}</span>
                 <span>·</span>
                 <span>{formatBytes(d.size_bytes)}</span>
-                <span>·</span>
-                <span>{new Date(d.created_at).toLocaleDateString('vi-VN')}</span>
               </p>
+              {d.error && <p className="mt-1 text-xs text-red-600">{d.error}</p>}
             </div>
             <div className="flex items-center gap-3 shrink-0">
               <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${
-                d.status === 'ready' ? 'bg-green-100 text-green-700' : 
-                d.status === 'error' ? 'bg-red-100 text-red-700' : 
+                d.status === 'ready' ? 'bg-green-100 text-green-700' :
+                d.status === 'error' ? 'bg-red-100 text-red-700' :
                 'bg-amber-100 text-amber-700'
               }`}>
-                {d.status === 'uploading' ? 'Đang tải lên' :
-                 d.status === 'processing' ? 'Đang xử lý...' :
-                 d.status === 'ready' ? 'Sẵn sàng' : 'Lỗi'}
+                {STATUS_LABELS[d.status]}
               </span>
-              <button 
-                onClick={() => handleDelete(d.document_id)}
-                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+              <button
+                onClick={() => handleDelete(d)}
+                disabled={d.status !== 'ready' && d.status !== 'error'}
+                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-30 disabled:pointer-events-none"
                 title="Xóa tài liệu"
               >
                 <Trash2 size={16} />

@@ -114,7 +114,12 @@ export function ChatPage() {
     try {
       await streamChatMessage(
         {
-          ...payload,
+          message: payload.message,
+          conversationId: payload.conversationId,
+          // The backend has a single attachment list; mentioned documents are attachments too.
+          attachmentIds: Array.from(
+            new Set([...(payload.attachmentIds ?? []), ...(payload.mentionedDocumentIds ?? [])]),
+          ),
           modelLevel: level,
         },
         (chunk: ChatStreamChunk) => {
@@ -130,10 +135,13 @@ export function ChatPage() {
                 ? {
                     ...msg,
                     content:
-                      chunk.delta !== undefined
-                        ? msg.content + chunk.delta
-                        : msg.content,
+                      chunk.error !== undefined
+                        ? msg.content || `⚠️ ${chunk.error}`
+                        : chunk.delta !== undefined
+                          ? msg.content + chunk.delta
+                          : msg.content,
                     status: chunk.status || msg.status,
+                    toolCalls: chunk.toolCalls ?? msg.toolCalls,
                   }
                 : msg,
             ),
@@ -147,7 +155,7 @@ export function ChatPage() {
                     ...msg,
                     id: finalMsg.id || assistantMsgId,
                     content: finalMsg.content,
-                    sources: finalMsg.sources,
+                    toolCalls: finalMsg.toolCalls,
                     status: finalMsg.status,
                   }
                 : msg,
@@ -177,7 +185,12 @@ export function ChatPage() {
 
     setMsgs((m) => [
       ...m,
-      { id: crypto.randomUUID(), role: "user", content: text },
+      {
+        id: crypto.randomUUID(),
+        role: "user",
+        content: text,
+        files: Array.from(new Set([...currentAttachments, ...currentMentions])),
+      },
       { id: assistantMsgId, role: "assistant", content: "", status: "idle" },
     ]);
 
