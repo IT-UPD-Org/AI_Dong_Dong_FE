@@ -16,6 +16,7 @@ export async function streamChatMessage(
   onChunk: (chunk: ChatStreamChunk) => void,
   onFinish: (message: ChatMessage) => void,
   onError?: (error: Error) => void,
+  signal?: AbortSignal,
 ): Promise<void> {
-  return await chatApi.streamMessage(payload, onChunk, onFinish, onError);
+  return await chatApi.streamMessage(payload, onChunk, onFinish, onError, signal);
 }

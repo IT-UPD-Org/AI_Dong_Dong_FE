@@ -1,0 +1,291 @@
+@import url("https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&display=swap");
+
+/* Allow the page to fit a 320px viewport even with a desktop scrollbar. */
+body:has(.project-team) { min-width: 0; }
+
+.project-team {
+  --team-ink: #17221b;
+  --team-green: #04714a;
+  --team-muted: #657169;
+  --team-line: #dfe7e1;
+  color: var(--team-ink);
+  background: #fff;
+  font-family: "Be Vietnam Pro", sans-serif;
+}
+
+.project-team__main {
+  max-width: 1240px;
+  margin-inline: auto;
+  padding: clamp(45px, 5vw, 75px) clamp(24px, 6vw, 85px) 80px;
+}
+
+.project-team__mobile-nav { display: none; }
+
+.project-team h1,
+.project-team h2,
+.project-team h3,
+.project-team p { margin: 0; }
+
+.project-team__eyebrow {
+  color: var(--team-green);
+  font-size: 11px;
+  line-height: 1.9;
+  letter-spacing: 1.4px;
+  font-weight: 500;
+}
+
+.project-team__intro-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+  align-items: end;
+  gap: 40px;
+  margin-top: 22px;
+}
+
+.project-team h1 {
+  font-size: clamp(34px, 4.5vw, 60px);
+  line-height: 1.35;
+  letter-spacing: -.055em;
+  font-weight: 500;
+}
+
+.project-team h1 span { color: var(--team-green); }
+
+.project-team__intro-row > p {
+  max-width: 310px;
+  font-size: 14px;
+  line-height: 1.85;
+  color: var(--team-muted);
+}
+
+.project-team__roles {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin: 30px 0 0;
+  padding: 0 0 23px;
+  list-style: none;
+  border-bottom: 1px solid var(--team-line);
+  color: var(--team-muted);
+  font-size: 11px;
+  line-height: 1.9;
+}
+
+.project-team__roles li + li::before {
+  content: "·";
+  margin-right: 12px;
+  color: #668477;
+}
+
+.project-team__story,
+.project-team__engineering {
+  display: grid;
+  grid-template-columns: minmax(0, .8fr) minmax(0, 1.65fr);
+  column-gap: 11%;
+  align-items: start;
+  margin-top: 44px;
+}
+
+.project-team__frontend { padding-top: 54px; }
+
+.project-team__group-heading {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 11px;
+  margin-bottom: 17px;
+}
+
+.project-team__group-heading h2 {
+  font-size: 18px;
+  line-height: 1.5;
+  letter-spacing: -.5px;
+  font-weight: 500;
+}
+
+.project-team__index,
+.project-team__count {
+  font-size: 11px;
+  line-height: 1.8;
+}
+
+.project-team__index { color: var(--team-green); }
+.project-team__count { color: var(--team-muted); }
+.project-team__group-heading .project-team__count { margin-left: auto; }
+.project-team__member { min-width: 0; }
+
+.project-team__portrait {
+  aspect-ratio: 4 / 5;
+  position: relative;
+  display: grid;
+  place-items: center;
+  background: #e7eeeb;
+  color: #4e6959;
+  overflow: hidden;
+}
+
+.project-team__member--frontend .project-team__portrait,
+.project-team__member--database .project-team__portrait { background: #e2ece5; }
+.project-team__member--data .project-team__portrait { background: #ecf0e9; }
+.project-team__member:nth-child(even) .project-team__portrait { background: #e4ebe6; }
+
+.project-team__portrait img,
+.project-team__club-photo img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.project-team__placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 18px;
+  text-align: center;
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.project-team__photo-number,
+.project-team__photo-tag {
+  position: absolute;
+  left: 16px;
+  padding: 2px 6px;
+  background: #ffffffdd;
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.project-team__photo-number { top: 16px; }
+.project-team__photo-tag { bottom: 16px; letter-spacing: 1px; }
+
+.project-team__caption { margin-top: 16px; }
+.project-team__caption h3 { font-size: 15px; line-height: 1.6; font-weight: 500; letter-spacing: -.25px; }
+.project-team__caption > span { display: block; margin-top: 3px; color: var(--team-green); font-size: 12px; line-height: 1.8; }
+.project-team .project-team__bio { max-width: 280px; margin-top: 10px; font-size: 13px; line-height: 1.85; color: var(--team-muted); }
+
+.project-team__club-photo {
+  aspect-ratio: 1.65;
+  position: relative;
+  display: grid;
+  place-items: center;
+  background: #e6eee8;
+  color: #476453;
+  overflow: hidden;
+}
+
+.project-team__club-mark {
+  position: absolute;
+  left: 6%;
+  bottom: 7%;
+  font-size: clamp(38px, 6vw, 85px);
+  line-height: 1;
+  font-weight: 600;
+  letter-spacing: -.075em;
+  color: #d4e2d8;
+}
+
+.project-team__club-photo .project-team__placeholder { position: relative; padding-bottom: 40px; }
+.project-team__club-label { position: absolute; left: 23px; top: 20px; font-size: 11px; line-height: 1.7; letter-spacing: 1.2px; }
+.project-team__club-caption { padding-top: 24px; max-width: 425px; }
+.project-team__club-caption h2 { margin: 13px 0 14px; font-size: clamp(25px, 2.8vw, 37px); line-height: 1.5; letter-spacing: -.045em; font-weight: 500; }
+.project-team__club-caption > p:last-child { font-size: 14px; line-height: 1.9; color: var(--team-muted); }
+
+.project-team__engineering { grid-template-columns: minmax(0, 1.65fr) minmax(0, .8fr); margin-top: 75px; }
+.project-team .project-team__group-description { margin: -3px 0 22px; font-size: 14px; line-height: 1.8; color: var(--team-muted); }
+.project-team__pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 23px; }
+.project-team__database { padding-top: 103px; }
+.project-team__data { margin-top: 77px; padding-top: 33px; border-top: 1px solid var(--team-line); }
+.project-team__data-intro { display: grid; grid-template-columns: 1fr 1fr auto; align-items: start; gap: 25px; margin-bottom: 27px; }
+.project-team__data-intro .project-team__group-heading { margin-bottom: 0; }
+.project-team__data-intro > p { font-size: 20px; line-height: 1.6; letter-spacing: -.4px; color: var(--team-green); }
+.project-team__trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; }
+.project-team__trio .project-team__portrait { aspect-ratio: 4 / 4.4; }
+.project-team__trio .project-team__member:nth-child(2) { padding-top: 34px; }
+.project-team__trio .project-team__member:nth-child(3) { padding-top: 68px; }
+
+.project-team__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 30px;
+  padding: 32px max(6%, calc((100% - 1070px) / 2));
+  background: #11130f;
+  color: #c0c9c0;
+}
+
+.project-team__brand { color: #e9f0ea; font-size: 17px; line-height: 1.5; font-weight: 500; letter-spacing: -.7px; }
+.project-team__footer p { margin-top: 9px; font-size: 12px; line-height: 1.8; }
+.project-team__footer nav { display: flex; flex-wrap: wrap; gap: 23px; }
+.project-team__footer nav a { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding-block: 12px; font-size: 12px; line-height: 1.8; }
+.project-team__footer a:hover { color: #6be3ae; }
+
+@media (max-width: 1023px) {
+  .project-team__intro-row { gap: 26px; }
+  .project-team__story { grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); column-gap: 7%; }
+  .project-team__engineering { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); column-gap: 7%; }
+  .project-team__pair { gap: 17px; }
+  .project-team__trio { gap: 21px; }
+}
+
+@media (max-width: 767px) {
+  .project-team__mobile-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 16px;
+    padding: 0 20px 8px;
+    border-bottom: 1px solid var(--team-line);
+    font-size: 11px;
+    line-height: 1.8;
+    color: var(--team-muted);
+  }
+  .project-team__mobile-nav a { display: inline-flex; align-items: center; min-height: 44px; }
+  .project-team__mobile-nav a[aria-current="page"] {
+    border-bottom: 2px solid var(--team-green);
+    color: var(--team-green);
+    font-weight: 500;
+  }
+  .project-team__main { padding: 34px 24px 48px; }
+  .project-team__intro-row { grid-template-columns: 1fr; gap: 19px; margin-top: 17px; }
+  .project-team h1 { font-size: clamp(29px, 7.5vw, 43px); line-height: 1.45; }
+  .project-team__intro-row > p { max-width: none; }
+  .project-team__roles { margin-top: 22px; padding-bottom: 20px; }
+  .project-team__story { display: flex; flex-direction: column; gap: 37px; margin-top: 27px; }
+  .project-team__club { order: -1; width: 100%; }
+  .project-team__club-photo { aspect-ratio: 1.4; }
+  .project-team__club-label { left: 15px; top: 14px; letter-spacing: .7px; }
+  .project-team__club-mark { font-size: 14vw; }
+  .project-team__club-caption { padding-top: 20px; }
+  .project-team__club-caption h2 { font-size: 25px; }
+  .project-team__frontend { width: 100%; padding-top: 24px; border-top: 1px solid var(--team-line); }
+  .project-team__portrait { aspect-ratio: 4 / 4.5; }
+  .project-team__caption h3 { font-size: 16px; }
+  .project-team .project-team__bio { max-width: none; font-size: 14px; }
+  .project-team__engineering { display: flex; flex-direction: column; gap: 38px; margin-top: 38px; }
+  .project-team__backend, .project-team__database { width: 100%; padding-top: 25px; border-top: 1px solid var(--team-line); }
+  .project-team__pair { gap: 25px; }
+  .project-team__database .project-team__member { max-width: 360px; }
+  .project-team__data { margin-top: 37px; padding-top: 24px; }
+  .project-team__data-intro { grid-template-columns: 1fr auto; gap: 15px; margin-bottom: 23px; }
+  .project-team__data-intro > p { grid-row: 2; grid-column: 1 / -1; font-size: 18px; }
+  .project-team__data-intro > p br { display: none; }
+  .project-team__data-intro > .project-team__count { grid-column: 2; grid-row: 1; }
+  .project-team__trio { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 22px; }
+  .project-team__trio .project-team__member:nth-child(2), .project-team__trio .project-team__member:nth-child(3) { padding-top: 0; }
+  .project-team__footer { flex-direction: column; align-items: flex-start; gap: 17px; padding: 28px 24px; }
+  .project-team__footer nav { gap: 18px; }
+}
+
+@media (max-width: 460px) {
+  .project-team__main { padding-inline: 22px; }
+  .project-team h1 { font-size: clamp(26px, 7.4vw, 32px); }
+  .project-team__pair, .project-team__trio { grid-template-columns: 1fr; gap: 30px; }
+  .project-team__data-intro { grid-template-columns: 1fr; }
+  .project-team__data-intro > .project-team__count { grid-row: 3; grid-column: 1; }
+  .project-team__group-heading h2 { font-size: 17px; }
+  .project-team__club-label { max-width: 190px; line-height: 1.8; }
+}

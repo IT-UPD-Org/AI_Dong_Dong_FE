@@ -1,6 +1,9 @@
 import { FormEvent, useEffect, useState, useRef, Fragment } from "react";
-import { useSearchParams } from "react-router-dom";
-import { streamChatMessage, getConversationMessages } from "../services/chat.service";
+import { useLocation, useSearchParams } from "react-router-dom";
+import {
+  streamChatMessage,
+  getConversationMessages,
+} from "../services/chat.service";
 import {
   AgentLevel,
   ModifiedPromptInput,
@@ -35,8 +38,17 @@ function EmptyStatePrompt() {
 
 export function ChatPage() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
   const conversationId = searchParams.get("id") || undefined;
+  const newChatKey = (location.state as { newChatKey?: string } | null)?.newChatKey;
+
   const conversationIdRef = useRef<string | undefined>(conversationId);
+  const pendingCreatedIdRef = useRef<string | undefined>(undefined);
+  const streamControllerRef = useRef<AbortController | null>(null);
+  const sessionRef = useRef(0);
+
+  const [composerKey, setComposerKey] = useState(0);
+  const [error, setError] = useState("");
 
   const [msgs, setMsgs] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -49,37 +61,53 @@ export function ChatPage() {
   const [mentionedDocumentIds, setMentionedDocumentIds] = useState<string[]>([]);
 
   useEffect(() => {
-    conversationIdRef.current = conversationId;
-  }, [conversationId]);
-
-  // Load conversation messages when conversationId changes
-  useEffect(() => {
-    let isCancelled = false;
-    async function loadConversation() {
-      if (conversationId) {
-        setLoading(true);
-        try {
-          const loadedMsgs = await getConversationMessages(conversationId);
-          if (!isCancelled) {
-            setMsgs(loadedMsgs);
-          }
-        } catch (err) {
-          console.error("Failed to load conversation:", err);
-        } finally {
-          if (!isCancelled) {
-            setLoading(false);
-          }
-        }
-      } else {
-        setMsgs([]);
-      }
+    // The first SSE event assigns an ID to the chat already visible on screen.
+    // Do not reload incomplete server history over the live response.
+    if (conversationId && pendingCreatedIdRef.current === conversationId) {
+      pendingCreatedIdRef.current = undefined;
+      return;
     }
 
-    loadConversation();
+    let cancelled = false;
+    streamControllerRef.current?.abort();
+    streamControllerRef.current = null;
+    sessionRef.current += 1;
+    conversationIdRef.current = conversationId;
+    pendingCreatedIdRef.current = undefined;
+    setMsgs([]);
+    setInput("");
+    setError("");
+    setLoading(Boolean(conversationId));
+    setAttachmentIds([]);
+    setMentionedDocumentIds([]);
+    setReactions({});
+    setClosedFeedbackId(null);
+    setComposerKey((key) => key + 1);
+
+    if (conversationId) {
+      getConversationMessages(conversationId)
+        .then((messages) => {
+          if (!cancelled) setMsgs(messages);
+        })
+        .catch(() => {
+          if (!cancelled) setError("Không thể tải cuộc trò chuyện. Vui lòng thử lại.");
+        })
+        .finally(() => {
+          if (!cancelled) setLoading(false);
+        });
+    }
+
     return () => {
-      isCancelled = true;
+      cancelled = true;
     };
-  }, [conversationId]);
+  }, [conversationId, newChatKey]);
+
+  useEffect(() => {
+    return () => {
+      streamControllerRef.current?.abort();
+      sessionRef.current += 1;
+    };
+  }, []);
 
   const isEmpty = msgs.length === 0;
 
@@ -109,8 +137,15 @@ export function ChatPage() {
     },
     assistantMsgId: string,
   ) {
+    const controller = new AbortController();
+    streamControllerRef.current = controller;
+    const session = ++sessionRef.current;
+    const isCurrent = () => session === sessionRef.current && !controller.signal.aborted;
+
     markNearBottom();
+    setError("");
     setLoading(true);
+
     try {
       await streamChatMessage(
         {
@@ -118,14 +153,19 @@ export function ChatPage() {
           conversationId: payload.conversationId,
           // The backend has a single attachment list; mentioned documents are attachments too.
           attachmentIds: Array.from(
-            new Set([...(payload.attachmentIds ?? []), ...(payload.mentionedDocumentIds ?? [])]),
+            new Set([
+              ...(payload.attachmentIds ?? []),
+              ...(payload.mentionedDocumentIds ?? []),
+            ]),
           ),
           modelLevel: level,
         },
         (chunk: ChatStreamChunk) => {
+          if (!isCurrent()) return;
           if (chunk.conversationId && !conversationIdRef.current) {
             conversationIdRef.current = chunk.conversationId;
-            setSearchParams({ id: chunk.conversationId }, { replace: true });
+            pendingCreatedIdRef.current = chunk.conversationId;
+            setSearchParams({ id: chunk.conversationId }, { replace: true, state: location.state });
             window.dispatchEvent(new CustomEvent("chats:updated"));
           }
 
@@ -148,6 +188,7 @@ export function ChatPage() {
           );
         },
         (finalMsg) => {
+          if (!isCurrent()) return;
           setMsgs((prev) =>
             prev.map((msg) =>
               msg.id === assistantMsgId
@@ -155,6 +196,7 @@ export function ChatPage() {
                     ...msg,
                     id: finalMsg.id || assistantMsgId,
                     content: finalMsg.content,
+                    sources: finalMsg.sources,
                     toolCalls: finalMsg.toolCalls,
                     status: finalMsg.status,
                   }
@@ -163,15 +205,37 @@ export function ChatPage() {
           );
           window.dispatchEvent(new CustomEvent("chats:updated"));
         },
+        undefined,
+        controller.signal,
+      );
+    } catch {
+      if (!isCurrent()) return;
+      const message = "Không thể nhận câu trả lời. Vui lòng thử lại.";
+      setError(message);
+      setMsgs((current) =>
+        current.map((item) =>
+          item.id === assistantMsgId
+            ? { ...item, content: item.content || message, status: "error" }
+            : item,
+        ),
       );
     } finally {
-      setLoading(false);
+      if (isCurrent()) {
+        setLoading(false);
+        streamControllerRef.current = null;
+      }
     }
   }
 
   async function submit(e?: FormEvent) {
     e?.preventDefault();
-    if ((!input.trim() && attachmentIds.length === 0) || loading) return;
+    if (
+      (!input.trim() && attachmentIds.length === 0 && mentionedDocumentIds.length === 0) ||
+      loading ||
+      streamControllerRef.current
+    ) {
+      return;
+    }
 
     const text = input.trim();
     setInput("");
@@ -206,7 +270,7 @@ export function ChatPage() {
   }
 
   async function handleEdit(index: number, newContent: string) {
-    if (loading) return;
+    if (loading || streamControllerRef.current) return;
     const assistantMsgId = crypto.randomUUID();
 
     setMsgs((m) => [
@@ -225,7 +289,7 @@ export function ChatPage() {
   }
 
   async function handleRegenerate(index: number) {
-    if (loading) return;
+    if (loading || streamControllerRef.current) return;
     const prevUserMsg = msgs
       .slice(0, index)
       .reverse()
@@ -304,6 +368,7 @@ export function ChatPage() {
                   {/* Hiển thị Feedback Panel ngay dưới câu trả lời mới nhất sau khi AI hoàn tất */}
                   {message.id === latestAssistantId &&
                     message.content &&
+                    message.status !== "error" &&
                     !loading &&
                     closedFeedbackId !== message.id && (
                       <MessageFeedbackPanel
@@ -333,7 +398,14 @@ export function ChatPage() {
 
       {isEmpty && <EmptyStatePrompt />}
 
+      {error && (
+        <p role="alert" className="shrink-0 px-4 py-2 text-sm text-red-600">
+          {error}
+        </p>
+      )}
+
       <ModifiedPromptInput
+        key={composerKey}
         value={input}
         onChange={setInput}
         onSubmit={submit}
@@ -344,7 +416,7 @@ export function ChatPage() {
         onAttachmentChange={setAttachmentIds}
         mentionedDocumentIds={mentionedDocumentIds}
         onMentionChange={setMentionedDocumentIds}
-        onUploadError={(err) => alert(err)}
+        onUploadError={setError}
       />
     </div>
   );

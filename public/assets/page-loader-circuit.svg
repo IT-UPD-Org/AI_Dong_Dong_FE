@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1672 941" fill="none">
+  <defs>
+    <pattern id="grid" width="122" height="122" patternUnits="userSpaceOnUse">
+      <path d="M122 0H0V122" stroke="#19dca8" stroke-opacity=".12"/>
+    </pattern>
+    <linearGradient id="signal">
+      <stop stop-color="#15dda5" stop-opacity="0"/>
+      <stop offset=".25" stop-color="#15dda5" stop-opacity=".78"/>
+      <stop offset=".75" stop-color="#15dda5" stop-opacity=".3"/>
+      <stop offset="1" stop-color="#15dda5" stop-opacity=".08"/>
+    </linearGradient>
+    <filter id="glow" x="-200%" y="-200%" width="500%" height="500%"><feGaussianBlur stdDeviation="11"/></filter>
+  </defs>
+  <path d="M88 0H1672V941H88Z" fill="url(#grid)"/>
+  <g stroke="#24dfb1" stroke-opacity=".2" stroke-width="1">
+    <path d="M88 180H200Q220 180 240 162L292 112"/>
+    <path d="M88 148H164M88 236H196Q228 236 228 270V297M88 395H156V418"/>
+    <path d="M88 725H608Q638 725 660 754L710 822Q735 854 778 854H944Q1056 854 1120 902L1165 941"/>
+    <path d="M88 750H572Q615 750 640 784L700 856Q726 889 778 889H940Q1068 889 1100 912L1132 941"/>
+    <path d="M88 778H550Q584 778 615 814L676 882Q712 914 775 914H930Q1050 914 1080 941"/>
+    <path d="M1028 155L1060 112M1220 78V90M1352 72L1320 135"/>
+    <path d="M1358 0V158Q1358 213 1398 238Q1448 260 1448 306Q1448 336 1474 364Q1498 394 1508 444Q1520 480 1535 444Q1576 338 1672 338"/>
+    <path d="M1383 0V157Q1383 202 1420 222Q1470 247 1470 303Q1470 323 1490 344Q1524 371 1536 430Q1543 450 1555 423Q1594 366 1672 366"/>
+    <path d="M1398 38V116Q1398 158 1426 167M1168 155Q1157 120 1204 111"/>
+    <path d="M920 535Q900 533 912 554L998 698Q1031 754 1094 754H1224Q1270 754 1270 799V941"/>
+    <path d="M882 560Q900 552 916 579L979 688Q1009 728 1040 717"/>
+    <path d="M1328 941V824Q1328 777 1378 754L1436 727Q1485 703 1520 639L1590 500Q1628 435 1672 420"/>
+    <path d="M1354 941V835Q1354 792 1398 775L1460 746Q1503 723 1540 655L1610 520Q1640 464 1672 448"/>
+    <path d="M1380 941V850Q1380 820 1418 799L1484 766Q1531 737 1566 672L1636 544Q1652 519 1672 510"/>
+    <path d="M1408 941V860Q1408 834 1440 820L1509 790Q1550 765 1586 700L1656 570"/>
+  </g>
+  <g stroke="url(#signal)" stroke-width="1.2">
+    <path d="M88 298H534Q538 298 542 302L584 342Q588 346 594 346H840L870 312Q902 195 1038 195Q1086 195 1088 140Q1088 67 1176 62Q1254 62 1254 0"/>
+    <path d="M88 418H330Q338 418 344 412L370 390Q374 388 384 388H840Q877 388 892 353Q944 226 1040 227Q1130 234 1132 147Q1132 101 1196 92Q1276 82 1274 0"/>
+    <path d="M88 484H279Q284 484 288 480L324 442Q328 439 334 439H620Q625 439 629 443L666 481Q670 486 678 486H918"/>
+    <path d="M88 535H530Q535 535 539 540L554 554Q558 559 566 559H837Q870 559 889 590L980 731Q1014 780 1080 780H1210Q1240 780 1240 820V941"/>
+    <path d="M88 600H830Q850 600 863 615L958 754Q997 811 1066 811H1175Q1205 811 1205 850V941"/>
+    <path d="M88 449H825Q890 449 922 376Q975 256 1062 253Q1154 247 1153 171Q1153 135 1222 123Q1294 104 1294 0"/>
+    <path d="M88 460H848Q923 460 952 395Q1002 279 1082 282Q1183 282 1183 198Q1183 154 1239 148Q1314 140 1314 0"/>
+  </g>
+  <g fill="#27dca6" opacity=".3" filter="url(#glow)">
+    <rect x="460" y="380" width="15" height="15"/><rect x="658" y="338" width="16" height="16"/>
+    <rect x="843" y="478" width="16" height="16"/><rect x="635" y="551" width="15" height="15"/><rect x="415" y="592" width="16" height="16"/>
+  </g>
+  <g fill="#24dca7" opacity=".8">
+    <rect x="461" y="381" width="14" height="14"/><rect x="659" y="339" width="15" height="15"/>
+    <rect x="844" y="479" width="15" height="15"/><rect x="636" y="552" width="14" height="14"/><rect x="416" y="593" width="14" height="14"/>
+    <rect x="299" y="295" width="6" height="6" opacity=".8"/>
+  </g>
+  <g stroke="#26deb0" stroke-opacity=".22">
+    <rect x="288" y="109" width="6" height="6"/><rect x="258" y="130" width="6" height="5"/>
+    <rect x="1417" y="158" width="10" height="10"/><rect x="1036" y="715" width="9" height="9"/><rect x="1367" y="800" width="7" height="7"/>
+  </g>
+  <g fill="#26deb0" opacity=".2"><rect x="86" y="145" width="7" height="7"/><rect x="1025" y="151" width="7" height="7"/></g>
+</svg>

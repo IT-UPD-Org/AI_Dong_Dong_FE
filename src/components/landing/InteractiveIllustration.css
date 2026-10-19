@@ -1,0 +1,37 @@
+.interactive-illustration {
+  position: relative;
+  flex-shrink: 0;
+  max-width: 100%;
+}
+
+.interactive-illustration__viewport {
+  width: 100%;
+  height: auto;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  border-radius: 24px;
+}
+
+.interactive-illustration__viewport[data-dragging="true"] { cursor: grabbing; }
+.interactive-illustration__viewport:focus { outline: none; }
+.interactive-illustration__viewport[data-keyboard-focus="true"] { outline: 2px solid #00a86b; outline-offset: 4px; }
+.interactive-illustration__viewport svg { display: block; width: 100%; height: auto; }
+
+/* Crop the SVG's empty border, keeping the same artwork scale and a circular hit area. */
+.interactive-illustration--circle .interactive-illustration__viewport {
+  width: 85%;
+  margin-inline: auto;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  clip-path: circle(50%);
+}
+
+.interactive-illustration--circle .interactive-illustration__viewport[data-keyboard-focus="true"] {
+  outline: none;
+  box-shadow: inset 0 0 0 2px #00a86b;
+}
+
+.interactive-sphere__pulse { animation: illustration-node-pulse 3s ease-in-out infinite; }
+@keyframes illustration-node-pulse { 50% { opacity: .45; } }
+@media (prefers-reduced-motion: reduce) { .interactive-sphere__pulse { animation: none; } }

@@ -34,6 +34,7 @@
     "react-markdown": "^10.1.0",
     "react-router-dom": "^7.18.3",
     "remark-gfm": "^4.0.1",
+    "sentry": "^0.47.0",
     "shadcn": "^4.21.0",
     "sonner": "^2.0.8",
     "tailwind-merge": "^3.3.1",
