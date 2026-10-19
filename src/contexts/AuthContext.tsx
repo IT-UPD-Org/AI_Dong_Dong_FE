@@ -1,4 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { useTempsAnalytics } from '@temps-sdk/react-analytics';
 import { authApi } from '../api/auth.api';
 import { getStoredToken, removeStoredToken } from '../api/client';
 import type { User } from '../api/types';
@@ -20,6 +21,15 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const { identify } = useTempsAnalytics();
+
+  // Tie analytics to the signed-in account. Only the opaque ID and role are
+  // sent, so student names and emails stay out of the analytics service.
+  useEffect(() => {
+    if (user) {
+      void identify(user.id, { role: user.role });
+    }
+  }, [user?.id, user?.role, identify]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const clearSession = useCallback(() => {
     removeStoredToken();
