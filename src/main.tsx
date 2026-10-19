@@ -1,4 +1,5 @@
 import * as Sentry from "@sentry/react";
+import { TempsAnalyticsProvider } from "@temps-sdk/react-analytics";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
@@ -17,7 +18,10 @@ Sentry.init({
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
-      <App />
+      {/* Pageviews follow client-side route changes; nothing is sent from localhost. */}
+      <TempsAnalyticsProvider basePath="/api/_temps">
+        <App />
+      </TempsAnalyticsProvider>
     </BrowserRouter>
     <Toaster position="top-right" />
   </StrictMode>,
