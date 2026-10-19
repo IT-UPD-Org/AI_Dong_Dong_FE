@@ -7,6 +7,8 @@ interface ImportMetaEnv {
   readonly VITE_MICROSOFT_CLIENT_ID?: string;
   /** Must match MICROSOFT_REDIRECT_URI on the backend; defaults to `<origin>/auth/callback`. */
   readonly VITE_MICROSOFT_REDIRECT_URI?: string;
+  /** Sentry DSN; Sentry stays inactive when unset. */
+  readonly VITE_SENTRY_DSN?: string;
 }
 
 interface ImportMeta {
