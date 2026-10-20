@@ -175,6 +175,9 @@ importers:
       remark-gfm:
         specifier: ^4.0.1
         version: 4.0.1
+      sentry:
+        specifier: ^0.47.0
+        version: 0.47.0
       shadcn:
         specifier: ^4.21.0
         version: 4.21.0(typescript@5.7.3)
@@ -2873,6 +2876,11 @@ packages:
   send@1.2.1:
     resolution: {integrity: sha512-1gnZf7DFcoIcajTjTwjwuDjzuz4PPcY2StKPlsGAQ1+YH20IRVrBaXSWmdjowTJ6u8Rc01PoYOGHXfP1mYcZNQ==}
     engines: {node: '>= 18'}
+
+  sentry@0.47.0:
+    resolution: {integrity: sha512-BDhgsAJYm99Xbx+YTREec7lME0FN8Z66YzrQ+eEWDqwigcLqs90cEx5nrhVlneL9bbDCVyt5O/7Z3RqKpHNh2A==}
+    engines: {node: '>=20.0'}
+    hasBin: true
 
   serve-static@2.2.1:
     resolution: {integrity: sha512-xRXBn0pPqQTVQiC8wyQrKs2MOlX24zQ0POGaj0kultvoOCstBQM5yvOhAVSUwOMjQtTvsPWoNCHfPGwaaQJhTw==}
@@ -5978,6 +5986,8 @@ snapshots:
       statuses: 2.0.2
     transitivePeerDependencies:
       - supports-color
+
+  sentry@0.47.0: {}
 
   serve-static@2.2.1:
     dependencies:
