@@ -32,9 +32,9 @@ createRoot(document.getElementById("root")!).render(
             "/auth/*",
           ],
           useDefaultExcludedPaths: true,
-          // Replay 10% of sessions to keep ingest volume (and rrweb overhead)
-          // in line with the Sentry replay sampling. Use 1.0 for every session.
-          sessionSampleRate: 0.1,
+          // Record every session. The SDK samples once per page load, so a
+          // lower rate silently skips most visits.
+          sessionSampleRate: 1.0,
           // Never capture what users type.
           maskAllInputs: true,
           maskTextSelector: "[data-mask]",
