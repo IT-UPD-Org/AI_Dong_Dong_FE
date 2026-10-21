@@ -24,7 +24,7 @@ export const authApi = {
   /** Development-only login; the backend returns 404 outside dev mode. */
   devLogin(email: string, name: string): Promise<User> {
     return completeLogin(
-      apiClient<LoginResponse>('/auth/fake-login', {
+      apiClient<LoginResponse>('/api/auth/fake-login', {
         method: 'POST',
         body: JSON.stringify({ email, name }),
       }),
@@ -34,7 +34,7 @@ export const authApi = {
   /** Exchange a Microsoft authorization code (PKCE) for an internal token. */
   microsoftLogin(code: string, codeVerifier: string, nonce: string): Promise<User> {
     return completeLogin(
-      apiClient<LoginResponse>('/auth/microsoft/callback', {
+      apiClient<LoginResponse>('/api/auth/microsoft/callback', {
         method: 'POST',
         body: JSON.stringify({ code, code_verifier: codeVerifier, nonce }),
       }),
@@ -42,12 +42,12 @@ export const authApi = {
   },
 
   async getCurrentUser(): Promise<User> {
-    return toUser(await apiClient<BEUser>('/users/@me'));
+    return toUser(await apiClient<BEUser>('/api/users/@me'));
   },
 
   async updateProfile(changes: { name?: string; email?: string }): Promise<User> {
     return toUser(
-      await apiClient<BEUser>('/users/@me', {
+      await apiClient<BEUser>('/api/users/@me', {
         method: 'PATCH',
         body: JSON.stringify(changes),
       }),
@@ -55,17 +55,17 @@ export const authApi = {
   },
 
   async listSessions(): Promise<Session[]> {
-    const sessions = await apiClient<Session[]>('/users/@me/sessions');
+    const sessions = await apiClient<Session[]>('/api/users/@me/sessions');
     return sessions.map((s) => ({ ...s, id: String(s.id) }));
   },
 
   revokeSession(sessionId: string): Promise<void> {
-    return apiClient<void>(`/users/@me/sessions/${sessionId}`, { method: 'DELETE' });
+    return apiClient<void>(`/api/users/@me/sessions/${sessionId}`, { method: 'DELETE' });
   },
 
   async logout(): Promise<void> {
     try {
-      await apiClient<void>('/auth/logout', { method: 'POST' });
+      await apiClient<void>('/api/auth/logout', { method: 'POST' });
     } catch {
       // The local session is cleared regardless of whether revocation succeeded.
     } finally {

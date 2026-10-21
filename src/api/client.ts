@@ -1,4 +1,6 @@
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/+$/, '');
+// Same-origin by default: requests go to `/api/...` on the current host. Set
+// VITE_API_BASE_URL only when the backend lives on a different origin.
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '/').replace(/\/+$/, '');
 
 // The backend mounts every route under this prefix (FastAPI root_path="/api").
 const API_PREFIX = '/api';
@@ -28,11 +30,12 @@ export function removeStoredToken(): void {
 }
 
 /**
- * Resolve an API path such as `/chats` to a full URL.
+ * Resolve an API path such as `/api/chats` to a full URL.
  *
- * In development the Vite proxy forwards `/api` to the backend, so the base URL
- * stays empty and requests remain same-origin. In production `VITE_API_BASE_URL`
- * may point at a separate backend origin.
+ * Callers always pass the `/api` prefix; the guard below only protects against
+ * accidentally omitting it. In development the Vite proxy forwards `/api` to
+ * the backend, so the base URL stays same-origin. In production
+ * `VITE_API_BASE_URL` may point at a separate backend origin.
  */
 export function buildApiUrl(endpoint: string): string {
   if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) {

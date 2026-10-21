@@ -58,7 +58,7 @@ export const documentApi = {
 
   /** Storage usage is derived from the signed-in user's `storage_used`. */
   async getStorageUsage(): Promise<StorageUsage> {
-    const me = await apiClient<{ storage_used: number }>('/users/@me');
+    const me = await apiClient<{ storage_used: number }>('/api/users/@me');
     const used = me.storage_used;
     return {
       total_bytes: STORAGE_QUOTA_BYTES,
@@ -68,16 +68,16 @@ export const documentApi = {
   },
 
   async listDocuments(page = 1, limit = 100): Promise<Document[]> {
-    const files = await apiClient<BEFile[]>(`/files?page=${page}&limit=${limit}`);
+    const files = await apiClient<BEFile[]>(`/api/files?page=${page}&limit=${limit}`);
     return files.map((file) => toDocument(file));
   },
 
   deleteDocument(documentId: string): Promise<void> {
-    return apiClient<void>(`/files/${documentId}`, { method: 'DELETE' });
+    return apiClient<void>(`/api/files/${documentId}`, { method: 'DELETE' });
   },
 
   renameDocument(documentId: string, title: string): Promise<BEFile> {
-    return apiClient<BEFile>(`/files/${documentId}`, {
+    return apiClient<BEFile>(`/api/files/${documentId}`, {
       method: 'PATCH',
       body: JSON.stringify({ title }),
     });
@@ -116,7 +116,7 @@ export const documentApi = {
     };
 
     try {
-      for await (const evt of streamSse('/files/upload', form)) {
+      for await (const evt of streamSse('/api/files/upload', form)) {
         if (evt.event === 'progress') {
           const stage = (evt.data as { stage: string }).stage;
           current = { ...current, status: STAGE_STATUS[stage] ?? current.status };

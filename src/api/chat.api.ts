@@ -67,19 +67,19 @@ interface StreamPayload {
 
 export const chatApi = {
   async getConversations(page = 1, allChats = false): Promise<Conversation[]> {
-    const data = await apiClient<ConversationSummary[]>(`/chats?page=${page}&all_chats=${allChats}`);
+    const data = await apiClient<ConversationSummary[]>(`/api/chats?page=${page}&all_chats=${allChats}`);
     return data.map(toConversation);
   },
 
   getConversation(conversationId: string): Promise<ConversationDetail> {
-    return apiClient<ConversationDetail>(`/chats/${conversationId}`);
+    return apiClient<ConversationDetail>(`/api/chats/${conversationId}`);
   },
 
   /**
    * Send a message and stream the reply.
    *
-   * Without a conversation id this creates one (`POST /chats/create`), otherwise it
-   * appends to the existing conversation (`POST /chats/{id}/send`).
+   * Without a conversation id this creates one (`POST /api/chats/create`), otherwise it
+   * appends to the existing conversation (`POST /api/chats/{id}/send`).
    */
   async streamMessage(
     payload: SendMessagePayload,
@@ -88,7 +88,7 @@ export const chatApi = {
     onError?: (error: Error) => void,
     signal?: AbortSignal,
   ): Promise<void> {
-    const endpoint = payload.conversationId ? `/chats/${payload.conversationId}/send` : '/chats/create';
+    const endpoint = payload.conversationId ? `/api/chats/${payload.conversationId}/send` : '/api/chats/create';
     const body = JSON.stringify({
       content: payload.message,
       model_type: payload.modelType || mapLevelToModelType(payload.modelLevel),

@@ -29,7 +29,7 @@ export interface User {
   disable: boolean;
 }
 
-/** Response of `/auth/fake-login` and `/auth/microsoft/callback`. */
+/** Response of `/api/auth/fake-login` and `/api/auth/microsoft/callback`. */
 export interface LoginResponse {
   access_token: string;
   user: BEUser;
@@ -91,7 +91,7 @@ export interface BESystemMessage {
 
 export type BEMessage = BEUserMessage | BEAgentMessage | BESystemMessage;
 
-/** `ChatConversationListResponse` from `GET /chats`. */
+/** `ChatConversationListResponse` from `GET /api/chats`. */
 export interface ConversationSummary {
   id: string;
   title: string;
@@ -99,7 +99,7 @@ export interface ConversationSummary {
   async_status: AsyncStatus;
 }
 
-/** `ChatConversationResponse` from `GET /chats/{id}`. */
+/** `ChatConversationResponse` from `GET /api/chats/{id}`. */
 export interface ConversationDetail extends ConversationSummary {
   messages: BEMessage[];
 }
@@ -148,7 +148,7 @@ export interface Conversation {
 
 export type FileType = 'image' | 'docs';
 
-/** `FileListResponse` from the `/files` endpoints. */
+/** `FileListResponse` from the `/api/files` endpoints. */
 export interface BEFile {
   id: string;
   title: string;
@@ -222,7 +222,7 @@ export interface ProviderTypeResponse {
   };
 }
 
-/** `AdminFileResponse` from `GET /admin/files`. */
+/** `AdminFileResponse` from `GET /api/admin/files`. */
 export interface AdminFile extends BEFile {
   object_key: string;
   user_id: string;
