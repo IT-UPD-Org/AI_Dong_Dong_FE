@@ -1,4 +1,5 @@
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import * as Sentry from '@sentry/react';
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useTempsAnalytics } from '@temps-sdk/react-analytics';
 import { authApi } from '../api/auth.api';
 import { getStoredToken, removeStoredToken } from '../api/client';
@@ -21,15 +22,28 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const { identify } = useTempsAnalytics();
+  const { identify, trackEvent } = useTempsAnalytics();
+  const trackedUserId = useRef<string | null>(null);
 
-  // Tie analytics to the signed-in account. Only the opaque ID and role are
-  // sent, so student names and emails stay out of the analytics service.
+  // Tie error reports and analytics to the signed-in account. Only the opaque
+  // ID and role are sent, so names and emails stay out of both services.
   useEffect(() => {
-    if (user) {
-      void identify(user.id, { role: user.role });
+    if (!user) {
+      Sentry.setUser(null);
+      trackedUserId.current = null;
+      return;
     }
-  }, [user?.id, user?.role, identify]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    Sentry.setUser({ id: user.id });
+
+    if (trackedUserId.current !== user.id) {
+      trackedUserId.current = user.id;
+      // Temps 0.0.9's identify() is a no-op placeholder, so also send an
+      // explicit event that links the visitor/session to this user.
+      void identify(user.id, { role: user.role });
+      void trackEvent('user_login', { user_id: user.id, role: user.role });
+    }
+  }, [user, identify, trackEvent]);
 
   const clearSession = useCallback(() => {
     removeStoredToken();
