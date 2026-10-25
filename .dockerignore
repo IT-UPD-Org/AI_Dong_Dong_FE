@@ -1,0 +1,11 @@
+node_modules
+dist
+.git
+.vscode
+.env
+.env.*
+*.log
+tsconfig.tsbuildinfo
+package-lock.json
+Dockerfile
+.dockerignore

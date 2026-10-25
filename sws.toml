@@ -1,0 +1,39 @@
+# Static Web Server config. TLS and /api routing are handled by the upstream
+# proxy, so this only serves the built SPA from /public.
+[general]
+host = "::"
+port = 80
+root = "/public"
+log-level = "warn"
+
+# Unknown paths serve index.html with a 200, so client-side routes such as
+# /chat and /auth/callback load the SPA.
+page-fallback = "/public/index.html"
+
+compression = true
+cache-control-headers = true
+
+# GET /health returns 200 for the proxy's health checks.
+health = true
+
+# Custom headers run after the built-in cache rules and later entries win.
+[advanced]
+
+# index.html and SPA routes must be revalidated, or a deploy keeps serving the
+# old app (the built-in default caches them for a day).
+[[advanced.headers]]
+source = "**"
+[advanced.headers.headers]
+Cache-Control = "no-cache"
+
+# Vite's hashed bundles never change content under the same name.
+[[advanced.headers]]
+source = "/assets/*.{js,css}"
+[advanced.headers.headers]
+Cache-Control = "public, max-age=31536000, immutable"
+
+# Files from public/ keep their names across deploys, so cache them briefly.
+[[advanced.headers]]
+source = "**/*.{png,jpg,jpeg,svg,ico,webp,mp4,woff2}"
+[advanced.headers.headers]
+Cache-Control = "public, max-age=86400"
