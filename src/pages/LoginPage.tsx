@@ -202,13 +202,6 @@ export function LoginPage() {
                 "Đăng nhập"
               )}
             </button>
-            <p className="text-xs text-black/45">
-              Chưa có tài khoản?{" "}
-              <Link to="/admin/create" className="font-semibold text-[#04714a] hover:underline">
-                Tạo tài khoản
-              </Link>{" "}
-              (cần mã từ console của backend).
-            </p>
           </form>
         )}
 
