@@ -4,7 +4,7 @@ import { NavLink, Outlet, useMatch, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { chatApi } from "../../api/chat.api";
 import type { Conversation } from "../../api/types";
-import { confirmAndDeleteChat } from "../../lib/deleteChat";
+import { useDeleteChat } from "../../lib/deleteChat";
 import { DocumentProcessingNotifications } from "./DocumentProcessingNotifications";
 
 type IconProps = SVGProps<SVGSVGElement> & {
@@ -157,16 +157,10 @@ export function AppShell() {
     navigate("/chat", { state: { newChatKey: crypto.randomUUID() } });
   };
 
-  const handleDeleteChat = async (id: string, title: string) => {
-    try {
-      if (!(await confirmAndDeleteChat(id, title))) return;
-    } catch {
-      window.alert("Không thể xoá cuộc trò chuyện. Vui lòng thử lại.");
-      return;
-    }
+  const { requestDelete: handleDeleteChat, dialog: deleteChatDialog } = useDeleteChat((id) => {
     // Leaving a chat that no longer exists.
     if (currentChatId === id) navigate("/chat", { state: { newChatKey: crypto.randomUUID() } });
-  };
+  });
 
   return (
     <div className="flex h-screen w-full flex-col overflow-hidden bg-white md:flex-row">
@@ -360,6 +354,7 @@ export function AppShell() {
       </div>
 
       <DocumentProcessingNotifications />
+      {deleteChatDialog}
     </div>
   );
 }

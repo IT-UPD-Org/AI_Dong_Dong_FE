@@ -1,4 +1,5 @@
 import { FormEvent, useCallback, useEffect, useState } from "react";
+import { useConfirm } from '../../components/useConfirm';
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { ADMIN_PAGE_SIZE, adminApi } from "../../api/admin.api";
@@ -12,6 +13,7 @@ const SECRET_FIELD = /key|secret|token|password/i;
 type FormState = { mode: "create" } | { mode: "edit"; provider: ProviderInfo };
 
 export function ProvidersTab() {
+  const { confirm, dialog: confirmDialog } = useConfirm();
   const load = useCallback((page: number) => adminApi.getProviders(page), []);
   const list = usePagedList(load, ADMIN_PAGE_SIZE);
   const [types, setTypes] = useState<ProviderTypeResponse[]>([]);
@@ -25,7 +27,13 @@ export function ProvidersTab() {
   }, []);
 
   async function remove(provider: ProviderInfo) {
-    if (!confirm(`Xoá provider "${provider.provider_name}"?`)) return;
+    const ok = await confirm({
+      title: "Xoá provider?",
+      description: `Provider "${provider.provider_name}" sẽ bị xoá. Không thể xoá khi vẫn còn model dùng provider này.`,
+      confirmLabel: "Xoá",
+      destructive: true,
+    });
+    if (!ok) return;
     try {
       await adminApi.deleteProvider(provider.id);
       toast.success("Đã xoá provider.");
@@ -112,6 +120,7 @@ export function ProvidersTab() {
           )}
         </DialogContent>
       </Dialog>
+      {confirmDialog}
     </section>
   );
 }

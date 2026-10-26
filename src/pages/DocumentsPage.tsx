@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
+import { useConfirm } from '../components/useConfirm';
 import { FileText, UploadCloud, Trash2, File, FileSpreadsheet, FileIcon as FilePdf, MonitorPlay, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { applyDocumentUpdate, documentApi } from '../api/document.api';
@@ -37,6 +38,7 @@ function getFileIcon(filename: string, fileType: Document['file_type']) {
 }
 
 export function DocumentsPage() {
+  const { confirm, dialog: confirmDialog } = useConfirm();
   const [docs, setDocs] = useState<Document[]>([]);
   const [storage, setStorage] = useState<StorageUsage | null>(null);
   const [loading, setLoading] = useState(true);
@@ -92,7 +94,13 @@ export function DocumentsPage() {
       setDocs(prev => prev.filter(d => d.document_id !== doc.document_id));
       return;
     }
-    if (!confirm('Bạn có chắc muốn xóa tài liệu này?')) return;
+    const ok = await confirm({
+      title: 'Xoá tài liệu?',
+      description: `"${doc.title || doc.filename}" sẽ bị xoá vĩnh viễn.`,
+      confirmLabel: 'Xoá',
+      destructive: true,
+    });
+    if (!ok) return;
     try {
       await documentApi.deleteDocument(doc.document_id);
       toast.success('Đã xóa tài liệu.');
@@ -232,6 +240,7 @@ export function DocumentsPage() {
           </div>
         ))}
       </div>
+      {confirmDialog}
     </main>
   );
 }

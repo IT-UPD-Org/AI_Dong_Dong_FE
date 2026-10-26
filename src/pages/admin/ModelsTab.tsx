@@ -1,4 +1,5 @@
 import { FormEvent, useCallback, useEffect, useState } from "react";
+import { useConfirm } from '../../components/useConfirm';
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { ADMIN_PAGE_SIZE, adminApi } from "../../api/admin.api";
@@ -30,6 +31,7 @@ export function ModelsTab() {
   const list = usePagedList(load, ADMIN_PAGE_SIZE);
   const [providers, setProviders] = useState<ProviderInfo[]>([]);
   const [form, setForm] = useState<FormState | null>(null);
+  const { confirm, dialog: confirmDialog } = useConfirm();
 
   useEffect(() => {
     loadAllProviders()
@@ -38,7 +40,13 @@ export function ModelsTab() {
   }, []);
 
   async function remove(model: ModelInfo) {
-    if (!confirm(`Xoá model "${model.model_name}"?`)) return;
+    const ok = await confirm({
+      title: "Xoá model?",
+      description: `Model "${model.model_name}" sẽ bị xoá và không còn được dùng để trả lời.`,
+      confirmLabel: "Xoá",
+      destructive: true,
+    });
+    if (!ok) return;
     try {
       await adminApi.deleteModel(model.id);
       toast.success("Đã xoá model.");
@@ -129,6 +137,7 @@ export function ModelsTab() {
           )}
         </DialogContent>
       </Dialog>
+      {confirmDialog}
     </section>
   );
 }
