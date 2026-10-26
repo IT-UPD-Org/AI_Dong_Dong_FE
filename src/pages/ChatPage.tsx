@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useState, useRef, Fragment } from "react";
-import { useLocation, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   streamChatMessage,
   getConversationMessages,
@@ -37,9 +37,10 @@ function EmptyStatePrompt() {
 }
 
 export function ChatPage() {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const { id: routeId } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const location = useLocation();
-  const conversationId = searchParams.get("id") || undefined;
+  const conversationId = routeId || undefined;
   const newChatKey = (location.state as { newChatKey?: string } | null)?.newChatKey;
 
   const conversationIdRef = useRef<string | undefined>(conversationId);
@@ -165,7 +166,7 @@ export function ChatPage() {
           if (chunk.conversationId && !conversationIdRef.current) {
             conversationIdRef.current = chunk.conversationId;
             pendingCreatedIdRef.current = chunk.conversationId;
-            setSearchParams({ id: chunk.conversationId }, { replace: true, state: location.state });
+            navigate(`/c/${chunk.conversationId}`, { replace: true, state: location.state });
             window.dispatchEvent(new CustomEvent("chats:updated"));
           }
 

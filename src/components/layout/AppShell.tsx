@@ -1,5 +1,5 @@
 import { useEffect, useState, type SVGProps } from "react";
-import { NavLink, Outlet, useNavigate, useSearchParams } from "react-router-dom";
+import { NavLink, Outlet, useMatch, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../contexts/AuthContext";
 import { chatApi } from "../../api/chat.api";
@@ -112,8 +112,8 @@ const links = [
 
 export function AppShell() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const currentChatId = searchParams.get("id");
+  // The shell sits above the routes, so it reads the chat ID from the path itself.
+  const currentChatId = useMatch("/c/:id")?.params.id ?? null;
   const { user, isAdmin, logout } = useAuth();
   const [recentChats, setRecentChats] = useState<Conversation[]>([]);
 
@@ -228,7 +228,7 @@ export function AppShell() {
                 return (
                   <NavLink
                     key={conversation.id}
-                    to={`/chat?id=${conversation.id}`}
+                    to={`/c/${conversation.id}`}
                     className={`
                       w-full min-w-0
                       truncate

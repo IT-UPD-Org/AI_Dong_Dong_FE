@@ -50,7 +50,7 @@ export function ChatsTab() {
                   </TableCell>
                   <TableCell className="text-right">
                     <Link
-                      to={`/chat?id=${chat.id}`}
+                      to={`/c/${chat.id}`}
                       className="inline-flex items-center gap-1 text-xs font-medium text-[#04714a] hover:underline"
                     >
                       Xem <ArrowRight size={13} />

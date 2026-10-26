@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useSearchParams } from "react-router-dom";
 import { AppShell } from "../components/layout/AppShell";
 import { PublicLayout } from "../components/layout/PublicLayout";
 import { ProtectedRoute } from "../components/auth/ProtectedRoute";
@@ -19,6 +19,14 @@ import { SettingsPage } from "../pages/SettingsPage";
 import { InfoPage } from "../pages/InfoPage";
 import { ProjectTeamPage } from "../pages/ProjectTeamPage";
 import { CreateAccountPage } from "../pages/CreateAccountPage";
+
+/** `/chat` starts a new chat; old `/chat?id=X` links redirect to `/c/X`. */
+function ChatEntry() {
+  const [params] = useSearchParams();
+  const legacyId = params.get("id");
+  if (legacyId) return <Navigate to={`/c/${encodeURIComponent(legacyId)}`} replace />;
+  return <ChatPage />;
+}
 
 export function AppRouter() {
   return (
@@ -67,7 +75,8 @@ export function AppRouter() {
       {/* PROTECTED ROUTES: CHỈ TRUY CẬP ĐƯỢC SAU KHI ĐƯỢC CẤP QUYỀN (PERMISSION) */}
       <Route element={<ProtectedRoute />}>
         <Route element={<AppShell />}>
-          <Route path="/chat" element={<ChatPage />} />
+          <Route path="/chat" element={<ChatEntry />} />
+          <Route path="/c/:id" element={<ChatPage />} />
           <Route path="/history" element={<HistoryPage />} />
           <Route path="/knowledge" element={<KnowledgePage />} />
           <Route path="/documents" element={<DocumentsPage />} />
