@@ -47,7 +47,7 @@ export function convertBEMessageToChatMessage(msg: BEMessage): ChatMessage {
   return { id: crypto.randomUUID(), role: 'system', content: msg.content, status: 'idle' };
 }
 
-function toConversation(c: ConversationSummary): Conversation {
+export function toConversation(c: ConversationSummary): Conversation {
   return {
     id: String(c.id),
     title: c.title || 'Cuộc trò chuyện mới',
@@ -66,8 +66,9 @@ interface StreamPayload {
 }
 
 export const chatApi = {
-  async getConversations(page = 1, allChats = false): Promise<Conversation[]> {
-    const data = await apiClient<ConversationSummary[]>(`/api/chats?page=${page}&all_chats=${allChats}`);
+  /** The current user's own conversations. Admins list everyone's with `adminApi.getAllChats`. */
+  async getConversations(page = 1): Promise<Conversation[]> {
+    const data = await apiClient<ConversationSummary[]>(`/api/chats?page=${page}`);
     return data.map(toConversation);
   },
 
@@ -110,6 +111,11 @@ export const chatApi = {
         }
         if (evt.event === 'user_message_id') {
           continue;
+        }
+        if (evt.event === 'error') {
+          // Terminal: the agent failed and the backend closes the stream right after.
+          const detail = (evt.data as { detail?: string } | null)?.detail;
+          throw new Error(detail || 'Trợ lý không thể trả lời. Vui lòng thử lại.');
         }
 
         const data = evt.data as StreamPayload;

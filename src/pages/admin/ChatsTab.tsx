@@ -6,7 +6,7 @@ import { formatSnowflakeDate } from "../../lib/snowflake";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../components/ui/table";
 import { ListState, Pager, usePagedList } from "./shared";
 
-// Matches the fixed page size of GET /chats on the backend.
+// Matches the fixed page size of GET /admin/chats on the backend.
 const CHATS_PAGE_SIZE = 10;
 
 const STATUS_LABEL = { none: "Nhàn rỗi", pending: "Đang chờ", in_progress: "Đang chạy" } as const;
@@ -29,6 +29,7 @@ export function ChatsTab() {
             <TableHeader>
               <TableRow>
                 <TableHead>Tiêu đề</TableHead>
+                <TableHead>Người dùng</TableHead>
                 <TableHead>Tạo lúc</TableHead>
                 <TableHead>Agent</TableHead>
                 <TableHead>Trạng thái</TableHead>
@@ -39,6 +40,7 @@ export function ChatsTab() {
               {list.items.map((chat) => (
                 <TableRow key={chat.id}>
                   <TableCell className="max-w-80 truncate font-medium">{chat.title}</TableCell>
+                  <TableCell className="font-mono text-xs text-black/60">{chat.userId}</TableCell>
                   <TableCell className="text-black/60">{formatSnowflakeDate(chat.id) ?? "—"}</TableCell>
                   <TableCell>{STATUS_LABEL[chat.asyncStatus ?? "none"]}</TableCell>
                   <TableCell>

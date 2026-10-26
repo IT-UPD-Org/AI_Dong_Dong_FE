@@ -126,6 +126,11 @@ export interface ConversationSummary {
   async_status: AsyncStatus;
 }
 
+/** `AdminChatConversationListResponse` from `GET /api/admin/chats`. */
+export interface AdminConversationSummary extends ConversationSummary {
+  user_id: string;
+}
+
 /** `ChatConversationResponse` from `GET /api/chats/{id}`. */
 export interface ConversationDetail extends ConversationSummary {
   messages: BEMessage[];
@@ -167,6 +172,11 @@ export interface Conversation {
   title: string;
   disabled?: boolean;
   asyncStatus?: AsyncStatus;
+}
+
+/** Conversation in the admin list, with its owner. */
+export interface AdminConversation extends Conversation {
+  userId: string;
 }
 
 // ---------------------------------------------------------------------------

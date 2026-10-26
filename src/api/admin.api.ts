@@ -1,7 +1,9 @@
 import { apiClient } from './client';
 import { toUser } from './auth.api';
-import { chatApi } from './chat.api';
+import { toConversation } from './chat.api';
 import type {
+  AdminConversation,
+  AdminConversationSummary,
   AdminFile,
   BEUser,
   ModelInfo,
@@ -95,8 +97,9 @@ export const adminApi = {
   },
 
   // ---- Chats ----------------------------------------------------------------
-  /** All users' conversations, via the admin-only `all_chats` flag. */
-  getAllChats(page = 1) {
-    return chatApi.getConversations(page, true);
+  /** Every user's conversations, newest first, 10 per page, with their owner. */
+  async getAllChats(page = 1): Promise<AdminConversation[]> {
+    const chats = await apiClient<AdminConversationSummary[]>(`/api/admin/chats?p=${page}`);
+    return chats.map((c) => ({ ...toConversation(c), userId: String(c.user_id) }));
   },
 };
