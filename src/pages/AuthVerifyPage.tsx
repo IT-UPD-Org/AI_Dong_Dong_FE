@@ -4,7 +4,10 @@ import { AlertCircle, ArrowRight, CheckCircle2, Loader2 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { readMicrosoftCallback } from "../lib/microsoftAuth";
 
-/** Landing page for the Microsoft redirect; exchanges the code with the backend. */
+/**
+ * Microsoft sends the browser back here (`/callback`). This page posts the code
+ * to the backend, which returns the session, then continues into the app.
+ */
 export function AuthVerifyPage() {
   const nav = useNavigate();
   const { microsoftLogin } = useAuth();
@@ -26,7 +29,7 @@ export function AuthVerifyPage() {
       return;
     }
 
-    microsoftLogin(callback.code, callback.codeVerifier, callback.nonce)
+    microsoftLogin(callback.code, callback.codeVerifier, callback.nonce, callback.redirectUri)
       .then(() => {
         setStatus("success");
         setTimeout(() => nav(callback.returnTo, { replace: true }), 800);

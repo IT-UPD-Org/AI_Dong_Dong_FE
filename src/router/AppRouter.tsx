@@ -48,7 +48,9 @@ export function AppRouter() {
           }
         />
 
-        {/* MICROSOFT OAUTH REDIRECT */}
+        {/* MICROSOFT OAUTH REDIRECT: {origin}/callback is the default redirect URI.
+            /auth/callback stays for sign-ins already registered under the old URI. */}
+        <Route path="/callback" element={<AuthVerifyPage />} />
         <Route path="/auth/callback" element={<AuthVerifyPage />} />
 
         {/* Public on purpose: it creates the first account. The one-time key

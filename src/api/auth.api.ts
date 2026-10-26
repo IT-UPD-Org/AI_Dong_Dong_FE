@@ -76,11 +76,11 @@ export const authApi = {
   },
 
   /** Exchange a Microsoft authorization code (PKCE) for an internal token. */
-  microsoftLogin(code: string, codeVerifier: string, nonce: string): Promise<User> {
+  microsoftLogin(code: string, codeVerifier: string, nonce: string, redirectUri: string): Promise<User> {
     return completeLogin(
       apiClient<LoginResponse>('/api/auth/microsoft/callback', {
         method: 'POST',
-        body: JSON.stringify({ code, code_verifier: codeVerifier, nonce }),
+        body: JSON.stringify({ code, code_verifier: codeVerifier, nonce, redirect_uri: redirectUri }),
       }),
     );
   },

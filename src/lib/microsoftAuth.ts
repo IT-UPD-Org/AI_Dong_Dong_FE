@@ -12,11 +12,15 @@ import { authApi } from '../api/auth.api';
 
 const STORAGE_KEY = 'ms_auth_pending';
 
+/** Page Microsoft sends the browser back to; registered as a redirect URI in Azure. */
+export const CALLBACK_PATH = '/callback';
+
 interface PendingLogin {
   state: string;
   nonce: string;
   codeVerifier: string;
   returnTo: string;
+  redirectUri: string;
 }
 
 export interface MicrosoftCallbackResult {
@@ -24,6 +28,8 @@ export interface MicrosoftCallbackResult {
   codeVerifier: string;
   nonce: string;
   returnTo: string;
+  /** The exact redirect URI used to start sign-in; the backend must reuse it. */
+  redirectUri: string;
 }
 
 function randomString(byteLength = 32): string {
@@ -54,21 +60,23 @@ export async function startMicrosoftLogin(returnTo = '/chat'): Promise<void> {
     throw new Error('Đăng nhập Microsoft chưa được cấu hình.');
   }
 
+  // Default to this site's own callback page; the backend may pin a fixed one.
+  const redirectUri = config.redirect_uri || `${window.location.origin}${CALLBACK_PATH}`;
+
   // 64 random bytes -> 86 base64url chars, within the 43-128 range PKCE requires.
   const pending: PendingLogin = {
     state: randomString(),
     nonce: randomString(),
     codeVerifier: randomString(64),
     returnTo,
+    redirectUri,
   };
   sessionStorage.setItem(STORAGE_KEY, JSON.stringify(pending));
 
   const params = new URLSearchParams({
     client_id: config.client_id,
     response_type: 'code',
-    // The frontend's /auth/callback page; it must match the backend's
-    // MICROSOFT_REDIRECT_URI, which uses it again when exchanging the code.
-    redirect_uri: config.redirect_uri,
+    redirect_uri: redirectUri,
     response_mode: 'query',
     scope: config.scopes,
     state: pending.state,
@@ -116,5 +124,6 @@ export function readMicrosoftCallback(search: string): MicrosoftCallbackResult {
     codeVerifier: pending.codeVerifier,
     nonce: pending.nonce,
     returnTo: pending.returnTo,
+    redirectUri: pending.redirectUri,
   };
 }

@@ -12,7 +12,7 @@ interface AuthContextType {
   isLoading: boolean;
   devLogin: (email: string, name: string) => Promise<User>;
   passwordLogin: (email: string, password: string) => Promise<User>;
-  microsoftLogin: (code: string, codeVerifier: string, nonce: string) => Promise<User>;
+  microsoftLogin: (code: string, codeVerifier: string, nonce: string, redirectUri: string) => Promise<User>;
   refreshUser: () => Promise<void>;
   setUser: (user: User) => void;
   logout: () => Promise<void>;
@@ -84,8 +84,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return loggedIn;
   };
 
-  const microsoftLogin = async (code: string, codeVerifier: string, nonce: string) => {
-    const loggedIn = await authApi.microsoftLogin(code, codeVerifier, nonce);
+  const microsoftLogin = async (code: string, codeVerifier: string, nonce: string, redirectUri: string) => {
+    const loggedIn = await authApi.microsoftLogin(code, codeVerifier, nonce, redirectUri);
     setUser(loggedIn);
     return loggedIn;
   };

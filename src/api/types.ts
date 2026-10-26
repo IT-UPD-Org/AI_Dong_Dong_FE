@@ -46,7 +46,8 @@ export interface AuthMethods {
 export interface MicrosoftConfig {
   tenant_id: string;
   client_id: string;
-  redirect_uri: string;
+  /** Null unless the backend pins one; the frontend then uses `{origin}/callback`. */
+  redirect_uri: string | null;
   authorize_url: string;
   scopes: string;
 }
