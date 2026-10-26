@@ -18,6 +18,7 @@ import { ProfilePage } from "../pages/ProfilePage";
 import { SettingsPage } from "../pages/SettingsPage";
 import { InfoPage } from "../pages/InfoPage";
 import { ProjectTeamPage } from "../pages/ProjectTeamPage";
+import { CreateAccountPage } from "../pages/CreateAccountPage";
 
 export function AppRouter() {
   return (
@@ -49,6 +50,10 @@ export function AppRouter() {
 
         {/* MICROSOFT OAUTH REDIRECT */}
         <Route path="/auth/callback" element={<AuthVerifyPage />} />
+
+        {/* Public on purpose: it creates the first account. The one-time key
+            printed to the backend console is what protects it. */}
+        <Route path="/admin/create" element={<CreateAccountPage />} />
 
         {/* CÁC ROUTE CHỈ CHO NGƯỜI CHƯA ĐĂNG NHẬP */}
         <Route element={<PublicRoute />}>

@@ -1,13 +1,16 @@
 /**
  * Microsoft Entra ID sign-in using the authorization-code flow with PKCE.
  *
- * The backend exchanges the code itself (it holds the client secret) and
- * validates the ID token's nonce, so the browser only creates the PKCE
- * verifier, state and nonce, redirects, and hands the code back.
+ * Flow: the browser fetches the public Microsoft settings from the backend,
+ * redirects to Microsoft, and Microsoft sends it back to this app's
+ * `/auth/callback` page. That page then posts the code to the backend, which
+ * exchanges it (it holds the client secret), checks the nonce and returns the
+ * session. No Microsoft values are needed at build time.
  */
 
+import { authApi } from '../api/auth.api';
+
 const STORAGE_KEY = 'ms_auth_pending';
-const SCOPES = 'openid profile email';
 
 interface PendingLogin {
   state: string;
@@ -21,19 +24,6 @@ export interface MicrosoftCallbackResult {
   codeVerifier: string;
   nonce: string;
   returnTo: string;
-}
-
-function config() {
-  const tenantId = import.meta.env.VITE_MICROSOFT_TENANT_ID;
-  const clientId = import.meta.env.VITE_MICROSOFT_CLIENT_ID;
-  const redirectUri =
-    import.meta.env.VITE_MICROSOFT_REDIRECT_URI || `${window.location.origin}/auth/callback`;
-  return { tenantId, clientId, redirectUri };
-}
-
-export function isMicrosoftConfigured(): boolean {
-  const { tenantId, clientId } = config();
-  return Boolean(tenantId && clientId);
 }
 
 function randomString(byteLength = 32): string {
@@ -55,10 +45,12 @@ async function codeChallenge(verifier: string): Promise<string> {
   return base64Url(new Uint8Array(digest));
 }
 
-/** Redirect the browser to the Microsoft sign-in page. */
+/** Redirect the browser to the Microsoft sign-in page, using settings from the backend. */
 export async function startMicrosoftLogin(returnTo = '/chat'): Promise<void> {
-  const { tenantId, clientId, redirectUri } = config();
-  if (!tenantId || !clientId) {
+  let config;
+  try {
+    config = await authApi.getMicrosoftConfig();
+  } catch {
     throw new Error('Đăng nhập Microsoft chưa được cấu hình.');
   }
 
@@ -72,11 +64,13 @@ export async function startMicrosoftLogin(returnTo = '/chat'): Promise<void> {
   sessionStorage.setItem(STORAGE_KEY, JSON.stringify(pending));
 
   const params = new URLSearchParams({
-    client_id: clientId,
+    client_id: config.client_id,
     response_type: 'code',
-    redirect_uri: redirectUri,
+    // The frontend's /auth/callback page; it must match the backend's
+    // MICROSOFT_REDIRECT_URI, which uses it again when exchanging the code.
+    redirect_uri: config.redirect_uri,
     response_mode: 'query',
-    scope: SCOPES,
+    scope: config.scopes,
     state: pending.state,
     nonce: pending.nonce,
     code_challenge: await codeChallenge(pending.codeVerifier),
@@ -84,9 +78,7 @@ export async function startMicrosoftLogin(returnTo = '/chat'): Promise<void> {
     prompt: 'select_account',
   });
 
-  window.location.assign(
-    `https://login.microsoftonline.com/${encodeURIComponent(tenantId)}/oauth2/v2.0/authorize?${params}`,
-  );
+  window.location.assign(`${config.authorize_url}?${params}`);
 }
 
 /**

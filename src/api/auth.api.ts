@@ -1,5 +1,13 @@
 import { apiClient, removeStoredToken, setStoredToken } from './client';
-import type { BEUser, LoginResponse, Session, User } from './types';
+import type {
+  AuthMethods,
+  BEUser,
+  CreateAccountInput,
+  LoginResponse,
+  MicrosoftConfig,
+  Session,
+  User,
+} from './types';
 
 export function toUser(user: BEUser): User {
   return {
@@ -21,6 +29,42 @@ async function completeLogin(request: Promise<LoginResponse>): Promise<User> {
 }
 
 export const authApi = {
+  /** Which login options to show. */
+  getMethods(): Promise<AuthMethods> {
+    return apiClient<AuthMethods>('/api/auth/methods');
+  },
+
+  /** Public Microsoft settings; the backend returns 404 when Microsoft isn't configured. */
+  getMicrosoftConfig(): Promise<MicrosoftConfig> {
+    return apiClient<MicrosoftConfig>('/api/auth/microsoft');
+  },
+
+  /** Email and password login, available only while Microsoft isn't configured. */
+  passwordLogin(email: string, password: string): Promise<User> {
+    return completeLogin(
+      apiClient<LoginResponse>('/api/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+      }),
+    );
+  },
+
+  /** Ask the backend to print a one-time account key to its console; returns seconds until it expires. */
+  async requestSetupKey(): Promise<number> {
+    const res = await apiClient<{ expires_in: number }>('/api/auth/setup-key', { method: 'POST' });
+    return res.expires_in;
+  },
+
+  /** Create a password account with the key from the backend console. Does not sign in. */
+  async createAccount(input: CreateAccountInput): Promise<User> {
+    return toUser(
+      await apiClient<BEUser>('/api/auth/accounts', {
+        method: 'POST',
+        body: JSON.stringify(input),
+      }),
+    );
+  },
+
   /** Development-only login; the backend returns 404 outside dev mode. */
   devLogin(email: string, name: string): Promise<User> {
     return completeLogin(

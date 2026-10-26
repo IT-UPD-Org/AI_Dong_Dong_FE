@@ -29,10 +29,36 @@ export interface User {
   disable: boolean;
 }
 
-/** Response of `/api/auth/fake-login` and `/api/auth/microsoft/callback`. */
+/** Response of every login endpoint (`fake-login`, `login`, `microsoft/callback`). */
 export interface LoginResponse {
   access_token: string;
   user: BEUser;
+}
+
+/** `GET /api/auth/methods`: which login options the backend allows. */
+export interface AuthMethods {
+  microsoft: boolean;
+  password: boolean;
+  dev: boolean;
+}
+
+/** `GET /api/auth/microsoft`: public values needed to start Microsoft login. */
+export interface MicrosoftConfig {
+  tenant_id: string;
+  client_id: string;
+  redirect_uri: string;
+  authorize_url: string;
+  scopes: string;
+}
+
+export type AccountRole = 'student' | 'teacher' | 'admin';
+
+export interface CreateAccountInput {
+  setup_key: string;
+  email: string;
+  name: string;
+  password: string;
+  role: AccountRole;
 }
 
 export interface Session {

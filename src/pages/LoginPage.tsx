@@ -1,10 +1,12 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { AlertCircle, ArrowLeft, ArrowUpRight, Check, CheckCircle2, Mail, RefreshCw, Sparkles, UserRound } from "lucide-react";
+import { AlertCircle, ArrowLeft, ArrowUpRight, Check, CheckCircle2, KeyRound, Mail, RefreshCw, Sparkles, UserRound } from "lucide-react";
+import { authApi } from "../api/auth.api";
+import type { AuthMethods } from "../api/types";
 import { useAuth } from "../contexts/AuthContext";
-import { isMicrosoftConfigured, startMicrosoftLogin } from "../lib/microsoftAuth";
+import { startMicrosoftLogin } from "../lib/microsoftAuth";
 
-// Vite sets DEV only for `vite dev`; production builds always use Microsoft.
+// Dev login also needs `vite dev`; the backend separately refuses it outside dev mode.
 const IS_DEV = import.meta.env.DEV;
 
 function MicrosoftLogo() {
@@ -31,18 +33,56 @@ function getRoleInfo(emailValue: string) {
 }
 
 export function LoginPage() {
-  const { devLogin } = useAuth();
+  const { devLogin, passwordLogin } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const redirectTo: string = (location.state as { from?: string } | null)?.from ?? "/chat";
 
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [methods, setMethods] = useState<AuthMethods | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    authApi
+      .getMethods()
+      .then((m) => {
+        if (!cancelled) setMethods(m);
+      })
+      .catch(() => {
+        if (!cancelled) setError("Không thể tải phương thức đăng nhập. Vui lòng tải lại trang.");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const roleInfo = getRoleInfo(email);
-  const microsoftReady = isMicrosoftConfigured();
+  const microsoftReady = Boolean(methods?.microsoft);
+  const showPassword = Boolean(methods?.password);
+  const showDev = IS_DEV && Boolean(methods?.dev);
+
+  async function handlePasswordLogin(e: FormEvent) {
+    e.preventDefault();
+    setError("");
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail || !password) {
+      setError("Vui lòng nhập email và mật khẩu.");
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      await passwordLogin(cleanEmail, password);
+      navigate(redirectTo, { replace: true });
+    } catch (err) {
+      setError((err as Error).message || "Email hoặc mật khẩu không đúng.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   async function handleMicrosoftLogin() {
     setError("");
@@ -102,23 +142,77 @@ export function LoginPage() {
           </div>
         )}
 
-        <button
-          type="button"
-          onClick={handleMicrosoftLogin}
-          disabled={isSubmitting || !microsoftReady}
-          className="mt-8 flex w-full items-center justify-center gap-3 rounded-xl bg-[#11130f] px-4 py-3 font-semibold text-white transition-all hover:bg-[#04714a] disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
-        >
-          {isSubmitting && !IS_DEV ? <RefreshCw className="animate-spin" size={16} /> : <MicrosoftLogo />}
-          Đăng nhập bằng Microsoft
-          <ArrowUpRight size={16} />
-        </button>
-        {!microsoftReady && (
-          <p className="mt-2 text-xs text-black/45">
-            Đăng nhập Microsoft chưa được cấu hình (VITE_MICROSOFT_TENANT_ID, VITE_MICROSOFT_CLIENT_ID).
-          </p>
+        {methods === null && !error && (
+          <div className="mt-8 flex items-center justify-center gap-2 text-sm text-black/50">
+            <RefreshCw className="animate-spin" size={16} />
+            Đang tải...
+          </div>
         )}
 
-        {IS_DEV && (
+        {microsoftReady && (
+          <button
+            type="button"
+            onClick={handleMicrosoftLogin}
+            disabled={isSubmitting}
+            className="mt-8 flex w-full items-center justify-center gap-3 rounded-xl bg-[#11130f] px-4 py-3 font-semibold text-white transition-all hover:bg-[#04714a] disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+          >
+            {isSubmitting ? <RefreshCw className="animate-spin" size={16} /> : <MicrosoftLogo />}
+            Đăng nhập bằng Microsoft
+            <ArrowUpRight size={16} />
+          </button>
+        )}
+
+        {showPassword && (
+          <form onSubmit={handlePasswordLogin} className="mt-8 flex flex-col gap-4">
+            <div className="relative">
+              <Mail className="absolute left-4 top-3.5 text-black/35" size={18} />
+              <input
+                className="w-full rounded-xl border border-black/15 bg-white pl-11 pr-4 py-3 text-sm outline-none focus:border-[#00a86b] focus:ring-1 focus:ring-[#00a86b]"
+                type="email"
+                autoComplete="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="relative">
+              <KeyRound className="absolute left-4 top-3.5 text-black/35" size={18} />
+              <input
+                className="w-full rounded-xl border border-black/15 bg-white pl-11 pr-4 py-3 text-sm outline-none focus:border-[#00a86b] focus:ring-1 focus:ring-[#00a86b]"
+                type="password"
+                autoComplete="current-password"
+                placeholder="Mật khẩu"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex items-center justify-center rounded-xl bg-[#11130f] px-4 py-3 font-semibold text-white transition-all hover:bg-[#04714a] disabled:opacity-50 cursor-pointer"
+            >
+              {isSubmitting ? (
+                <span className="flex items-center gap-2">
+                  <RefreshCw className="animate-spin" size={16} />
+                  Đang đăng nhập...
+                </span>
+              ) : (
+                "Đăng nhập"
+              )}
+            </button>
+            <p className="text-xs text-black/45">
+              Chưa có tài khoản?{" "}
+              <Link to="/admin/create" className="font-semibold text-[#04714a] hover:underline">
+                Tạo tài khoản
+              </Link>{" "}
+              (cần mã từ console của backend).
+            </p>
+          </form>
+        )}
+
+        {showDev && (
           <form
             onSubmit={handleDevLogin}
             className="mt-8 flex flex-col gap-4 rounded-2xl border border-amber-300 bg-amber-50/60 p-5"
@@ -193,7 +287,9 @@ export function LoginPage() {
           <p className="font-semibold text-black/70 mb-1 flex items-center gap-1.5">
             <Sparkles size={14} className="text-[#04714a]" /> Bảo mật & Tiện lợi:
           </p>
-          Hệ thống dùng đăng nhập một lần (SSO) của Microsoft, bạn không cần tạo mật khẩu riêng.
+          {microsoftReady
+            ? "Hệ thống dùng đăng nhập một lần (SSO) của Microsoft, bạn không cần tạo mật khẩu riêng."
+            : "Đăng nhập Microsoft chưa được bật, nên hệ thống tạm dùng email và mật khẩu."}
         </div>
       </div>
     </main>

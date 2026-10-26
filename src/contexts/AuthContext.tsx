@@ -11,6 +11,7 @@ interface AuthContextType {
   isAdmin: boolean;
   isLoading: boolean;
   devLogin: (email: string, name: string) => Promise<User>;
+  passwordLogin: (email: string, password: string) => Promise<User>;
   microsoftLogin: (code: string, codeVerifier: string, nonce: string) => Promise<User>;
   refreshUser: () => Promise<void>;
   setUser: (user: User) => void;
@@ -77,6 +78,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return loggedIn;
   };
 
+  const passwordLogin = async (email: string, password: string) => {
+    const loggedIn = await authApi.passwordLogin(email, password);
+    setUser(loggedIn);
+    return loggedIn;
+  };
+
   const microsoftLogin = async (code: string, codeVerifier: string, nonce: string) => {
     const loggedIn = await authApi.microsoftLogin(code, codeVerifier, nonce);
     setUser(loggedIn);
@@ -100,6 +107,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAdmin: user?.role === 'admin',
         isLoading,
         devLogin,
+        passwordLogin,
         microsoftLogin,
         refreshUser,
         setUser,
