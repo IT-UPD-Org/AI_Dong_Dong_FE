@@ -1,9 +1,9 @@
 import * as Sentry from '@sentry/react';
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { useTempsAnalytics } from '@temps-sdk/react-analytics';
 import { authApi } from '../api/auth.api';
 import { getStoredToken, removeStoredToken } from '../api/client';
 import type { User } from '../api/types';
+import { identifyUser } from '../lib/analytics';
 
 interface AuthContextType {
   user: User | null;
@@ -22,7 +22,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const { identify, trackEvent } = useTempsAnalytics();
   const trackedUserId = useRef<string | null>(null);
 
   // Tie error reports and analytics to the signed-in account. Only the opaque
@@ -38,12 +37,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (trackedUserId.current !== user.id) {
       trackedUserId.current = user.id;
-      // Temps 0.0.9's identify() is a no-op placeholder, so also send an
-      // explicit event that links the visitor/session to this user.
-      void identify(user.id, { role: user.role });
-      void trackEvent('user_login', { user_id: user.id, role: user.role });
+      identifyUser(user.id, { role: user.role });
     }
-  }, [user, identify, trackEvent]);
+  }, [user]);
 
   const clearSession = useCallback(() => {
     removeStoredToken();

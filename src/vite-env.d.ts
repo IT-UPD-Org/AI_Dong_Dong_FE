@@ -9,6 +9,9 @@ interface ImportMetaEnv {
   readonly VITE_MICROSOFT_REDIRECT_URI?: string;
   /** Sentry DSN; Sentry stays inactive when unset. */
   readonly VITE_SENTRY_DSN?: string;
+  /** Umami analytics loads in production builds only, and only when both are set. */
+  readonly VITE_UMAMI_WEBSITE_ID?: string;
+  readonly VITE_UMAMI_SCRIPT_URL?: string;
 }
 
 interface ImportMeta {
