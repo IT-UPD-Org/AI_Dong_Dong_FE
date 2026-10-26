@@ -4,6 +4,7 @@ import { NavLink, Outlet, useMatch, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { chatApi } from "../../api/chat.api";
 import type { Conversation } from "../../api/types";
+import { confirmAndDeleteChat } from "../../lib/deleteChat";
 import { DocumentProcessingNotifications } from "./DocumentProcessingNotifications";
 
 type IconProps = SVGProps<SVGSVGElement> & {
@@ -70,6 +71,16 @@ const ShieldCheckIcon = ({ size, ...props }: IconProps) => (
   <BaseIcon size={size} {...props}>
     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
     <path d="m9 12 2 2 4-4" />
+  </BaseIcon>
+);
+
+const Trash2Icon = ({ size, ...props }: IconProps) => (
+  <BaseIcon size={size} {...props}>
+    <path d="M3 6h18" />
+    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+    <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+    <path d="M10 11v6" />
+    <path d="M14 11v6" />
   </BaseIcon>
 );
 
@@ -144,6 +155,17 @@ export function AppShell() {
 
   const handleNewChat = () => {
     navigate("/chat", { state: { newChatKey: crypto.randomUUID() } });
+  };
+
+  const handleDeleteChat = async (id: string, title: string) => {
+    try {
+      if (!(await confirmAndDeleteChat(id, title))) return;
+    } catch {
+      window.alert("Không thể xoá cuộc trò chuyện. Vui lòng thử lại.");
+      return;
+    }
+    // Leaving a chat that no longer exists.
+    if (currentChatId === id) navigate("/chat", { state: { newChatKey: crypto.randomUUID() } });
   };
 
   return (
@@ -226,25 +248,35 @@ export function AppShell() {
               recentChats.map((conversation) => {
                 const isCurrent = currentChatId === conversation.id;
                 return (
-                  <NavLink
-                    key={conversation.id}
-                    to={`/c/${conversation.id}`}
-                    className={`
-                      w-full min-w-0
-                      truncate
-                      rounded-lg
-                      px-2.5 py-2
-                      text-left text-xs
-                      transition-colors
-                      ${
-                        isCurrent
-                          ? "bg-[#e8f7ef] font-semibold text-[#013422]"
-                          : "text-black/55 hover:bg-[#e8f7ef] hover:text-[#04714a]"
-                      }
-                    `}
-                  >
-                    {conversation.title}
-                  </NavLink>
+                  <div key={conversation.id} className="group relative">
+                    <NavLink
+                      to={`/c/${conversation.id}`}
+                      className={`
+                        block w-full min-w-0
+                        truncate
+                        rounded-lg
+                        py-2 pl-2.5 pr-8
+                        text-left text-xs
+                        transition-colors
+                        ${
+                          isCurrent
+                            ? "bg-[#e8f7ef] font-semibold text-[#013422]"
+                            : "text-black/55 hover:bg-[#e8f7ef] hover:text-[#04714a]"
+                        }
+                      `}
+                    >
+                      {conversation.title}
+                    </NavLink>
+                    <button
+                      type="button"
+                      aria-label={`Xoá cuộc trò chuyện ${conversation.title}`}
+                      title="Xoá"
+                      onClick={() => handleDeleteChat(conversation.id, conversation.title)}
+                      className="absolute right-1 top-1/2 -translate-y-1/2 rounded-md p-1 text-black/40 opacity-0 transition-opacity hover:bg-red-50 hover:text-red-600 focus:opacity-100 group-hover:opacity-100"
+                    >
+                      <Trash2Icon size={13} />
+                    </button>
+                  </div>
                 );
               })
             )}

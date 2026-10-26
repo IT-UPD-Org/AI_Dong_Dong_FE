@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { MessageSquare, ArrowRight, Clock } from "lucide-react";
+import { MessageSquare, ArrowRight, Clock, Trash2 } from "lucide-react";
 import { chatApi } from "../api/chat.api";
 import type { Conversation } from "../api/types";
+import { confirmAndDeleteChat } from "../lib/deleteChat";
 import { formatSnowflakeDate } from "../lib/snowflake";
 
 export function HistoryPage() {
@@ -22,6 +23,16 @@ export function HistoryPage() {
     }
     load();
   }, []);
+
+  async function handleDelete(id: string, title: string) {
+    try {
+      if (await confirmAndDeleteChat(id, title)) {
+        setConversations((current) => current.filter((c) => c.id !== id));
+      }
+    } catch {
+      window.alert("Không thể xoá cuộc trò chuyện. Vui lòng thử lại.");
+    }
+  }
 
   return (
     <main>
@@ -87,6 +98,20 @@ export function HistoryPage() {
                     {formatSnowflakeDate(c.id)}
                   </span>
                 )}
+                <button
+                  type="button"
+                  aria-label={`Xoá cuộc trò chuyện ${c.title}`}
+                  title="Xoá"
+                  onClick={(event) => {
+                    // Inside the link: keep the click from opening the chat.
+                    event.preventDefault();
+                    event.stopPropagation();
+                    void handleDelete(c.id, c.title);
+                  }}
+                  className="rounded-lg p-1.5 text-black/35 hover:bg-red-50 hover:text-red-600"
+                >
+                  <Trash2 size={15} />
+                </button>
                 <ArrowRight size={15} className="transition-transform group-hover:translate-x-1" />
               </div>
             </Link>

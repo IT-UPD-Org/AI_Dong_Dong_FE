@@ -13,6 +13,7 @@ import { ConversationScrollbar } from "../components/chat/ConversationScrollbar"
 import { useConversationNav } from "../components/chat/useConversationNav";
 import { MessageBubble } from "../components/chat/MessageBubble";
 import { MessageFeedbackPanel } from "../components/chat/MessageFeedbackPanel";
+import { chatApi } from "../api/chat.api";
 import type { ChatMessage, ChatStreamChunk } from "../api/types";
 
 type Reaction = "like" | "dislike";
@@ -50,6 +51,11 @@ export function ChatPage() {
 
   const [composerKey, setComposerKey] = useState(0);
   const [error, setError] = useState("");
+  // Set when the backend says a reply is already running. The user chooses
+  // whether to follow it; it is never resumed automatically.
+  const [runningElsewhere, setRunningElsewhere] = useState(false);
+  // True while this page is reading a reply stream (send or resume); shows the Stop button.
+  const [streaming, setStreaming] = useState(false);
 
   const [msgs, setMsgs] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -72,12 +78,14 @@ export function ChatPage() {
     let cancelled = false;
     streamControllerRef.current?.abort();
     streamControllerRef.current = null;
+    setStreaming(false);
     sessionRef.current += 1;
     conversationIdRef.current = conversationId;
     pendingCreatedIdRef.current = undefined;
     setMsgs([]);
     setInput("");
     setError("");
+    setRunningElsewhere(false);
     setLoading(Boolean(conversationId));
     setAttachmentIds([]);
     setMentionedDocumentIds([]);
@@ -135,11 +143,13 @@ export function ChatPage() {
       conversationId?: string;
       attachmentIds?: string[];
       mentionedDocumentIds?: string[];
+      userMsgId?: string;
     },
     assistantMsgId: string,
   ) {
     const controller = new AbortController();
     streamControllerRef.current = controller;
+    setStreaming(true);
     const session = ++sessionRef.current;
     const isCurrent = () => session === sessionRef.current && !controller.signal.aborted;
 
@@ -163,6 +173,14 @@ export function ChatPage() {
         },
         (chunk: ChatStreamChunk) => {
           if (!isCurrent()) return;
+          if (chunk.runInProgress) {
+            // The message was not saved: drop the optimistic user message and
+            // the empty reply placeholder, keep the text for a retry.
+            setMsgs((prev) => prev.filter((msg) => msg.id !== assistantMsgId && msg.id !== payload.userMsgId));
+            if (payload.message) setInput(payload.message);
+            setRunningElsewhere(true);
+            return;
+          }
           if (chunk.conversationId && !conversationIdRef.current) {
             conversationIdRef.current = chunk.conversationId;
             pendingCreatedIdRef.current = chunk.conversationId;
@@ -224,6 +242,7 @@ export function ChatPage() {
       if (isCurrent()) {
         setLoading(false);
         streamControllerRef.current = null;
+        setStreaming(false);
       }
     }
   }
@@ -247,11 +266,12 @@ export function ChatPage() {
     setMentionedDocumentIds([]);
 
     const assistantMsgId = crypto.randomUUID();
+    const userMsgId = crypto.randomUUID();
 
     setMsgs((m) => [
       ...m,
       {
-        id: crypto.randomUUID(),
+        id: userMsgId,
         role: "user",
         content: text,
         files: Array.from(new Set([...currentAttachments, ...currentMentions])),
@@ -265,9 +285,77 @@ export function ChatPage() {
         conversationId: conversationIdRef.current,
         attachmentIds: currentAttachments,
         mentionedDocumentIds: currentMentions,
+        userMsgId,
       },
       assistantMsgId,
     );
+  }
+
+  /** Ask the backend to stop the running reply; the stream then ends with `stopped`. */
+  async function stopReply() {
+    const id = conversationIdRef.current;
+    if (!id) {
+      // A new chat whose ID has not arrived yet: just stop reading.
+      streamControllerRef.current?.abort();
+      return;
+    }
+    try {
+      await chatApi.stopReply(id);
+    } catch {
+      // 409: it already finished. Nothing to stop.
+    }
+  }
+
+  /** Follow the reply that is already running, chosen by the user. */
+  async function followRunningReply() {
+    const id = conversationIdRef.current;
+    if (!id || streamControllerRef.current) return;
+    setRunningElsewhere(false);
+    const assistantMsgId = crypto.randomUUID();
+    setMsgs((m) => [...m, { id: assistantMsgId, role: "assistant", content: "", status: "idle" }]);
+
+    const controller = new AbortController();
+    streamControllerRef.current = controller;
+    setStreaming(true);
+    const session = ++sessionRef.current;
+    const isCurrent = () => session === sessionRef.current && !controller.signal.aborted;
+    markNearBottom();
+    setError("");
+    setLoading(true);
+    const update = (patch: (msg: ChatMessage) => ChatMessage) =>
+      setMsgs((prev) => prev.map((msg) => (msg.id === assistantMsgId ? patch(msg) : msg)));
+    try {
+      await chatApi.resumeReply(
+        id,
+        (chunk) => {
+          if (!isCurrent()) return;
+          update((msg) => ({
+            ...msg,
+            content: chunk.error !== undefined ? msg.content || `⚠️ ${chunk.error}` : msg.content + (chunk.delta ?? ""),
+            status: chunk.status || msg.status,
+            toolCalls: chunk.toolCalls ?? msg.toolCalls,
+          }));
+        },
+        (finalMsg) => {
+          if (!isCurrent()) return;
+          update((msg) => ({ ...msg, id: finalMsg.id || assistantMsgId, content: finalMsg.content, status: finalMsg.status }));
+          window.dispatchEvent(new CustomEvent("chats:updated"));
+        },
+        undefined,
+        controller.signal,
+      );
+    } catch (err) {
+      if (!isCurrent()) return;
+      // 400/409: nothing running (or still starting). Drop the placeholder.
+      setMsgs((prev) => prev.filter((msg) => msg.id !== assistantMsgId));
+      setError((err as Error).message || "Không thể theo dõi câu trả lời.");
+    } finally {
+      if (isCurrent()) {
+        setLoading(false);
+        streamControllerRef.current = null;
+        setStreaming(false);
+      }
+    }
   }
 
   async function handleEdit(index: number, newContent: string) {
@@ -403,6 +491,32 @@ export function ChatPage() {
         <p role="alert" className="shrink-0 px-4 py-2 text-sm text-red-600">
           {error}
         </p>
+      )}
+
+      {runningElsewhere && (
+        <div className="mx-auto flex w-full max-w-4xl shrink-0 items-center justify-between gap-3 px-4 py-2 text-sm">
+          <span className="text-black/60">Một câu trả lời khác đang chạy. Tin nhắn của bạn chưa được gửi.</span>
+          <button
+            type="button"
+            onClick={followRunningReply}
+            className="rounded-full border border-black/15 px-3 py-1 font-medium text-[#04714a] hover:bg-[#e8f7ef]"
+          >
+            Theo dõi câu trả lời
+          </button>
+        </div>
+      )}
+
+      {streaming && (
+        <div className="mx-auto flex w-full max-w-4xl shrink-0 justify-center px-4 pb-1">
+          <button
+            type="button"
+            onClick={stopReply}
+            className="flex items-center gap-1.5 rounded-full border border-black/15 bg-white px-3 py-1 text-sm font-medium text-black/70 shadow-sm hover:bg-black/5"
+          >
+            <span className="size-2.5 rounded-sm bg-current" aria-hidden />
+            Dừng trả lời
+          </button>
+        </div>
       )}
 
       <ModifiedPromptInput

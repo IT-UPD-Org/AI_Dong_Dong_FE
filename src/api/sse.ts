@@ -9,22 +9,32 @@ export interface SseEvent {
 /**
  * POST to an endpoint that responds with Server-Sent Events and yield each event.
  *
- * EventSource only supports GET, so streaming endpoints that take a body are
- * read manually from the fetch response stream.
+ * EventSource only supports GET and cannot send the auth header, so streams
+ * are read manually from the fetch response.
  */
-export async function* streamSse(
+export function streamSse(endpoint: string, body: BodyInit, signal?: AbortSignal): AsyncGenerator<SseEvent> {
+  return readSse(endpoint, 'POST', body, signal);
+}
+
+/** GET an SSE endpoint (for example `/resume`) and yield each event. Never reconnects on its own. */
+export function streamSseGet(endpoint: string, signal?: AbortSignal): AsyncGenerator<SseEvent> {
+  return readSse(endpoint, 'GET', undefined, signal);
+}
+
+async function* readSse(
   endpoint: string,
-  body: BodyInit,
+  method: 'GET' | 'POST',
+  body: BodyInit | undefined,
   signal?: AbortSignal,
 ): AsyncGenerator<SseEvent> {
   const headers = authHeaders({ Accept: 'text/event-stream' });
-  if (!(body instanceof FormData)) {
+  if (body !== undefined && !(body instanceof FormData)) {
     headers.set('Content-Type', 'application/json');
   }
 
   let response: Response;
   try {
-    response = await fetch(buildApiUrl(endpoint), { method: 'POST', headers, body, signal });
+    response = await fetch(buildApiUrl(endpoint), { method, headers, body, signal });
   } catch (error) {
     if ((error as Error).name === 'AbortError') throw error;
     throw new ApiError((error as Error).message || 'Lỗi kết nối mạng đến máy chủ.', 0);

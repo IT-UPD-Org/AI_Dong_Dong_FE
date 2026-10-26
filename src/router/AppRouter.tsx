@@ -20,12 +20,18 @@ import { InfoPage } from "../pages/InfoPage";
 import { ProjectTeamPage } from "../pages/ProjectTeamPage";
 import { CreateAccountPage } from "../pages/CreateAccountPage";
 
-/** `/chat` starts a new chat; old `/chat?id=X` links redirect to `/c/X`. */
+/**
+ * Shared element for `/chat` (new chat) and `/c/:id` (existing chat).
+ * Old `/chat?id=X` links redirect to `/c/X`.
+ *
+ * The fixed key keeps ChatPage mounted when a new chat's URL changes from
+ * /chat to /c/:id, so the reply that is still streaming is not cancelled.
+ */
 function ChatEntry() {
   const [params] = useSearchParams();
   const legacyId = params.get("id");
   if (legacyId) return <Navigate to={`/c/${encodeURIComponent(legacyId)}`} replace />;
-  return <ChatPage />;
+  return <ChatPage key="chat" />;
 }
 
 export function AppRouter() {
@@ -75,8 +81,10 @@ export function AppRouter() {
       {/* PROTECTED ROUTES: CHỈ TRUY CẬP ĐƯỢC SAU KHI ĐƯỢC CẤP QUYỀN (PERMISSION) */}
       <Route element={<ProtectedRoute />}>
         <Route element={<AppShell />}>
+          {/* One shared element (same key) for both paths: a new chat moves from
+              /chat to /c/:id mid-stream, and remounting would cancel the reply. */}
           <Route path="/chat" element={<ChatEntry />} />
-          <Route path="/c/:id" element={<ChatPage />} />
+          <Route path="/c/:id" element={<ChatEntry />} />
           <Route path="/history" element={<HistoryPage />} />
           <Route path="/knowledge" element={<KnowledgePage />} />
           <Route path="/documents" element={<DocumentsPage />} />

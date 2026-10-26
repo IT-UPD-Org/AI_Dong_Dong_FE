@@ -73,7 +73,7 @@ export interface Session {
 
 export type MessageRole = 'user' | 'assistant' | 'system';
 
-export type ChatStatus = 'idle' | 'thinking' | 'searching' | 'generating' | 'completed' | 'error';
+export type ChatStatus = 'idle' | 'thinking' | 'searching' | 'generating' | 'completed' | 'stopped' | 'error';
 
 export type ModelTypeEnum = 'instant' | 'standard' | 'detailed';
 
@@ -164,6 +164,8 @@ export interface ChatStreamChunk {
   conversationId?: string;
   title?: string;
   toolCalls?: BEToolCall[];
+  /** Another reply is already running; this message was not saved. Offer to follow it with resume. */
+  runInProgress?: boolean;
 }
 
 /** Conversation summary for lists/sidebar. */

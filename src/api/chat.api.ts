@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import { streamSse } from './sse';
+import { streamSse, streamSseGet, type SseEvent } from './sse';
 import type {
   AgentLevel,
   BEMessage,
@@ -76,6 +76,30 @@ export const chatApi = {
     return apiClient<ConversationDetail>(`/api/chats/${conversationId}`);
   },
 
+  /** Stop the running reply; the partial reply is kept. 409 when nothing is running. */
+  stopReply(conversationId: string): Promise<void> {
+    return apiClient<void>(`/api/chats/${conversationId}/stop`, { method: 'POST' });
+  },
+
+  /** Delete a conversation, stopping its reply first if one is running. */
+  deleteConversation(conversationId: string): Promise<void> {
+    return apiClient<void>(`/api/chats/${conversationId}`, { method: 'DELETE' });
+  },
+
+  /**
+   * Follow a reply that is already running, from its start (`GET /resume`).
+   * The caller decides when to call this; it is never started automatically.
+   */
+  resumeReply(
+    conversationId: string,
+    onChunk: (chunk: ChatStreamChunk) => void,
+    onFinish: (completeMessage: ChatMessage) => void,
+    onError?: (error: Error) => void,
+    signal?: AbortSignal,
+  ): Promise<void> {
+    return readReply(streamSseGet(`/api/chats/${conversationId}/resume`, signal), onChunk, onFinish, onError);
+  },
+
   /**
    * Send a message and stream the reply.
    *
@@ -95,53 +119,78 @@ export const chatApi = {
       model_type: payload.modelType || mapLevelToModelType(payload.modelLevel),
       files: payload.attachmentIds ?? [],
     });
-
-    let fullText = '';
-    let assistantId: string | undefined;
-    let toolCalls: BEToolCall[] = [];
-
-    try {
-      onChunk({ status: 'thinking' });
-
-      for await (const evt of streamSse(endpoint, body, signal)) {
-        if (evt.event === 'conversation_created') {
-          const data = evt.data as { id: string; title: string };
-          onChunk({ conversationId: String(data.id), title: data.title });
-          continue;
-        }
-        if (evt.event === 'user_message_id') {
-          continue;
-        }
-        if (evt.event === 'error') {
-          // Terminal: the agent failed and the backend closes the stream right after.
-          const detail = (evt.data as { detail?: string } | null)?.detail;
-          throw new Error(detail || 'Trợ lý không thể trả lời. Vui lòng thử lại.');
-        }
-
-        const data = evt.data as StreamPayload;
-        if (data?.message_id) assistantId = String(data.message_id);
-
-        if (evt.event === 'content' && data.content) {
-          fullText += data.content;
-          onChunk({ delta: data.content, status: 'generating', messageId: assistantId });
-        } else if (evt.event === 'tool_calls' && data.tool_calls) {
-          toolCalls = [...toolCalls, ...data.tool_calls];
-          onChunk({ status: 'searching', toolCalls, messageId: assistantId });
-        }
-      }
-
-      onFinish({
-        id: assistantId || crypto.randomUUID(),
-        role: 'assistant',
-        content: fullText,
-        status: 'completed',
-        toolCalls: toolCalls.length ? toolCalls : undefined,
-      });
-    } catch (err) {
-      const error = err as Error;
-      if (error.name === 'AbortError') return;
-      onChunk({ status: 'error', error: error.message });
-      onError?.(error);
-    }
+    return readReply(streamSse(endpoint, body, signal), onChunk, onFinish, onError);
   },
 };
+
+/**
+ * Turn a reply's SSE events into chunk/finish callbacks.
+ *
+ * Terminal events: `error` (agent failed), `stopped` (user stopped it; the
+ * partial reply is kept) and `run_in_progress` (another reply is already
+ * running; the message was not saved). For `run_in_progress` the caller is
+ * told via `runInProgress` and decides whether to call `resumeReply`; it is
+ * never resumed automatically.
+ */
+async function readReply(
+  events: AsyncGenerator<SseEvent>,
+  onChunk: (chunk: ChatStreamChunk) => void,
+  onFinish: (completeMessage: ChatMessage) => void,
+  onError?: (error: Error) => void,
+): Promise<void> {
+  let fullText = '';
+  let assistantId: string | undefined;
+  let toolCalls: BEToolCall[] = [];
+  let stopped = false;
+
+  try {
+    onChunk({ status: 'thinking' });
+
+    for await (const evt of events) {
+      if (evt.event === 'conversation_created') {
+        const data = evt.data as { id: string; title: string };
+        onChunk({ conversationId: String(data.id), title: data.title });
+        continue;
+      }
+      if (evt.event === 'user_message_id') {
+        continue;
+      }
+      if (evt.event === 'run_in_progress') {
+        onChunk({ status: 'idle', runInProgress: true });
+        return;
+      }
+      if (evt.event === 'stopped') {
+        stopped = true;
+        continue;
+      }
+      if (evt.event === 'error') {
+        const detail = (evt.data as { detail?: string } | null)?.detail;
+        throw new Error(detail || 'Trợ lý không thể trả lời. Vui lòng thử lại.');
+      }
+
+      const data = evt.data as StreamPayload;
+      if (data?.message_id) assistantId = String(data.message_id);
+
+      if (evt.event === 'content' && data.content) {
+        fullText += data.content;
+        onChunk({ delta: data.content, status: 'generating', messageId: assistantId });
+      } else if (evt.event === 'tool_calls' && data.tool_calls) {
+        toolCalls = [...toolCalls, ...data.tool_calls];
+        onChunk({ status: 'searching', toolCalls, messageId: assistantId });
+      }
+    }
+
+    onFinish({
+      id: assistantId || crypto.randomUUID(),
+      role: 'assistant',
+      content: fullText,
+      status: stopped ? 'stopped' : 'completed',
+      toolCalls: toolCalls.length ? toolCalls : undefined,
+    });
+  } catch (err) {
+    const error = err as Error;
+    if (error.name === 'AbortError') return;
+    onChunk({ status: 'error', error: error.message });
+    onError?.(error);
+  }
+}
