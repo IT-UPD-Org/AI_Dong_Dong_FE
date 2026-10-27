@@ -25,7 +25,19 @@ export function mapLevelToModelType(level?: AgentLevel): ModelTypeEnum {
   }
 }
 
+export const HIDDEN_REPLY_NOTICE = 'Câu trả lời này đã bị ẩn vì vi phạm quy định sử dụng.';
+const VIOLATION_FALLBACK = 'Tin nhắn của bạn không được gửi vì vi phạm quy định sử dụng.';
+
 export function convertBEMessageToChatMessage(msg: BEMessage): ChatMessage {
+  if (msg.type === 'agent' && msg.hidden) {
+    return {
+      id: String(msg.id),
+      role: 'assistant',
+      content: HIDDEN_REPLY_NOTICE,
+      status: 'completed',
+      hidden: true,
+    };
+  }
   if (msg.type === 'agent') {
     return {
       id: String(msg.id),
@@ -127,7 +139,8 @@ export const chatApi = {
  * Turn a reply's SSE events into chunk/finish callbacks.
  *
  * Terminal events: `error` (agent failed), `stopped` (user stopped it; the
- * partial reply is kept) and `run_in_progress` (another reply is already
+ * partial reply is kept), `violation` (moderation rejected the message; it
+ * was not saved) and `run_in_progress` (another reply is already
  * running; the message was not saved). For `run_in_progress` the caller is
  * told via `runInProgress` and decides whether to call `resumeReply`; it is
  * never resumed automatically.
@@ -142,6 +155,7 @@ async function readReply(
   let assistantId: string | undefined;
   let toolCalls: BEToolCall[] = [];
   let stopped = false;
+  let hidden = false;
 
   try {
     onChunk({ status: 'thinking' });
@@ -158,6 +172,15 @@ async function readReply(
       if (evt.event === 'run_in_progress') {
         onChunk({ status: 'idle', runInProgress: true });
         return;
+      }
+      if (evt.event === 'violation') {
+        const detail = (evt.data as { detail?: string } | null)?.detail;
+        onChunk({ status: 'idle', violation: detail || VIOLATION_FALLBACK });
+        return;
+      }
+      if (evt.event === 'output_violation') {
+        hidden = true;
+        continue;
       }
       if (evt.event === 'stopped') {
         stopped = true;
@@ -183,9 +206,10 @@ async function readReply(
     onFinish({
       id: assistantId || crypto.randomUUID(),
       role: 'assistant',
-      content: fullText,
+      content: hidden ? HIDDEN_REPLY_NOTICE : fullText,
       status: stopped ? 'stopped' : 'completed',
-      toolCalls: toolCalls.length ? toolCalls : undefined,
+      toolCalls: hidden || !toolCalls.length ? undefined : toolCalls,
+      hidden: hidden || undefined,
     });
   } catch (err) {
     const error = err as Error;

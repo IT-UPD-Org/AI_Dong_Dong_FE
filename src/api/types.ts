@@ -109,6 +109,9 @@ export interface BEAgentMessage {
   content: string | null;
   tool_calls?: BEToolCall[];
   complete: boolean;
+  /** Set when moderation flagged the reply; its content must not be shown. */
+  hidden?: boolean;
+  hidden_reason?: string | null;
 }
 
 export interface BESystemMessage {
@@ -145,6 +148,8 @@ export interface ChatMessage {
   status?: ChatStatus;
   toolCalls?: BEToolCall[];
   files?: string[];
+  /** The reply was hidden by moderation; content holds the notice instead. */
+  hidden?: boolean;
 }
 
 export interface SendMessagePayload {
@@ -166,6 +171,8 @@ export interface ChatStreamChunk {
   toolCalls?: BEToolCall[];
   /** Another reply is already running; this message was not saved. Offer to follow it with resume. */
   runInProgress?: boolean;
+  /** Moderation rejected the user's message; it was not saved. Holds the reason to show. */
+  violation?: string;
 }
 
 /** Conversation summary for lists/sidebar. */

@@ -181,6 +181,14 @@ export function ChatPage() {
             setRunningElsewhere(true);
             return;
           }
+          if (chunk.violation) {
+            // Rejected by moderation and not saved: drop the optimistic messages,
+            // keep the text so the user can edit it, and show why.
+            setMsgs((prev) => prev.filter((msg) => msg.id !== assistantMsgId && msg.id !== payload.userMsgId));
+            if (payload.message) setInput(payload.message);
+            setError(chunk.violation);
+            return;
+          }
           if (chunk.conversationId && !conversationIdRef.current) {
             conversationIdRef.current = chunk.conversationId;
             pendingCreatedIdRef.current = chunk.conversationId;
@@ -218,6 +226,7 @@ export function ChatPage() {
                     sources: finalMsg.sources,
                     toolCalls: finalMsg.toolCalls,
                     status: finalMsg.status,
+                    hidden: finalMsg.hidden,
                   }
                 : msg,
             ),
@@ -329,6 +338,11 @@ export function ChatPage() {
         id,
         (chunk) => {
           if (!isCurrent()) return;
+          if (chunk.violation) {
+            setMsgs((prev) => prev.filter((msg) => msg.id !== assistantMsgId));
+            setError(chunk.violation);
+            return;
+          }
           update((msg) => ({
             ...msg,
             content: chunk.error !== undefined ? msg.content || `⚠️ ${chunk.error}` : msg.content + (chunk.delta ?? ""),
@@ -338,7 +352,13 @@ export function ChatPage() {
         },
         (finalMsg) => {
           if (!isCurrent()) return;
-          update((msg) => ({ ...msg, id: finalMsg.id || assistantMsgId, content: finalMsg.content, status: finalMsg.status }));
+          update((msg) => ({
+            ...msg,
+            id: finalMsg.id || assistantMsgId,
+            content: finalMsg.content,
+            status: finalMsg.status,
+            hidden: finalMsg.hidden,
+          }));
           window.dispatchEvent(new CustomEvent("chats:updated"));
         },
         undefined,
