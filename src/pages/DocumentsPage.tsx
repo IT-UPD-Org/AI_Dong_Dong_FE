@@ -118,9 +118,9 @@ export function DocumentsPage() {
   const strokeDashoffset = circumference - (percentUsed / 100) * circumference;
 
   return (
-    <main>
+    <main className="px-4 py-6 sm:px-6 sm:py-8">
       <p className="font-mono text-xs uppercase tracking-[.18em] text-[#04714a]">Kho tài liệu</p>
-      <h1 className="mt-3 text-5xl font-bold tracking-[-.07em]">Documents</h1>
+      <h1 className="mt-3 text-3xl sm:text-5xl font-bold tracking-[-.07em]">Documents</h1>
 
       {storage && (
         <div className="mt-10 flex flex-col md:flex-row items-center gap-6 rounded-3xl border border-black/10 bg-white p-6 shadow-sm">

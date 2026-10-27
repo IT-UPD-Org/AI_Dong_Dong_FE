@@ -44,6 +44,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const clearSession = useCallback(() => {
     removeStoredToken();
+    if (import.meta.env.DEV) {
+      localStorage.removeItem('dev_mock_user');
+    }
     setUser(null);
   }, []);
 
@@ -54,9 +57,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (getStoredToken()) {
         try {
           const currentUser = await authApi.getCurrentUser();
-          if (!cancelled) setUser(currentUser);
+          if (!cancelled) {
+            if (import.meta.env.DEV) {
+              const devOverride = localStorage.getItem('dev_mock_user');
+              if (devOverride) {
+                try {
+                  const parsed = JSON.parse(devOverride);
+                  setUser({ ...currentUser, role: parsed.role, name: parsed.name || currentUser.name });
+                  setIsLoading(false);
+                  return;
+                } catch {}
+              }
+            }
+            setUser(currentUser);
+          }
         } catch {
-          if (!cancelled) clearSession();
+          if (!cancelled) {
+            if (import.meta.env.DEV) {
+              const devOverride = localStorage.getItem('dev_mock_user');
+              if (devOverride) {
+                try {
+                  const parsed = JSON.parse(devOverride);
+                  setUser(parsed);
+                  setIsLoading(false);
+                  return;
+                } catch {}
+              }
+            }
+            clearSession();
+          }
         }
       }
       if (!cancelled) setIsLoading(false);
@@ -95,8 +124,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = async () => {
-    await authApi.logout();
-    setUser(null);
+    try {
+      await authApi.logout();
+    } catch {
+      // Local session is cleared regardless of network error
+    } finally {
+      if (import.meta.env.DEV) {
+        localStorage.removeItem('dev_mock_user');
+      }
+      setUser(null);
+    }
   };
 
   return (

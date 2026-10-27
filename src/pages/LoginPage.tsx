@@ -1,10 +1,21 @@
 import { FormEvent, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { AlertCircle, ArrowLeft, ArrowUpRight, Check, CheckCircle2, KeyRound, Mail, RefreshCw, Sparkles, UserRound } from "lucide-react";
-import { authApi } from "../api/auth.api";
-import type { AuthMethods } from "../api/types";
+import {
+  AlertCircle,
+  ArrowLeft,
+  ArrowUpRight,
+  Check,
+  CheckCircle2,
+  Mail,
+  RefreshCw,
+  Sparkles,
+  UserRound,
+} from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
-import { startMicrosoftLogin } from "../lib/microsoftAuth";
+import {
+  isMicrosoftConfigured,
+  startMicrosoftLogin,
+} from "../lib/microsoftAuth";
 
 // Dev login also needs `vite dev`; the backend separately refuses it outside dev mode.
 const IS_DEV = import.meta.env.DEV;
@@ -29,14 +40,23 @@ function getRoleInfo(emailValue: string) {
   if (cleanEmail.endsWith("@pduni.edu.vn")) {
     return { type: "student" as const, label: "Sinh viên Phương Đông" };
   }
-  return { type: "other" as const, label: "Tài khoản thử nghiệm (chỉ dùng khi dev)" };
+  return {
+    type: "other" as const,
+    label: "Tài khoản thử nghiệm (chỉ dùng khi dev)",
+  };
 }
 
 export function LoginPage() {
   const { devLogin, passwordLogin } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const redirectTo: string = (location.state as { from?: string } | null)?.from ?? "/chat";
+  const redirectTo: string =
+    (location.state as { from?: string } | null)?.from ?? "/chat";
+
+  // Cho phép chuyển đổi nhanh giữa 2 chế độ ngay trên UI khi đang dev
+  const [activeMode, setActiveMode] = useState<"temporary" | "official">(
+    USE_TEMPORARY_LOGIN ? "temporary" : "official",
+  );
 
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
@@ -53,7 +73,10 @@ export function LoginPage() {
         if (!cancelled) setMethods(m);
       })
       .catch(() => {
-        if (!cancelled) setError("Không thể tải phương thức đăng nhập. Vui lòng tải lại trang.");
+        if (!cancelled)
+          setError(
+            "Không thể tải phương thức đăng nhập. Vui lòng tải lại trang.",
+          );
       });
     return () => {
       cancelled = true;
@@ -90,7 +113,9 @@ export function LoginPage() {
     try {
       await startMicrosoftLogin(redirectTo);
     } catch (err) {
-      setError((err as Error).message || "Không thể bắt đầu đăng nhập Microsoft.");
+      setError(
+        (err as Error).message || "Không thể bắt đầu đăng nhập Microsoft.",
+      );
       setIsSubmitting(false);
     }
   }
@@ -110,29 +135,65 @@ export function LoginPage() {
       await devLogin(cleanEmail, displayName);
       navigate(redirectTo, { replace: true });
     } catch (err) {
-      setError((err as Error).message || "Đăng nhập thất bại. Vui lòng thử lại.");
+      setError(
+        (err as Error).message || "Đăng nhập thất bại. Vui lòng thử lại.",
+      );
     } finally {
       setIsSubmitting(false);
     }
   }
 
-  return (
-    <main className="grid min-h-[calc(100vh-80px)] place-items-center px-6 py-6">
-      <div className="w-full max-w-lg">
-        <Link
-          to="/"
-          className="mb-6 inline-flex items-center gap-2 text-sm text-black/55 hover:text-black transition-colors"
-        >
-          <ArrowLeft size={16} />
-          Trở về trang chủ
-        </Link>
+  // =======================================================================
+  // LOGIN MODE A — TEMPORARY DEVELOPMENT LOGIN
+  // Dùng cho phát triển và demo nội bộ.
+  // Khi cần dùng lại đăng nhập chuẩn, đổi USE_TEMPORARY_LOGIN = false
+  // hoặc comment khối if bên dưới.
+  // =======================================================================
+  if (activeMode === "temporary") {
+    return (
+      <TemporaryLogin
+        redirectTo={redirectTo}
+        onSwitchToOfficial={() => setActiveMode("official")}
+      />
+    );
+  }
 
-        <p className="text-xs uppercase tracking-[.18em] text-[#04714a]">Tài khoản nhà trường</p>
-        <h1 className="mt-2 text-2xl font-bold tracking-[-.06em] md:text-4xl text-[#11130f]">
+  // =======================================================================
+  // LOGIN MODE B — OFFICIAL AUTHENTICATION
+  // Luồng đăng nhập chuẩn hiện tại của dự án (Microsoft OAuth + Dev form).
+  // Khi quay lại production, đảm bảo nhánh này hoạt động và USE_TEMPORARY_LOGIN = false.
+  // =======================================================================
+  return (
+    <main className="grid min-h-[calc(100vh-80px)] place-items-center px-4 py-8 sm:px-6">
+      <div className="w-full max-w-lg">
+        <div className="flex items-center justify-between mb-6">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 text-sm text-black/55 hover:text-black transition-colors"
+          >
+            <ArrowLeft size={16} />
+            Trở về trang chủ
+          </Link>
+          {IS_DEV && (
+            <button
+              type="button"
+              onClick={() => setActiveMode("temporary")}
+              className="text-xs font-semibold text-[#04714a] bg-[#e8f7ef] hover:bg-[#d1efe0] px-2.5 py-1 rounded-full transition-colors cursor-pointer"
+            >
+              Chuyển sang Đăng nhập thử nghiệm
+            </button>
+          )}
+        </div>
+
+        <p className="text-xs uppercase tracking-[.18em] text-[#04714a]">
+          Tài khoản nhà trường
+        </p>
+        <h1 className="mt-2 text-2xl font-bold tracking-[-.06em] sm:text-3xl md:text-4xl text-[#11130f]">
           Đăng nhập vào IT UPD GenAI.
         </h1>
-        <p className="mt-2 text-black/60 text-sm leading-relaxed">
-          Sử dụng tài khoản Microsoft của trường (@pduni.edu.vn cho sinh viên, @phuongdong.edu.vn cho giảng viên).
+        <p className="mt-2 text-black/60 text-xs sm:text-sm leading-relaxed">
+          Sử dụng tài khoản Microsoft của trường (@pduni.edu.vn cho sinh viên,
+          @phuongdong.edu.vn cho giảng viên).
         </p>
 
         {error && (
@@ -142,83 +203,46 @@ export function LoginPage() {
           </div>
         )}
 
-        {methods === null && !error && (
-          <div className="mt-8 flex items-center justify-center gap-2 text-sm text-black/50">
+        <button
+          type="button"
+          onClick={handleMicrosoftLogin}
+          disabled={isSubmitting || !microsoftReady}
+          className="mt-8 flex w-full items-center justify-center gap-3 rounded-xl bg-[#11130f] px-4 py-3 font-semibold text-white transition-all hover:bg-[#04714a] disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+        >
+          {isSubmitting && !IS_DEV ? (
             <RefreshCw className="animate-spin" size={16} />
-            Đang tải...
-          </div>
-        )}
-
-        {microsoftReady && (
-          <button
-            type="button"
-            onClick={handleMicrosoftLogin}
-            disabled={isSubmitting}
-            className="mt-8 flex w-full items-center justify-center gap-3 rounded-xl bg-[#11130f] px-4 py-3 font-semibold text-white transition-all hover:bg-[#04714a] disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
-          >
-            {isSubmitting ? <RefreshCw className="animate-spin" size={16} /> : <MicrosoftLogo />}
-            Đăng nhập bằng Microsoft
-            <ArrowUpRight size={16} />
-          </button>
-        )}
-
-        {showPassword && (
-          <form onSubmit={handlePasswordLogin} className="mt-8 flex flex-col gap-4">
-            <div className="relative">
-              <Mail className="absolute left-4 top-3.5 text-black/35" size={18} />
-              <input
-                className="w-full rounded-xl border border-black/15 bg-white pl-11 pr-4 py-3 text-sm outline-none focus:border-[#00a86b] focus:ring-1 focus:ring-[#00a86b]"
-                type="email"
-                autoComplete="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div className="relative">
-              <KeyRound className="absolute left-4 top-3.5 text-black/35" size={18} />
-              <input
-                className="w-full rounded-xl border border-black/15 bg-white pl-11 pr-4 py-3 text-sm outline-none focus:border-[#00a86b] focus:ring-1 focus:ring-[#00a86b]"
-                type="password"
-                autoComplete="current-password"
-                placeholder="Mật khẩu"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="flex items-center justify-center rounded-xl bg-[#11130f] px-4 py-3 font-semibold text-white transition-all hover:bg-[#04714a] disabled:opacity-50 cursor-pointer"
-            >
-              {isSubmitting ? (
-                <span className="flex items-center gap-2">
-                  <RefreshCw className="animate-spin" size={16} />
-                  Đang đăng nhập...
-                </span>
-              ) : (
-                "Đăng nhập"
-              )}
-            </button>
-          </form>
+          ) : (
+            <MicrosoftLogo />
+          )}
+          Đăng nhập bằng Microsoft
+          <ArrowUpRight size={16} />
+        </button>
+        {!microsoftReady && (
+          <p className="mt-2 text-xs text-black/45">
+            Đăng nhập Microsoft chưa được cấu hình (VITE_MICROSOFT_TENANT_ID,
+            VITE_MICROSOFT_CLIENT_ID).
+          </p>
         )}
 
         {showDev && (
           <form
             onSubmit={handleDevLogin}
-            className="mt-8 flex flex-col gap-4 rounded-2xl border border-amber-300 bg-amber-50/60 p-5"
+            className="mt-8 flex flex-col gap-4 rounded-2xl border border-amber-300 bg-amber-50/60 p-4 sm:p-5"
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-amber-900">Đăng nhập Dev</span>
+              <span className="text-xs font-semibold text-amber-900">
+                Đăng nhập Dev (Thủ công)
+              </span>
               <span className="text-[10px] uppercase font-bold text-amber-700 bg-amber-200/60 px-2 py-0.5 rounded-full">
                 Chỉ khi chạy vite dev
               </span>
             </div>
 
             <div className="relative">
-              <Mail className="absolute left-4 top-3.5 text-black/35" size={18} />
+              <Mail
+                className="absolute left-4 top-3.5 text-black/35"
+                size={18}
+              />
               <input
                 className="w-full rounded-xl border border-black/15 bg-white pl-11 pr-4 py-3 text-sm outline-none focus:border-[#00a86b] focus:ring-1 focus:ring-[#00a86b]"
                 type="email"
@@ -229,7 +253,10 @@ export function LoginPage() {
               />
             </div>
             <div className="relative">
-              <UserRound className="absolute left-4 top-3.5 text-black/35" size={18} />
+              <UserRound
+                className="absolute left-4 top-3.5 text-black/35"
+                size={18}
+              />
               <input
                 className="w-full rounded-xl border border-black/15 bg-white pl-11 pr-4 py-3 text-sm outline-none focus:border-[#00a86b] focus:ring-1 focus:ring-[#00a86b]"
                 type="text"
@@ -262,7 +289,7 @@ export function LoginPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex items-center justify-center rounded-xl bg-[#04714a] px-4 py-3 font-semibold text-white transition-all hover:bg-[#03593a] disabled:opacity-50 cursor-pointer"
+              className="flex items-center justify-center rounded-xl bg-[#04714a] px-4 py-3 font-semibold text-white transition-all hover:bg-[#03593a] disabled:opacity-50 cursor-pointer text-sm sm:text-base"
             >
               {isSubmitting ? (
                 <span className="flex items-center gap-2">
@@ -278,11 +305,11 @@ export function LoginPage() {
 
         <div className="mt-8 rounded-2xl border border-black/5 bg-[#fcfcfb] p-4 text-xs text-black/50 leading-relaxed">
           <p className="font-semibold text-black/70 mb-1 flex items-center gap-1.5">
-            <Sparkles size={14} className="text-[#04714a]" /> Bảo mật & Tiện lợi:
+            <Sparkles size={14} className="text-[#04714a]" /> Bảo mật & Tiện
+            lợi:
           </p>
-          {microsoftReady
-            ? "Hệ thống dùng đăng nhập một lần (SSO) của Microsoft, bạn không cần tạo mật khẩu riêng."
-            : "Đăng nhập Microsoft chưa được bật, nên hệ thống tạm dùng email và mật khẩu."}
+          Hệ thống dùng đăng nhập một lần (SSO) của Microsoft, bạn không cần tạo
+          mật khẩu riêng.
         </div>
       </div>
     </main>

@@ -2,21 +2,44 @@ import { ArrowUpRight, Image as ImageIcon, UserRound } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
   backendMembers,
-  databaseMember,
-  dataMembers,
-  frontendMember,
+  databaseMembers,
+  frontendMembers,
+  managerMember,
   projectClub,
   projectMemberCount,
   type ProjectMember,
 } from "../data/projectTeam";
 import "./ProjectTeamPage.css";
 
+type MemberGroup = "frontend" | "backend" | "database";
+
+/** Mỗi nhóm dev luôn hiển thị ít nhất 3 ô; ô thiếu là skeleton trống. */
+const GROUP_SLOTS = 3;
+
+const VIETNAMESE_COUNTS = [
+  "Không",
+  "Một",
+  "Hai",
+  "Ba",
+  "Bốn",
+  "Năm",
+  "Sáu",
+  "Bảy",
+  "Tám",
+  "Chín",
+  "Mười",
+];
+
+function padCount(count: number) {
+  return String(count).padStart(2, "0");
+}
+
 function MemberCard({
   member,
   group,
 }: {
   member: ProjectMember;
-  group: "frontend" | "backend" | "database" | "data";
+  group: MemberGroup;
 }) {
   return (
     <article
@@ -44,9 +67,7 @@ function MemberCard({
         <span className="project-team__photo-number" aria-hidden="true">
           {member.number}
         </span>
-        <span className="project-team__photo-tag">
-          {group === "data" ? "DỮ LIỆU" : group.toUpperCase()}
-        </span>
+        <span className="project-team__photo-tag">{group.toUpperCase()}</span>
       </div>
       <div className="project-team__caption">
         <h3>{member.name}</h3>
@@ -54,6 +75,23 @@ function MemberCard({
       </div>
       <p className="project-team__bio">{member.contribution}</p>
     </article>
+  );
+}
+
+/** Ô trống giữ chỗ để nhóm ít người vẫn đủ 3 cột bậc thang. */
+function SkeletonCard() {
+  return (
+    <div
+      className="project-team__member project-team__skeleton"
+      aria-hidden="true"
+    >
+      <div className="project-team__portrait" />
+      <div className="project-team__caption">
+        <span className="project-team__skeleton-line project-team__skeleton-line--title" />
+        <span className="project-team__skeleton-line project-team__skeleton-line--role" />
+      </div>
+      <span className="project-team__skeleton-line project-team__skeleton-line--bio" />
+    </div>
   );
 }
 
@@ -81,7 +119,50 @@ function GroupHeading({
   );
 }
 
+function TeamGroup({
+  id,
+  index,
+  title,
+  description,
+  group,
+  members,
+}: {
+  id: string;
+  index: string;
+  title: string;
+  description: string;
+  group: MemberGroup;
+  members: ProjectMember[];
+}) {
+  const emptySlots = Math.max(0, GROUP_SLOTS - members.length);
+  return (
+    <section
+      className={`project-team__group project-team__group--${group}`}
+      aria-labelledby={id}
+    >
+      <GroupHeading
+        id={id}
+        index={index}
+        title={title}
+        count={members.length}
+      />
+      <p className="project-team__group-description">{description}</p>
+      <div className="project-team__trio">
+        {members.map((member) => (
+          <MemberCard key={member.id} member={member} group={group} />
+        ))}
+        {Array.from({ length: emptySlots }, (_, slot) => (
+          <SkeletonCard key={`empty-${slot}`} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export function ProjectTeamPage() {
+  const memberCountWord =
+    VIETNAMESE_COUNTS[projectMemberCount] ?? String(projectMemberCount);
+
   return (
     <div className="project-team">
       <nav className="project-team__mobile-nav" aria-label="Điều hướng trang">
@@ -99,7 +180,7 @@ export function ProjectTeamPage() {
           <p className="project-team__eyebrow">ĐỘI NGŨ / IT UPD GenAI</p>
           <div className="project-team__intro-row">
             <h1 id="project-team-title">
-              Bảy mảnh ghép
+              {memberCountWord} mảnh ghép
               <br />
               <span>Một tầm nhìn.</span>
             </h1>
@@ -112,12 +193,10 @@ export function ProjectTeamPage() {
             className="project-team__roles"
             aria-label={`Vai trò của ${projectMemberCount} thành viên`}
           >
-            <li>01 Frontend</li>
-            <li>{String(backendMembers.length).padStart(2, "0")} Backend</li>
-            <li>01 Database</li>
-            <li>
-              {String(dataMembers.length).padStart(2, "0")} Thu thập dữ liệu
-            </li>
+            <li>01 Project Manager</li>
+            <li>{padCount(backendMembers.length)} Backend Developer</li>
+            <li>{padCount(frontendMembers.length)} Frontend Developer</li>
+            <li>{padCount(databaseMembers.length)} Database Developer</li>
           </ul>
         </section>
 
@@ -129,9 +208,9 @@ export function ProjectTeamPage() {
             <GroupHeading
               id="project-team-frontend"
               index="01"
-              title="Frontend"
+              title="Project Manager"
             />
-            <MemberCard member={frontendMember} group="frontend" />
+            <MemberCard member={managerMember} group="frontend" />
           </section>
           <section
             className="project-team__club"
@@ -179,64 +258,33 @@ export function ProjectTeamPage() {
           </section>
         </div>
 
-        <div className="project-team__engineering">
-          <section
-            className="project-team__backend"
-            aria-labelledby="project-team-backend"
-          >
-            <GroupHeading
-              id="project-team-backend"
-              index="02"
-              title="Backend"
-              count={backendMembers.length}
-            />
-            <p className="project-team__group-description">
-              Xây dựng phần xử lý phía sau mỗi tương tác.
-            </p>
-            <div className="project-team__pair">
-              {backendMembers.map((member) => (
-                <MemberCard key={member.id} member={member} group="backend" />
-              ))}
-            </div>
-          </section>
-          <section
-            className="project-team__database"
-            aria-labelledby="project-team-database"
-          >
-            <GroupHeading
-              id="project-team-database"
-              index="03"
-              title="Database"
-            />
-            <MemberCard member={databaseMember} group="database" />
-          </section>
+        {/* Mỗi nhóm: 3 ô thụt dần xuống, nhóm thiếu người được bù skeleton. */}
+        <div className="project-team__groups">
+          <TeamGroup
+            id="project-team-backend"
+            index="02"
+            title="Backend Developer"
+            description="Xây dựng phần xử lý phía sau mỗi tương tác."
+            group="backend"
+            members={backendMembers}
+          />
+          <TeamGroup
+            id="project-team-frontend-dev"
+            index="03"
+            title="Frontend Developer"
+            description="Thiết kế giao diện người dùng."
+            group="frontend"
+            members={frontendMembers}
+          />
+          <TeamGroup
+            id="project-team-database"
+            index="04"
+            title="Database Developer"
+            description="Thiết kế và vận hành nơi lưu trữ tri thức."
+            group="database"
+            members={databaseMembers}
+          />
         </div>
-
-        <section
-          className="project-team__data"
-          aria-labelledby="project-team-data"
-        >
-          <div className="project-team__data-intro">
-            <GroupHeading
-              id="project-team-data"
-              index="04"
-              title="Thu thập dữ liệu"
-            />
-            <p>
-              Tri thức bắt đầu
-              <br />
-              từ những nguồn dữ liệu.
-            </p>
-            <span className="project-team__count">
-              {dataMembers.length} thành viên
-            </span>
-          </div>
-          <div className="project-team__trio">
-            {dataMembers.map((member) => (
-              <MemberCard key={member.id} member={member} group="data" />
-            ))}
-          </div>
-        </section>
       </main>
 
       <footer className="project-team__footer">

@@ -329,29 +329,77 @@ export function AppShell() {
             IT UPD GenAI<span className="text-[#00a86b]">.</span>
           </NavLink>
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={handleNewChat}
-                className="p-1 text-black/70 hover:text-black cursor-pointer"
-                title="Cuộc trò chuyện mới"
-              >
-                <PlusIcon size={20} />
-              </button>
-              <NavLink to="/settings">
-                <SettingsIcon size={18} />
-              </NavLink>
-              <button onClick={handleLogout} className="text-red-600 cursor-pointer">
-                <LogOutIcon size={18} />
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={handleNewChat}
+              className="p-1.5 text-black/70 hover:text-black cursor-pointer"
+              title="Cuộc trò chuyện mới"
+            >
+              <PlusIcon size={20} />
+            </button>
+            <NavLink to="/profile" className="p-1.5 text-black/70 hover:text-[#04714a]">
+              <UserRoundIcon size={18} />
+            </NavLink>
+            <button
+              onClick={handleLogout}
+              className="p-1.5 text-red-600 hover:text-red-700 cursor-pointer"
+              title="Đăng xuất"
+            >
+              <LogOutIcon size={18} />
+            </button>
           </div>
         </header>
 
-        <main className="flex-1 min-h-0 overflow-y-auto">
+        {/* Main content — pb-16 on mobile to clear the bottom nav */}
+        <main className="flex-1 min-h-0 overflow-y-auto pb-16 md:pb-0">
           <Outlet />
         </main>
       </div>
+
+      {/* Mobile Bottom Navigation */}
+      <nav className="fixed bottom-0 inset-x-0 z-40 flex md:hidden border-t border-black/10 bg-white safe-area-inset-bottom">
+        {links.map(([to, label, Icon]) => (
+          <NavLink
+            key={to}
+            to={to}
+            end={to === "/chat"}
+            className={({ isActive }) =>
+              `flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] transition-colors ${
+                isActive && (to !== "/chat" || !currentChatId)
+                  ? "text-[#04714a] font-semibold"
+                  : "text-black/45 hover:text-[#04714a]"
+              }`
+            }
+          >
+            {({ isActive }) => (
+              <>
+                <Icon
+                  size={20}
+                  className={isActive && (to !== "/chat" || !currentChatId) ? "text-[#04714a]" : ""}
+                />
+                <span className="leading-none">{label}</span>
+              </>
+            )}
+          </NavLink>
+        ))}
+        {isAdmin && (
+          <NavLink
+            to="/admin"
+            className={({ isActive }) =>
+              `flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] transition-colors ${
+                isActive ? "text-[#04714a] font-semibold" : "text-black/45 hover:text-[#04714a]"
+              }`
+            }
+          >
+            {({ isActive }) => (
+              <>
+                <ShieldCheckIcon size={20} className={isActive ? "text-[#04714a]" : ""} />
+                <span className="leading-none">Quản trị</span>
+              </>
+            )}
+          </NavLink>
+        )}
+      </nav>
 
       <DocumentProcessingNotifications />
       {deleteChatDialog}

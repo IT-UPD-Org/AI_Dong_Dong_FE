@@ -1,11 +1,11 @@
 import { contributors } from "../mocks/data";
 export function ContributorsPage() {
   return (
-    <main>
+    <main className="px-4 py-6 sm:px-6 sm:py-8">
       <p className="mono text-xs uppercase tracking-[.18em] text-[#04714a]">
         The people behind it
       </p>
-      <h1 className="mt-3 text-5xl font-bold tracking-[-.07em]">
+      <h1 className="mt-3 text-3xl sm:text-5xl font-bold tracking-[-.07em]">
         Contributors
       </h1>
       <p className="mt-4 max-w-xl text-black/55">

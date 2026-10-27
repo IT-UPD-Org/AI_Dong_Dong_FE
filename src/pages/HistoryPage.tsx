@@ -29,11 +29,11 @@ export function HistoryPage() {
   );
 
   return (
-    <main>
+    <main className="px-4 py-6 sm:px-6 sm:py-8">
       <p className="font-mono text-xs uppercase tracking-[.18em] text-[#04714a]">
         Lịch sử trò chuyện
       </p>
-      <h1 className="mt-3 mb-8 text-5xl font-bold tracking-[-.07em]">
+      <h1 className="mt-3 mb-8 text-3xl sm:text-5xl font-bold tracking-[-.07em]">
         Conversations
       </h1>
 

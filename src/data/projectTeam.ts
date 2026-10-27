@@ -7,81 +7,90 @@ export interface ProjectMember {
   photoSrc?: string;
 }
 
-// Điền link ảnh trực tiếp vào photoSrc, ví dụ: "https://example.com/anh.jpg".
-// Hoặc đặt ảnh trong public/assets/team rồi dùng: "/assets/team/anh.jpg".
+// Ảnh đặt trong public/ được phục vụ từ gốc "/": ghi "/assets/...", KHÔNG ghi "/public/...".
 // Để trống photoSrc sẽ giữ ô ảnh mẫu.
-export const frontendMember: ProjectMember = {
-  id: "frontend",
+export const managerMember: ProjectMember = {
+  id: "Project Manager",
   number: "01",
-  name: "Thành viên Frontend",
-  photoSrc: "/public/assets/images/Binhngu.png",
-  role: "Frontend developer",
+  name: "Thầy Nguyễn Mạnh Dũng",
+  photoSrc: "/assets/images/Binhngu.png",
+  role: "Project Manager",
   contribution:
-    "Mang ý tưởng lên màn hình, chăm chút giao diện và trải nghiệm sử dụng.",
+    "Quản lý dự án, điều phối các thành viên và đảm bảo tiến độ. Đảm bảo chất lượng sản phẩm và sự hợp tác hiệu quả giữa các thành viên.",
 };
 
 export const backendMembers: ProjectMember[] = [
   {
     id: "backend-1",
-    number: "02",
-    name: "Thành viên Backend 01",
-    photoSrc: "/public/assets/images/anh2.png",
-    role: "Backend developer",
+    number: "01",
+    name: "Sinh viên Nguyễn Dương Tuấn",
+    photoSrc: "/assets/images/dev-avt/BE1dev.jpg",
+    role: "Backend Developer",
     contribution: "Phát triển Backend.",
   },
   {
     id: "backend-2",
+    number: "02",
+    name: "Sinh viên Vương Đình Bình",
+    photoSrc: "/assets/images/dev-avt/BE2dev.jpg",
+    role: "Backend Developer",
+    contribution: "Phát triển Backend.",
+  },
+  {
+    id: "backend-3",
     number: "03",
-    name: "Thành viên Backend 02",
-    photoSrc: "",
-    role: "Backend developer",
+    name: "Sinh viên Phan Thị Khánh Linh",
+    photoSrc: "/assets/images/dev-avt/BE3dev.jpg",
+    role: "Backend Developer",
     contribution: "Phát triển Backend.",
   },
 ];
 
-export const databaseMember: ProjectMember = {
-  id: "database",
-  number: "04",
-  name: "Thành viên Database",
-  photoSrc: "",
-  role: "Database",
-  contribution: "Phụ trách cơ sở dữ liệu của dự án.",
-};
+export const frontendMembers: ProjectMember[] = [
+  {
+    id: "frontend-1",
+    number: "04",
+    name: "Sinh viên Chu Quốc Huy",
+    photoSrc: "/assets/images/dev-avt/FE1dev.jpg",
+    role: "Frontend Developer",
+    contribution: "Phát triển giao diện người dùng.",
+  },
+];
 
-export const dataMembers: ProjectMember[] = [
+export const databaseMembers: ProjectMember[] = [
   {
-    id: "data-1",
+    id: "database-1",
     number: "05",
-    name: "Thành viên dữ liệu 01",
-    photoSrc: "",
-    role: "Thu thập dữ liệu",
-    contribution: "Thu thập dữ liệu.",
+    name: "Sinh viên Phạm Thị Thu Trang",
+    photoSrc: "/assets/images/dev-avt/DB1dev.jpg",
+    role: "Database Developer",
+    contribution: "Phụ trách cơ sở dữ liệu của dự án.",
   },
   {
-    id: "data-2",
+    id: "database-2",
     number: "06",
-    name: "Thành viên dữ liệu 02",
-    photoSrc: "",
-    role: "Thu thập dữ liệu",
-    contribution: "Thu thập dữ liệu.",
+    name: "Sinh viên ",
+    photoSrc: "/assets/images/dev-avt/DB2dev.jpg",
+    role: "Database Developer",
+    contribution: "Phụ trách cơ sở dữ liệu của dự án.",
   },
   {
-    id: "data-3",
+    id: "database-3",
     number: "07",
-    name: "Thành viên dữ liệu 03",
+    name: "Thành viên Database 03",
     photoSrc: "",
-    role: "Thu thập dữ liệu",
-    contribution: "Thu thập dữ liệu.",
+    role: "Database Developer",
+    contribution: "Phụ trách cơ sở dữ liệu của dự án.",
   },
 ];
 
 export const projectClub: { photoSrc?: string } = {
-  photoSrc: "",
+  photoSrc: "/assets/images/dev-avt/all.jpg",
 };
 
 export const projectMemberCount = [
-  frontendMember,
+  managerMember,
   ...backendMembers,
-  databaseMember,
-  ...dataMembers,
+  ...frontendMembers,
+  ...databaseMembers,
 ].length;
