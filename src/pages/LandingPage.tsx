@@ -1,10 +1,10 @@
 import { ArrowUpRight, BookOpen, FileText, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ProductDemoVideo } from "../components/landing/ProductDemoVideo";
-import { contributors } from "../mocks/data";
 import { HeroIntro } from "../components/landing/HeroIntro";
 import { ChatShowcaseSection } from "../components/landing/ChatShowcaseSection";
 import { KnowledgeRepositoryIllustration } from "../components/landing/KnowledgeRepositoryIllustration";
+import { LandingFooter } from "../components/layout/LandingFooter";
 const gems = [
   {
     id: "v3",
@@ -27,7 +27,7 @@ export function LandingPage() {
         </p>
 
         <div className="mt-12 space-y-32">
-          <section>
+          <section id="ai-assistant" className="scroll-mt-24">
             <div className="mb-6 flex items-center gap-3">
               <Sparkles className="text-[#00a86b]" size={24} />
 
@@ -39,7 +39,7 @@ export function LandingPage() {
 
             <ChatShowcaseSection />
           </section>
-          <section className="relative">
+          <section id="knowledge" className="relative scroll-mt-24">
             <div className="mb-2 flex items-center gap-3">
               <BookOpen className="text-[#00a86b]" size={24} />
 
@@ -64,7 +64,7 @@ export function LandingPage() {
             </div>
           </section>
 
-          <section>
+          <section id="administration" className="scroll-mt-24">
             <div className="mb-6 flex items-center gap-3">
               <FileText className="text-[#00a86b]" size={24} />
 
@@ -112,44 +112,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      <section className="bg-[#11130f] px-6 py-20 text-white md:px-12">
-        <div className="flex flex-col justify-between gap-10 md:flex-row md:items-end">
-          {/* Heading */}
-          <div>
-            <p className="mono text-xs uppercase tracking-[.18em] text-[#68d9a7]">
-              Bảng đóng góp
-            </p>
-
-            <h2 className="mt-5 max-w-xl text-4xl font-bold tracking-tighter md:text-6xl">
-              Được xây dựng bởi chính những người sử dụng.
-            </h2>
-          </div>
-
-          {/* Link */}
-          <Link
-            to="/contributors"
-            className="text-sm text-white/60 transition-colors hover:text-white"
-          >
-            Gặp gỡ các nhà đóng góp
-            <ArrowUpRight className="ml-2 inline" size={16} />
-          </Link>
-        </div>
-
-        <div className="mt-16 flex -space-x-4">
-          {contributors.map((c) => (
-            <div
-              key={c.id}
-              title={c.name}
-              className="flex size-16 items-center justify-center rounded-full border-4 border-[#11130f] text-sm font-bold text-black"
-              style={{
-                background: c.color,
-              }}
-            >
-              {c.initials}
-            </div>
-          ))}
-        </div>
-      </section>
+      <LandingFooter />
     </main>
   );
 }

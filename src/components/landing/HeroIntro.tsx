@@ -93,7 +93,7 @@ export function HeroIntro() {
               hover:text-[#04714a]
             "
           >
-            Xin cấp phép ngoài
+            Cấp phép tài khoản
           </Link>
         </div>
       </div>

@@ -44,7 +44,7 @@ export function RegisterPage() {
             to="/approve"
             className="flex items-center justify-center rounded-xl border border-black/15 px-4 py-2.5 text-xs font-medium text-black/70 hover:border-[#00a86b] hover:text-[#04714a] transition-colors"
           >
-            Yêu cầu cấp phép ngoài trường
+            Cấp phép tài khoản
           </Link>
         </div>
       </div>

@@ -11,7 +11,7 @@ export function PublicLayout() {
   const navLinks = [
     { to: "/", label: "Trang chủ" },
     { to: "/donate", label: "Đóng góp" },
-    { to: "/approve", label: "Cấp phép ngoài trường" },
+    { to: "/approve", label: "Cấp phép tài khoản" },
   ];
 
   return (

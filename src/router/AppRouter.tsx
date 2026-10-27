@@ -19,6 +19,7 @@ import { SettingsPage } from "../pages/SettingsPage";
 import { InfoPage } from "../pages/InfoPage";
 import { ProjectTeamPage } from "../pages/ProjectTeamPage";
 import { CreateAccountPage } from "../pages/CreateAccountPage";
+import { ApprovePage } from "../pages/ApprovePage";
 
 /**
  * Shared element for `/chat` (new chat) and `/c/:id` (existing chat).
@@ -51,16 +52,7 @@ export function AppRouter() {
           }
         />
         <Route path="/donate" element={<ProjectTeamPage />} />
-        <Route
-          path="/approve"
-          element={
-            <InfoPage
-              title="Approve to try"
-              eyebrow="For university leaders"
-              body="Help us bring a thoughtful, safe AI layer to your campus community."
-            />
-          }
-        />
+        <Route path="/approve" element={<ApprovePage />} />
 
         {/* MICROSOFT OAUTH REDIRECT: {origin}/callback is the default redirect URI.
             /auth/callback stays for sign-ins already registered under the old URI. */}

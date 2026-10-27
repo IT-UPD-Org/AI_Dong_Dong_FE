@@ -12,13 +12,14 @@ import {
   UserRound,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
-import {
-  isMicrosoftConfigured,
-  startMicrosoftLogin,
-} from "../lib/microsoftAuth";
+import { startMicrosoftLogin } from "../lib/microsoftAuth";
+import { authApi } from "../api/auth.api";
+import type { AuthMethods } from "../api/types";
+import { TemporaryLogin } from "../components/auth/TemporaryLogin";
 
 // Dev login also needs `vite dev`; the backend separately refuses it outside dev mode.
 const IS_DEV = import.meta.env.DEV;
+const USE_TEMPORARY_LOGIN = true;
 
 function MicrosoftLogo() {
   return (

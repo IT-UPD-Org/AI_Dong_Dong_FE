@@ -170,7 +170,7 @@ export function ProjectTeamPage() {
         <Link to="/donate" aria-current="page">
           Đóng góp
         </Link>
-        <Link to="/approve">Cấp phép ngoài trường</Link>
+        <Link to="/approve">Cấp phép tài khoản</Link>
       </nav>
       <main className="project-team__main">
         <section
@@ -299,7 +299,7 @@ export function ProjectTeamPage() {
           <Link to="/chat">
             Phòng chat <ArrowUpRight size={16} aria-hidden="true" />
           </Link>
-          <Link to="/approve">Cấp phép ngoài trường</Link>
+          <Link to="/approve">Cấp phép tài khoản</Link>
         </nav>
       </footer>
     </div>
