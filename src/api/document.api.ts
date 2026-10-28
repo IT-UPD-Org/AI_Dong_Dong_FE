@@ -72,6 +72,11 @@ export const documentApi = {
     return files.map((file) => toDocument(file));
   },
 
+  async getDocument(documentId: string): Promise<Document> {
+    const file = await apiClient<BEFile>(`/api/files/${documentId}`);
+    return toDocument(file);
+  },
+
   deleteDocument(documentId: string): Promise<void> {
     return apiClient<void>(`/api/files/${documentId}`, { method: 'DELETE' });
   },

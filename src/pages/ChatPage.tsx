@@ -13,8 +13,12 @@ import { ConversationScrollbar } from "../components/chat/ConversationScrollbar"
 import { useConversationNav } from "../components/chat/useConversationNav";
 import { MessageBubble } from "../components/chat/MessageBubble";
 import { MessageFeedbackPanel } from "../components/chat/MessageFeedbackPanel";
+import { FilePreviewPanel } from "../components/chat/FilePreviewPanel";
+import { PreviewFile, getFileExtension } from "../lib/filePreviewUtils";
+import { buildApiUrl } from "../api/client";
+import { documentApi } from "../api/document.api";
 import { chatApi } from "../api/chat.api";
-import type { ChatMessage, ChatStreamChunk } from "../api/types";
+import type { ChatMessage, ChatStreamChunk, Document } from "../api/types";
 
 type Reaction = "like" | "dislike";
 
@@ -66,6 +70,113 @@ export function ChatPage() {
 
   const [attachmentIds, setAttachmentIds] = useState<string[]>([]);
   const [mentionedDocumentIds, setMentionedDocumentIds] = useState<string[]>([]);
+
+  // File Preview Workspace state
+  const [previewFile, setPreviewFile] = useState<PreviewFile | null>(null);
+  const [isPreviewExpanded, setIsPreviewExpanded] = useState(false);
+  const [docsMap, setDocsMap] = useState<Record<string, Document>>({});
+
+  useEffect(() => {
+    let mounted = true;
+    documentApi
+      .listDocuments(1, 100)
+      .then((docs) => {
+        if (!mounted) return;
+        setDocsMap((prev) => {
+          const next = { ...prev };
+          for (const d of docs) next[d.document_id] = d;
+          return next;
+        });
+      })
+      .catch(() => {});
+
+    const unsub = documentApi.subscribe(({ doc }) => {
+      setDocsMap((prev) => ({ ...prev, [doc.document_id]: doc }));
+    });
+
+    return () => {
+      mounted = false;
+      unsub();
+    };
+  }, []);
+
+  useEffect(() => {
+    const unknownIds = new Set<string>();
+    for (const msg of msgs) {
+      for (const fid of msg.files || []) {
+        if (!docsMap[fid]) unknownIds.add(fid);
+      }
+    }
+    if (unknownIds.size === 0) return;
+
+    let cancelled = false;
+    for (const fid of unknownIds) {
+      documentApi
+        .getDocument(fid)
+        .then((doc) => {
+          if (!cancelled) {
+            setDocsMap((prev) => ({ ...prev, [doc.document_id]: doc }));
+          }
+        })
+        .catch(() => {});
+    }
+
+    return () => {
+      cancelled = true;
+    };
+  }, [msgs, docsMap]);
+
+  function getAttachedFilesForMessage(message: ChatMessage): PreviewFile[] {
+    const files: PreviewFile[] = [];
+    const seen = new Set<string>();
+
+    if (message.files && message.files.length > 0) {
+      for (const fid of message.files) {
+        if (seen.has(fid)) continue;
+        seen.add(fid);
+        const doc = docsMap[fid];
+        if (doc) {
+          files.push({
+            id: doc.document_id,
+            name: doc.filename || doc.title,
+            url: doc.file_url || buildApiUrl(`/api/files/${doc.document_id}`),
+            extension: getFileExtension(doc.filename),
+            size: doc.size_bytes,
+            source: "attachment",
+          });
+        } else {
+          files.push({
+            id: fid,
+            name: `Tài liệu đính kèm`,
+            url: buildApiUrl(`/api/files/${fid}`),
+            extension: "pdf",
+            source: "attachment",
+          });
+        }
+      }
+    }
+
+    if (message.sources && message.sources.length > 0) {
+      for (const src of message.sources) {
+        const id = src.document_id || src.url || src.title;
+        if (seen.has(id)) continue;
+        seen.add(id);
+
+        const url = src.url || (src.document_id ? buildApiUrl(`/api/files/${src.document_id}`) : "");
+        if (url) {
+          files.push({
+            id: src.document_id,
+            name: src.title || "Tài liệu nguồn",
+            url,
+            extension: getFileExtension(src.title || url) || "pdf",
+            source: "source",
+          });
+        }
+      }
+    }
+
+    return files;
+  }
 
   useEffect(() => {
     // The first SSE event assigns an ID to the chat already visible on screen.
@@ -432,127 +543,160 @@ export function ChatPage() {
   }
 
   return (
-    <div className="flex h-full min-w-0 flex-col overflow-hidden">
-      <div className="relative min-h-0 flex-1">
-        <div
-          ref={scrollRef}
-          onScroll={handleScroll}
-          className="h-full overflow-y-auto py-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        >
-          <div className="mx-auto w-full max-w-4xl px-2 md:pr-8">
-            <div className="flex flex-col gap-5">
-              {msgs.map((message, idx) => (
-                <Fragment key={message.id}>
-                  <MessageBubble
-                    message={message}
-                    ref={
-                      message.role === "user"
-                        ? registerMessageRef(message.id)
-                        : undefined
-                    }
-                    reaction={reactions[message.id]}
-                    onLike={
-                      message.role !== "user"
-                        ? () => handleReaction(message.id, "like")
-                        : undefined
-                    }
-                    onDislike={
-                      message.role !== "user"
-                        ? () => handleReaction(message.id, "dislike")
-                        : undefined
-                    }
-                    onRegenerate={
-                      message.role !== "user"
-                        ? () => handleRegenerate(idx)
-                        : undefined
-                    }
-                    onEdit={
-                      message.role === "user"
-                        ? (newContent) => handleEdit(idx, newContent)
-                        : undefined
-                    }
-                    regenerateDisabled={loading}
-                  />
+    <div className="relative flex h-full min-w-0 flex-row overflow-hidden">
+      {/* Chat Column */}
+      <div
+        className={`flex h-full min-w-0 flex-col overflow-hidden transition-all duration-200 ${
+          previewFile
+            ? isPreviewExpanded
+              ? "hidden md:flex md:w-[35%] lg:w-[35%] shrink-0 border-r border-black/10"
+              : "hidden md:flex md:w-[58%] lg:w-[60%] shrink-0 border-r border-black/10"
+            : "w-full"
+        }`}
+      >
+        <div className="relative min-h-0 flex-1">
+          <div
+            ref={scrollRef}
+            onScroll={handleScroll}
+            className="h-full overflow-y-auto py-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          >
+            <div
+              className={`mx-auto w-full px-2 md:pr-8 transition-all ${
+                previewFile ? "max-w-2xl" : "max-w-4xl"
+              }`}
+            >
+              <div className="flex flex-col gap-5">
+                {msgs.map((message, idx) => (
+                  <Fragment key={message.id}>
+                    <MessageBubble
+                      message={message}
+                      ref={
+                        message.role === "user"
+                          ? registerMessageRef(message.id)
+                          : undefined
+                      }
+                      reaction={reactions[message.id]}
+                      onLike={
+                        message.role !== "user"
+                          ? () => handleReaction(message.id, "like")
+                          : undefined
+                      }
+                      onDislike={
+                        message.role !== "user"
+                          ? () => handleReaction(message.id, "dislike")
+                          : undefined
+                      }
+                      onRegenerate={
+                        message.role !== "user"
+                          ? () => handleRegenerate(idx)
+                          : undefined
+                      }
+                      onEdit={
+                        message.role === "user"
+                          ? (newContent) => handleEdit(idx, newContent)
+                          : undefined
+                      }
+                      regenerateDisabled={loading}
+                      onPreviewFile={(f) => setPreviewFile(f)}
+                      attachedFiles={getAttachedFilesForMessage(message)}
+                    />
 
-                  {/* Hiển thị Feedback Panel ngay dưới câu trả lời mới nhất sau khi AI hoàn tất */}
-                  {message.id === latestAssistantId &&
-                    message.content &&
-                    message.status !== "error" &&
-                    !loading &&
-                    closedFeedbackId !== message.id && (
-                      <MessageFeedbackPanel
-                        onClose={() => setClosedFeedbackId(message.id)}
-                      />
-                    )}
-                </Fragment>
-              ))}
-              <div ref={bottomRef} />
+                    {/* Hiển thị Feedback Panel ngay dưới câu trả lời mới nhất sau khi AI hoàn tất */}
+                    {message.id === latestAssistantId &&
+                      message.content &&
+                      message.status !== "error" &&
+                      !loading &&
+                      closedFeedbackId !== message.id && (
+                        <MessageFeedbackPanel
+                          onClose={() => setClosedFeedbackId(message.id)}
+                        />
+                      )}
+                  </Fragment>
+                ))}
+                <div ref={bottomRef} />
+              </div>
             </div>
           </div>
+          {!isEmpty && (
+            <>
+              <ConversationScrollbar
+                items={navItems}
+                activeId={activeId}
+                onSelect={scrollToMessage}
+              />
+              <ScrollToLatestButton
+                visible={showJumpToLatest}
+                onClick={() => scrollToBottom()}
+              />
+            </>
+          )}
         </div>
-        {!isEmpty && (
-          <>
-            <ConversationScrollbar
-              items={navItems}
-              activeId={activeId}
-              onSelect={scrollToMessage}
-            />
-            <ScrollToLatestButton
-              visible={showJumpToLatest}
-              onClick={() => scrollToBottom()}
-            />
-          </>
+
+        {isEmpty && <EmptyStatePrompt />}
+
+        {error && (
+          <p role="alert" className="shrink-0 px-4 py-2 text-sm text-red-600">
+            {error}
+          </p>
         )}
+
+        {runningElsewhere && (
+          <div className="mx-auto flex w-full max-w-4xl shrink-0 items-center justify-between gap-3 px-4 py-2 text-sm">
+            <span className="text-black/60">Một câu trả lời khác đang chạy. Tin nhắn của bạn chưa được gửi.</span>
+            <button
+              type="button"
+              onClick={followRunningReply}
+              className="rounded-full border border-black/15 px-3 py-1 font-medium text-[#04714a] hover:bg-[#e8f7ef] cursor-pointer"
+            >
+              Theo dõi câu trả lời
+            </button>
+          </div>
+        )}
+
+        {streaming && (
+          <div className="mx-auto flex w-full max-w-4xl shrink-0 justify-center px-4 pb-1">
+            <button
+              type="button"
+              onClick={stopReply}
+              className="flex items-center gap-1.5 rounded-full border border-black/15 bg-white px-3 py-1 text-sm font-medium text-black/70 shadow-sm hover:bg-black/5 cursor-pointer"
+            >
+              <span className="size-2.5 rounded-sm bg-current" aria-hidden />
+              Dừng trả lời
+            </button>
+          </div>
+        )}
+
+        <ModifiedPromptInput
+          key={composerKey}
+          value={input}
+          onChange={setInput}
+          onSubmit={submit}
+          loading={loading}
+          level={level}
+          onLevelChange={setLevel}
+          attachmentIds={attachmentIds}
+          onAttachmentChange={setAttachmentIds}
+          mentionedDocumentIds={mentionedDocumentIds}
+          onMentionChange={setMentionedDocumentIds}
+          onUploadError={setError}
+        />
       </div>
 
-      {isEmpty && <EmptyStatePrompt />}
-
-      {error && (
-        <p role="alert" className="shrink-0 px-4 py-2 text-sm text-red-600">
-          {error}
-        </p>
-      )}
-
-      {runningElsewhere && (
-        <div className="mx-auto flex w-full max-w-4xl shrink-0 items-center justify-between gap-3 px-4 py-2 text-sm">
-          <span className="text-black/60">Một câu trả lời khác đang chạy. Tin nhắn của bạn chưa được gửi.</span>
-          <button
-            type="button"
-            onClick={followRunningReply}
-            className="rounded-full border border-black/15 px-3 py-1 font-medium text-[#04714a] hover:bg-[#e8f7ef]"
-          >
-            Theo dõi câu trả lời
-          </button>
+      {/* File Preview Workspace Column */}
+      {previewFile && (
+        <div
+          className={`fixed inset-0 z-50 bg-white md:static md:z-auto md:flex md:h-full md:min-w-0 transition-all duration-200 ${
+            isPreviewExpanded ? "md:w-[65%] lg:w-[65%]" : "md:flex-1"
+          }`}
+        >
+          <FilePreviewPanel
+            file={previewFile}
+            onClose={() => setPreviewFile(null)}
+            isExpanded={isPreviewExpanded}
+            onToggleExpand={() => setIsPreviewExpanded((v) => !v)}
+          />
         </div>
       )}
-
-      {streaming && (
-        <div className="mx-auto flex w-full max-w-4xl shrink-0 justify-center px-4 pb-1">
-          <button
-            type="button"
-            onClick={stopReply}
-            className="flex items-center gap-1.5 rounded-full border border-black/15 bg-white px-3 py-1 text-sm font-medium text-black/70 shadow-sm hover:bg-black/5"
-          >
-            <span className="size-2.5 rounded-sm bg-current" aria-hidden />
-            Dừng trả lời
-          </button>
-        </div>
-      )}
-
-      <ModifiedPromptInput
-        key={composerKey}
-        value={input}
-        onChange={setInput}
-        onSubmit={submit}
-        loading={loading}
-        level={level}
-        onLevelChange={setLevel}
-        attachmentIds={attachmentIds}
-        onAttachmentChange={setAttachmentIds}
-        mentionedDocumentIds={mentionedDocumentIds}
-        onMentionChange={setMentionedDocumentIds}
-        onUploadError={setError}
-      />
     </div>
   );
 }
