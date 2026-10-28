@@ -170,14 +170,11 @@ describe("LoginPage", () => {
     });
   });
 
-  it("contains valid navigation links to /approve and /admin/create", async () => {
+  it("links to /approve", async () => {
     await renderLoginPage();
 
     const approveLink = screen.getByRole("link", { name: /Cấp phép tài khoản/i });
     expect(approveLink).toHaveAttribute("href", "/approve");
-
-    const adminCreateLink = screen.getByRole("link", { name: /Khởi tạo tài khoản quản trị/i });
-    expect(adminCreateLink).toHaveAttribute("href", "/admin/create");
   });
 
   it("renders Microsoft login button when microsoft is available from backend methods", async () => {

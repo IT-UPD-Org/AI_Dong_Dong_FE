@@ -347,12 +347,6 @@ export function LoginPage() {
               Cấp phép tài khoản
             </Link>
           </span>
-          <Link
-            to="/admin/create"
-            className="text-black/50 hover:text-[#04714a] hover:underline"
-          >
-            Khởi tạo tài khoản quản trị
-          </Link>
         </div>
 
         {/* Security and privacy note */}
