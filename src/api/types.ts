@@ -1,3 +1,5 @@
+import type { ReplyStep } from '../lib/groupMessages';
+
 // ---------------------------------------------------------------------------
 // Users & auth
 // ---------------------------------------------------------------------------
@@ -150,6 +152,8 @@ export interface ChatMessage {
   files?: string[];
   /** The reply was hidden by moderation; content holds the notice instead. */
   hidden?: boolean;
+  /** A streamed reply's steps (text, then that round's tool calls), kept while it is shown live. */
+  steps?: ReplyStep[];
 }
 
 export interface SendMessagePayload {
@@ -169,6 +173,8 @@ export interface ChatStreamChunk {
   conversationId?: string;
   title?: string;
   toolCalls?: BEToolCall[];
+  /** The reply so far, one step per assistant message (text, then that round's tool calls). */
+  steps?: ReplyStep[];
   /** Another reply is already running; this message was not saved. Offer to follow it with resume. */
   runInProgress?: boolean;
   /** Moderation rejected the user's message; it was not saved. Holds the reason to show. */

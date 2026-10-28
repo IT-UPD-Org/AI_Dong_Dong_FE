@@ -11,8 +11,9 @@ import {
 import { ScrollToLatestButton } from "../components/chat/ScrollToLatestButton";
 import { ConversationScrollbar } from "../components/chat/ConversationScrollbar";
 import { useConversationNav } from "../components/chat/useConversationNav";
+import { groupMessages } from "../lib/groupMessages";
 import { MessageBubble } from "../components/chat/MessageBubble";
-import { MessageFeedbackPanel } from "../components/chat/MessageFeedbackPanel";
+import { MessageFeedbackPanel, type FeedbackMode } from "../components/chat/MessageFeedbackPanel";
 import { FilePreviewPanel } from "../components/chat/FilePreviewPanel";
 import { PreviewFile, getFileExtension } from "../lib/filePreviewUtils";
 import { buildApiUrl } from "../api/client";
@@ -66,7 +67,8 @@ export function ChatPage() {
   const [loading, setLoading] = useState(false);
   const [level, setLevel] = useState<AgentLevel>("L2");
   const [reactions, setReactions] = useState<Record<string, Reaction>>({});
-  const [closedFeedbackId, setClosedFeedbackId] = useState<string | null>(null);
+  // The reply whose feedback panel is open, and which tab: opened by like/dislike or report, never on its own.
+  const [feedbackFor, setFeedbackFor] = useState<{ id: string; mode: FeedbackMode } | null>(null);
 
   const [attachmentIds, setAttachmentIds] = useState<string[]>([]);
   const [mentionedDocumentIds, setMentionedDocumentIds] = useState<string[]>([]);
@@ -201,7 +203,7 @@ export function ChatPage() {
     setAttachmentIds([]);
     setMentionedDocumentIds([]);
     setReactions({});
-    setClosedFeedbackId(null);
+    setFeedbackFor(null);
     setComposerKey((key) => key + 1);
 
     if (conversationId) {
@@ -235,10 +237,6 @@ export function ChatPage() {
   }, []);
 
   const isEmpty = msgs.length === 0;
-
-  const latestAssistantId = [...msgs]
-    .reverse()
-    .find((message) => message.role === "assistant")?.id;
 
   const {
     scrollRef,
@@ -325,6 +323,7 @@ export function ChatPage() {
                           : msg.content,
                     status: chunk.status || msg.status,
                     toolCalls: chunk.toolCalls ?? msg.toolCalls,
+                    steps: chunk.steps ?? msg.steps,
                   }
                 : msg,
             ),
@@ -343,6 +342,7 @@ export function ChatPage() {
                     toolCalls: finalMsg.toolCalls,
                     status: finalMsg.status,
                     hidden: finalMsg.hidden,
+            steps: finalMsg.steps,
                   }
                 : msg,
             ),
@@ -464,6 +464,7 @@ export function ChatPage() {
             content: chunk.error !== undefined ? msg.content || `⚠️ ${chunk.error}` : msg.content + (chunk.delta ?? ""),
             status: chunk.status || msg.status,
             toolCalls: chunk.toolCalls ?? msg.toolCalls,
+                    steps: chunk.steps ?? msg.steps,
           }));
         },
         (finalMsg) => {
@@ -474,6 +475,7 @@ export function ChatPage() {
             content: finalMsg.content,
             status: finalMsg.status,
             hidden: finalMsg.hidden,
+            steps: finalMsg.steps,
           }));
           window.dispatchEvent(new CustomEvent("chats:updated"));
         },
@@ -537,6 +539,7 @@ export function ChatPage() {
   }
 
   function handleReaction(id: string, type: Reaction) {
+    const removing = reactions[id] === type;
     setReactions((prev) => {
       if (prev[id] === type) {
         const next = { ...prev };
@@ -545,6 +548,12 @@ export function ChatPage() {
       }
       return { ...prev, [id]: type };
     });
+    // Ask for details once the user has given a thumbs up or down; un-reacting closes it.
+    setFeedbackFor(removing ? null : { id, mode: "suggestion" });
+  }
+
+  function handleReport(id: string) {
+    setFeedbackFor({ id, mode: "issue" });
   }
 
   return (
@@ -571,10 +580,15 @@ export function ChatPage() {
               }`}
             >
               <div className="flex flex-col gap-5">
-                {msgs.map((message, idx) => (
+                {groupMessages(msgs).map((item) => {
+                  const { message } = item;
+                  // Regenerating a reply replaces all of it, from its first message.
+                  const idx = item.kind === "reply" ? item.firstIndex : item.index;
+                  return (
                   <Fragment key={message.id}>
                     <MessageBubble
                       message={message}
+                      steps={item.kind === "reply" ? item.steps : undefined}
                       ref={
                         message.role === "user"
                           ? registerMessageRef(message.id)
@@ -601,23 +615,27 @@ export function ChatPage() {
                           ? (newContent) => handleEdit(idx, newContent)
                           : undefined
                       }
+                      onReport={
+                        message.role !== "user"
+                          ? () => handleReport(message.id)
+                          : undefined
+                      }
                       regenerateDisabled={loading}
                       onPreviewFile={(f) => setPreviewFile(f)}
                       attachedFiles={getAttachedFilesForMessage(message)}
                     />
 
-                    {/* Hiển thị Feedback Panel ngay dưới câu trả lời mới nhất sau khi AI hoàn tất */}
-                    {message.id === latestAssistantId &&
-                      message.content &&
-                      message.status !== "error" &&
-                      !loading &&
-                      closedFeedbackId !== message.id && (
-                        <MessageFeedbackPanel
-                          onClose={() => setClosedFeedbackId(message.id)}
-                        />
-                      )}
+                    {/* Feedback panel: opens under a reply after like/dislike or report */}
+                    {feedbackFor?.id === message.id && (
+                      <MessageFeedbackPanel
+                        key={`-`}
+                        initialMode={feedbackFor.mode}
+                        onClose={() => setFeedbackFor(null)}
+                      />
+                    )}
                   </Fragment>
-                ))}
+                  );
+                })}
                 <div ref={bottomRef} />
               </div>
             </div>

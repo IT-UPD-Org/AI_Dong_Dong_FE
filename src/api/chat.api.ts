@@ -12,6 +12,7 @@ import type {
   ModelTypeEnum,
   SendMessagePayload,
 } from './types';
+import type { ReplyStep } from '../lib/groupMessages';
 
 export function mapLevelToModelType(level?: AgentLevel): ModelTypeEnum {
   switch (level) {
@@ -154,6 +155,17 @@ async function readReply(
   let fullText = '';
   let assistantId: string | undefined;
   let toolCalls: BEToolCall[] = [];
+  // One entry per assistant message (tool round), in order, so the live view groups like the saved one.
+  const steps: ReplyStep[] = [];
+  const stepFor = (messageId: string | undefined): ReplyStep => {
+    const id = messageId ?? 'pending';
+    let step = steps.find((s) => s.id === id);
+    if (!step) {
+      step = { id, content: '', toolCalls: [] };
+      steps.push(step);
+    }
+    return step;
+  };
   let stopped = false;
   let hidden = false;
 
@@ -196,10 +208,12 @@ async function readReply(
 
       if (evt.event === 'content' && data.content) {
         fullText += data.content;
-        onChunk({ delta: data.content, status: 'generating', messageId: assistantId });
+        stepFor(assistantId).content += data.content;
+        onChunk({ delta: data.content, status: 'generating', messageId: assistantId, steps: steps.map((s) => ({ ...s })) });
       } else if (evt.event === 'tool_calls' && data.tool_calls) {
         toolCalls = [...toolCalls, ...data.tool_calls];
-        onChunk({ status: 'searching', toolCalls, messageId: assistantId });
+        stepFor(assistantId).toolCalls = data.tool_calls;
+        onChunk({ status: 'searching', toolCalls, messageId: assistantId, steps: steps.map((s) => ({ ...s })) });
       }
     }
 
@@ -210,6 +224,7 @@ async function readReply(
       status: stopped ? 'stopped' : 'completed',
       toolCalls: hidden || !toolCalls.length ? undefined : toolCalls,
       hidden: hidden || undefined,
+      steps: hidden || steps.length < 2 ? undefined : steps,
     });
   } catch (err) {
     const error = err as Error;
