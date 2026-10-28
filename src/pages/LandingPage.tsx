@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { ArrowUpRight, BookOpen, FileText, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ProductDemoVideo } from "../components/landing/ProductDemoVideo";
@@ -17,6 +18,19 @@ const gems = [
 ];
 
 export function LandingPage() {
+  useEffect(() => {
+    if (window.location.hash) {
+      const id = window.location.hash.slice(1);
+      const el = document.getElementById(id);
+      if (el) {
+        const timeout = setTimeout(() => {
+          el.scrollIntoView({ behavior: "smooth" });
+        }, 150);
+        return () => clearTimeout(timeout);
+      }
+    }
+  }, []);
+
   return (
     <main>
       <HeroIntro />

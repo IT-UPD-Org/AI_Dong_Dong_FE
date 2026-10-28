@@ -44,9 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const clearSession = useCallback(() => {
     removeStoredToken();
-    if (import.meta.env.DEV) {
-      localStorage.removeItem('dev_mock_user');
-    }
+    localStorage.removeItem('dev_mock_user');
     setUser(null);
   }, []);
 
@@ -58,32 +56,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
           const currentUser = await authApi.getCurrentUser();
           if (!cancelled) {
-            if (import.meta.env.DEV) {
-              const devOverride = localStorage.getItem('dev_mock_user');
-              if (devOverride) {
-                try {
-                  const parsed = JSON.parse(devOverride);
-                  setUser({ ...currentUser, role: parsed.role, name: parsed.name || currentUser.name });
-                  setIsLoading(false);
-                  return;
-                } catch {}
-              }
-            }
             setUser(currentUser);
           }
         } catch {
           if (!cancelled) {
-            if (import.meta.env.DEV) {
-              const devOverride = localStorage.getItem('dev_mock_user');
-              if (devOverride) {
-                try {
-                  const parsed = JSON.parse(devOverride);
-                  setUser(parsed);
-                  setIsLoading(false);
-                  return;
-                } catch {}
-              }
-            }
             clearSession();
           }
         }
@@ -129,9 +105,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {
       // Local session is cleared regardless of network error
     } finally {
-      if (import.meta.env.DEV) {
-        localStorage.removeItem('dev_mock_user');
-      }
+      localStorage.removeItem('dev_mock_user');
       setUser(null);
     }
   };

@@ -6,20 +6,18 @@ import {
   ArrowUpRight,
   Check,
   CheckCircle2,
+  Eye,
+  EyeOff,
+  Lock,
   Mail,
   RefreshCw,
   Sparkles,
-  UserRound,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { startMicrosoftLogin } from "../lib/microsoftAuth";
 import { authApi } from "../api/auth.api";
+import { ApiError } from "../api/client";
 import type { AuthMethods } from "../api/types";
-import { TemporaryLogin } from "../components/auth/TemporaryLogin";
-
-// Dev login also needs `vite dev`; the backend separately refuses it outside dev mode.
-const IS_DEV = import.meta.env.DEV;
-const USE_TEMPORARY_LOGIN = true;
 
 function MicrosoftLogo() {
   return (
@@ -41,27 +39,21 @@ function getRoleInfo(emailValue: string) {
   if (cleanEmail.endsWith("@pduni.edu.vn")) {
     return { type: "student" as const, label: "Sinh viên Phương Đông" };
   }
-  return {
-    type: "other" as const,
-    label: "Tài khoản thử nghiệm (chỉ dùng khi dev)",
-  };
+  return null;
 }
 
 export function LoginPage() {
-  const { devLogin, passwordLogin } = useAuth();
+  const { passwordLogin } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const redirectTo: string =
-    (location.state as { from?: string } | null)?.from ?? "/chat";
 
-  // Cho phép chuyển đổi nhanh giữa 2 chế độ ngay trên UI khi đang dev
-  const [activeMode, setActiveMode] = useState<"temporary" | "official">(
-    USE_TEMPORARY_LOGIN ? "temporary" : "official",
-  );
+  const stateFrom = (location.state as { from?: string } | null)?.from;
+  const redirectTo: string =
+    typeof stateFrom === "string" && stateFrom.startsWith("/") ? stateFrom : "/chat";
 
   const [email, setEmail] = useState("");
-  const [name, setName] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [methods, setMethods] = useState<AuthMethods | null>(null);
@@ -71,13 +63,12 @@ export function LoginPage() {
     authApi
       .getMethods()
       .then((m) => {
-        if (!cancelled) setMethods(m);
+        if (!cancelled) {
+          setMethods(m);
+        }
       })
       .catch(() => {
-        if (!cancelled)
-          setError(
-            "Không thể tải phương thức đăng nhập. Vui lòng tải lại trang.",
-          );
+        // Nếu backend chưa kết nối được methods, giữ methods = null
       });
     return () => {
       cancelled = true;
@@ -86,88 +77,81 @@ export function LoginPage() {
 
   const roleInfo = getRoleInfo(email);
   const microsoftReady = Boolean(methods?.microsoft);
-  const showPassword = Boolean(methods?.password);
-  const showDev = IS_DEV && Boolean(methods?.dev);
+  // Khi methods chưa tải xong hoặc backend cho phép password, hiển thị form mật khẩu
+  const showPasswordForm = methods ? Boolean(methods.password) : true;
 
   async function handlePasswordLogin(e: FormEvent) {
     e.preventDefault();
+    if (isSubmitting) return;
     setError("");
+
     const cleanEmail = email.trim().toLowerCase();
-    if (!cleanEmail || !password) {
-      setError("Vui lòng nhập email và mật khẩu.");
+    if (!cleanEmail) {
+      setError("Vui lòng nhập địa chỉ email.");
       return;
     }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(cleanEmail)) {
+      setError("Địa chỉ email không đúng định dạng.");
+      return;
+    }
+
+    if (!password) {
+      setError("Vui lòng nhập mật khẩu.");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       await passwordLogin(cleanEmail, password);
       navigate(redirectTo, { replace: true });
     } catch (err) {
-      setError((err as Error).message || "Email hoặc mật khẩu không đúng.");
+      if (err instanceof ApiError) {
+        if (err.status === 401) {
+          setError("Email hoặc mật khẩu không chính xác.");
+        } else if (err.status === 403) {
+          setError(
+            "Tài khoản đã bị vô hiệu hóa hoặc chưa được kích hoạt. Vui lòng liên hệ quản trị viên."
+          );
+        } else if (err.status === 404) {
+          setError(
+            "Phương thức đăng nhập bằng mật khẩu hiện không khả dụng trên hệ thống."
+          );
+        } else if (err.status === 0) {
+          setError(
+            "Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại kết nối mạng hoặc thử lại sau."
+          );
+        } else {
+          setError(err.message || "Đăng nhập thất bại. Vui lòng thử lại.");
+        }
+      } else {
+        setError((err as Error).message || "Đăng nhập thất bại. Vui lòng thử lại.");
+      }
     } finally {
       setIsSubmitting(false);
     }
   }
 
   async function handleMicrosoftLogin() {
+    if (isSubmitting) return;
     setError("");
     setIsSubmitting(true);
     try {
       await startMicrosoftLogin(redirectTo);
     } catch (err) {
       setError(
-        (err as Error).message || "Không thể bắt đầu đăng nhập Microsoft.",
+        (err as Error).message || "Không thể bắt đầu đăng nhập Microsoft."
       );
       setIsSubmitting(false);
     }
   }
 
-  async function handleDevLogin(e: FormEvent) {
-    e.preventDefault();
-    setError("");
-    const cleanEmail = email.trim().toLowerCase();
-    const displayName = name.trim() || cleanEmail.split("@")[0];
-    if (!cleanEmail) {
-      setError("Vui lòng nhập email.");
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      await devLogin(cleanEmail, displayName);
-      navigate(redirectTo, { replace: true });
-    } catch (err) {
-      setError(
-        (err as Error).message || "Đăng nhập thất bại. Vui lòng thử lại.",
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
-  // =======================================================================
-  // LOGIN MODE A — TEMPORARY DEVELOPMENT LOGIN
-  // Dùng cho phát triển và demo nội bộ.
-  // Khi cần dùng lại đăng nhập chuẩn, đổi USE_TEMPORARY_LOGIN = false
-  // hoặc comment khối if bên dưới.
-  // =======================================================================
-  if (activeMode === "temporary") {
-    return (
-      <TemporaryLogin
-        redirectTo={redirectTo}
-        onSwitchToOfficial={() => setActiveMode("official")}
-      />
-    );
-  }
-
-  // =======================================================================
-  // LOGIN MODE B — OFFICIAL AUTHENTICATION
-  // Luồng đăng nhập chuẩn hiện tại của dự án (Microsoft OAuth + Dev form).
-  // Khi quay lại production, đảm bảo nhánh này hoạt động và USE_TEMPORARY_LOGIN = false.
-  // =======================================================================
   return (
     <main className="grid min-h-[calc(100vh-80px)] place-items-center px-4 py-8 sm:px-6">
       <div className="w-full max-w-lg">
-        <div className="flex items-center justify-between mb-6">
+        {/* Navigation link */}
+        <div className="mb-6">
           <Link
             to="/"
             className="inline-flex items-center gap-2 text-sm text-black/55 hover:text-black transition-colors"
@@ -175,18 +159,10 @@ export function LoginPage() {
             <ArrowLeft size={16} />
             Trở về trang chủ
           </Link>
-          {IS_DEV && (
-            <button
-              type="button"
-              onClick={() => setActiveMode("temporary")}
-              className="text-xs font-semibold text-[#04714a] bg-[#e8f7ef] hover:bg-[#d1efe0] px-2.5 py-1 rounded-full transition-colors cursor-pointer"
-            >
-              Chuyển sang Đăng nhập thử nghiệm
-            </button>
-          )}
         </div>
 
-        <p className="text-xs uppercase tracking-[.18em] text-[#04714a]">
+        {/* Header */}
+        <p className="text-xs uppercase tracking-[.18em] text-[#04714a] font-semibold">
           Tài khoản nhà trường
         </p>
         <h1 className="mt-2 text-2xl font-bold tracking-[-.06em] sm:text-3xl md:text-4xl text-[#11130f]">
@@ -194,123 +170,197 @@ export function LoginPage() {
         </h1>
         <p className="mt-2 text-black/60 text-xs sm:text-sm leading-relaxed">
           Sử dụng tài khoản Microsoft của trường (@pduni.edu.vn cho sinh viên,
-          @phuongdong.edu.vn cho giảng viên).
+          @phuongdong.edu.vn cho giảng viên) hoặc email và mật khẩu.
         </p>
 
+        {/* Error message */}
         {error && (
-          <div className="mt-6 rounded-xl border border-red-200 bg-red-50 p-3 text-xs font-medium text-red-700 flex items-start gap-2">
-            <AlertCircle size={16} className="shrink-0 mt-0.5" />
+          <div
+            role="alert"
+            className="mt-6 rounded-xl border border-red-200 bg-red-50 p-3 text-xs font-medium text-red-700 flex items-start gap-2 animate-in fade-in duration-200"
+          >
+            <AlertCircle size={16} className="shrink-0 mt-0.5 text-red-600" />
             <span>{error}</span>
           </div>
         )}
 
-        <button
-          type="button"
-          onClick={handleMicrosoftLogin}
-          disabled={isSubmitting || !microsoftReady}
-          className="mt-8 flex w-full items-center justify-center gap-3 rounded-xl bg-[#11130f] px-4 py-3 font-semibold text-white transition-all hover:bg-[#04714a] disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
-        >
-          {isSubmitting && !IS_DEV ? (
-            <RefreshCw className="animate-spin" size={16} />
-          ) : (
-            <MicrosoftLogo />
-          )}
-          Đăng nhập bằng Microsoft
-          <ArrowUpRight size={16} />
-        </button>
-        {!microsoftReady && (
-          <p className="mt-2 text-xs text-black/45">
-            Đăng nhập Microsoft chưa được cấu hình (VITE_MICROSOFT_TENANT_ID,
-            VITE_MICROSOFT_CLIENT_ID).
-          </p>
+        {/* Microsoft OAuth Login button */}
+        {microsoftReady && (
+          <button
+            type="button"
+            onClick={handleMicrosoftLogin}
+            disabled={isSubmitting}
+            className="mt-6 flex w-full items-center justify-center gap-3 rounded-xl bg-[#11130f] px-4 py-3 font-semibold text-white transition-all hover:bg-[#04714a] hover:shadow-md disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed text-sm sm:text-base"
+          >
+            {isSubmitting ? (
+              <RefreshCw className="animate-spin" size={16} />
+            ) : (
+              <MicrosoftLogo />
+            )}
+            <span>Đăng nhập bằng Microsoft</span>
+            <ArrowUpRight size={16} />
+          </button>
         )}
 
-        {showDev && (
+        {/* Divider if both Microsoft and Password are visible */}
+        {microsoftReady && showPasswordForm && (
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-black/10" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-[#fafaf9] px-3 text-black/45 font-medium">
+                Hoặc đăng nhập bằng email & mật khẩu
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Email & Password Login Form */}
+        {showPasswordForm ? (
           <form
-            onSubmit={handleDevLogin}
-            className="mt-8 flex flex-col gap-4 rounded-2xl border border-amber-300 bg-amber-50/60 p-4 sm:p-5"
+            onSubmit={handlePasswordLogin}
+            className={microsoftReady ? "" : "mt-6"}
+            noValidate
           >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-amber-900">
-                Đăng nhập Dev (Thủ công)
-              </span>
-              <span className="text-[10px] uppercase font-bold text-amber-700 bg-amber-200/60 px-2 py-0.5 rounded-full">
-                Chỉ khi chạy vite dev
-              </span>
-            </div>
+            <div className="space-y-4">
+              {/* Email */}
+              <div>
+                <label
+                  htmlFor="login-email"
+                  className="block text-xs font-semibold uppercase tracking-wider text-black/70 mb-2"
+                >
+                  Email tài khoản
+                </label>
+                <div className="relative">
+                  <Mail
+                    className="absolute left-4 top-3.5 text-black/35 pointer-events-none"
+                    size={18}
+                    aria-hidden="true"
+                  />
+                  <input
+                    id="login-email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    placeholder="ví dụ: sinhvien@pduni.edu.vn"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (error) setError("");
+                    }}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-black/15 bg-white pl-11 pr-4 py-3 text-sm outline-none transition-all placeholder:text-black/35 focus:border-[#00a86b] focus:ring-1 focus:ring-[#00a86b] disabled:bg-black/5 disabled:opacity-60"
+                  />
+                </div>
 
-            <div className="relative">
-              <Mail
-                className="absolute left-4 top-3.5 text-black/35"
-                size={18}
-              />
-              <input
-                className="w-full rounded-xl border border-black/15 bg-white pl-11 pr-4 py-3 text-sm outline-none focus:border-[#00a86b] focus:ring-1 focus:ring-[#00a86b]"
-                type="email"
-                placeholder="ví_dụ: sinhvien@pduni.edu.vn"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div className="relative">
-              <UserRound
-                className="absolute left-4 top-3.5 text-black/35"
-                size={18}
-              />
-              <input
-                className="w-full rounded-xl border border-black/15 bg-white pl-11 pr-4 py-3 text-sm outline-none focus:border-[#00a86b] focus:ring-1 focus:ring-[#00a86b]"
-                type="text"
-                placeholder="Tên hiển thị (tuỳ chọn)"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </div>
-
-            {roleInfo && (
-              <div className="flex justify-end">
-                {roleInfo.type === "teacher" ? (
-                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-green-700 bg-green-50 px-2.5 py-0.5 rounded-full border border-green-200">
-                    <Check size={13} className="stroke-[2.5]" />
-                    {roleInfo.label}
-                  </span>
-                ) : roleInfo.type === "student" ? (
-                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">
-                    <CheckCircle2 size={13} />
-                    {roleInfo.label}
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-black/60 bg-white px-2.5 py-0.5 rounded-full border border-black/15">
-                    {roleInfo.label}
-                  </span>
+                {roleInfo && (
+                  <div className="mt-2 flex justify-end animate-in fade-in duration-200">
+                    {roleInfo.type === "teacher" ? (
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                        <Check size={13} className="stroke-[2.5]" />
+                        {roleInfo.label}
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">
+                        <CheckCircle2 size={13} />
+                        {roleInfo.label}
+                      </span>
+                    )}
+                  </div>
                 )}
               </div>
-            )}
 
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="flex items-center justify-center rounded-xl bg-[#04714a] px-4 py-3 font-semibold text-white transition-all hover:bg-[#03593a] disabled:opacity-50 cursor-pointer text-sm sm:text-base"
-            >
-              {isSubmitting ? (
-                <span className="flex items-center gap-2">
-                  <RefreshCw className="animate-spin" size={16} />
-                  Đang đăng nhập...
-                </span>
-              ) : (
-                "Đăng nhập Dev"
-              )}
-            </button>
+              {/* Password */}
+              <div>
+                <label
+                  htmlFor="login-password"
+                  className="block text-xs font-semibold uppercase tracking-wider text-black/70 mb-2"
+                >
+                  Mật khẩu
+                </label>
+                <div className="relative">
+                  <Lock
+                    className="absolute left-4 top-3.5 text-black/35 pointer-events-none"
+                    size={18}
+                    aria-hidden="true"
+                  />
+                  <input
+                    id="login-password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="current-password"
+                    required
+                    placeholder="Nhập mật khẩu"
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (error) setError("");
+                    }}
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-black/15 bg-white pl-11 pr-11 py-3 text-sm outline-none transition-all placeholder:text-black/35 focus:border-[#00a86b] focus:ring-1 focus:ring-[#00a86b] disabled:bg-black/5 disabled:opacity-60"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    tabIndex={-1}
+                    aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                    className="absolute right-3.5 top-3 text-black/40 hover:text-black/70 transition-colors p-0.5 cursor-pointer"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Submit button */}
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-[#04714a] px-4 py-3 font-semibold text-white transition-all hover:bg-[#03593a] disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed shadow-sm text-sm sm:text-base"
+              >
+                {isSubmitting ? (
+                  <>
+                    <RefreshCw className="animate-spin" size={16} />
+                    <span>Đang đăng nhập...</span>
+                  </>
+                ) : (
+                  "Đăng nhập"
+                )}
+              </button>
+            </div>
           </form>
+        ) : (
+          /* Khi backend tắt password và chỉ cho phép Microsoft */
+          <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 text-xs text-emerald-900 leading-relaxed">
+            <p className="font-semibold mb-1">Phương thức xác thực Microsoft SSO</p>
+            Hệ thống hiện đang áp dụng phương thức đăng nhập Microsoft SSO cho toàn bộ cán bộ, giảng viên và sinh viên. Vui lòng bấm vào nút “Đăng nhập bằng Microsoft” ở trên.
+          </div>
         )}
 
-        <div className="mt-8 rounded-2xl border border-black/5 bg-[#fcfcfb] p-4 text-xs text-black/50 leading-relaxed">
-          <p className="font-semibold text-black/70 mb-1 flex items-center gap-1.5">
-            <Sparkles size={14} className="text-[#04714a]" /> Bảo mật & Tiện
-            lợi:
+        {/* Links below form */}
+        <div className="mt-6 flex flex-col gap-2.5 text-xs text-black/60 sm:flex-row sm:items-center sm:justify-between border-t border-black/10 pt-4">
+          <span>
+            Chưa có tài khoản?{" "}
+            <Link
+              to="/approve"
+              className="font-semibold text-[#04714a] hover:underline"
+            >
+              Cấp phép tài khoản
+            </Link>
+          </span>
+          <Link
+            to="/admin/create"
+            className="text-black/50 hover:text-[#04714a] hover:underline"
+          >
+            Khởi tạo tài khoản quản trị
+          </Link>
+        </div>
+
+        {/* Security and privacy note */}
+        <div className="mt-8 rounded-2xl border border-black/5 bg-[#fcfcfb] p-4 text-xs text-black/55 leading-relaxed">
+          <p className="font-semibold text-black/75 mb-1 flex items-center gap-1.5">
+            <Sparkles size={14} className="text-[#04714a]" /> Bảo mật & Tiện ích:
           </p>
-          Hệ thống dùng đăng nhập một lần (SSO) của Microsoft, bạn không cần tạo
-          mật khẩu riêng.
+          Tài khoản Phương Đông gồm email sinh viên (<code>@pduni.edu.vn</code>) và giảng viên (<code>@phuongdong.edu.vn</code>). Phiên đăng nhập được duy trì an toàn và phân quyền chính xác theo tài khoản đã được phê duyệt.
         </div>
       </div>
     </main>

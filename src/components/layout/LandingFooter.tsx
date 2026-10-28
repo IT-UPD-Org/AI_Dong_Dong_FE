@@ -7,7 +7,7 @@ import {
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { contributors } from "../../mocks/data";
 
 interface FooterLink {
@@ -58,8 +58,25 @@ const navigation: NavGroup[] = [
 ];
 
 export function LandingFooter() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const handleScrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleHashLink = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    e.preventDefault();
+    const targetId = href.replace(/^#/, "");
+    if (location.pathname === "/") {
+      const el = document.getElementById(targetId);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth" });
+        window.history.pushState(null, "", href);
+        return;
+      }
+    }
+    navigate(`/${href}`);
   };
 
   return (
@@ -188,7 +205,8 @@ export function LandingFooter() {
                     return (
                       <li key={item.label}>
                         <a
-                          href={item.href}
+                          href={`/${item.href}`}
+                          onClick={(e) => handleHashLink(e, item.href)}
                           className="text-sm text-white/65 transition-colors hover:text-[#68d9a7] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#68d9a7] rounded"
                         >
                           {item.label}

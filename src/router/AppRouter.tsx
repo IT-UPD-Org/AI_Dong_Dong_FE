@@ -53,6 +53,7 @@ export function AppRouter() {
         />
         <Route path="/donate" element={<ProjectTeamPage />} />
         <Route path="/approve" element={<ApprovePage />} />
+        <Route path="/contributors" element={<ContributorsPage />} />
 
         {/* MICROSOFT OAUTH REDIRECT: {origin}/callback is the default redirect URI.
             /auth/callback stays for sign-ins already registered under the old URI. */}

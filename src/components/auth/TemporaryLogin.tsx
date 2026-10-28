@@ -12,8 +12,7 @@ import {
   UserCheck,
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
-import { setStoredToken } from "../../api/client";
-import type { User, UserRole } from "../../api/types";
+import type { UserRole } from "../../api/types";
 
 interface TemporaryLoginProps {
   redirectTo?: string;
@@ -73,7 +72,7 @@ const DEMO_ACCOUNTS: DemoAccount[] = [
 ];
 
 export function TemporaryLogin({ redirectTo = "/chat", onSwitchToOfficial }: TemporaryLoginProps) {
-  const { devLogin, setUser } = useAuth();
+  const { devLogin } = useAuth();
   const navigate = useNavigate();
   const [loadingRole, setLoadingRole] = useState<string | null>(null);
   const [error, setError] = useState<string>("");
@@ -83,38 +82,14 @@ export function TemporaryLogin({ redirectTo = "/chat", onSwitchToOfficial }: Tem
     setLoadingRole(account.roleCode);
 
     try {
-      // 1. Ưu tiên xác thực qua backend endpoint devLogin (/auth/fake-login)
-      let loggedUser: User | null = null;
-      try {
-        loggedUser = await devLogin(account.email, account.name);
-      } catch (beErr) {
-        // Nếu Backend không chạy hoặc trả lỗi mạng (ví dụ môi trường test UI độc lập),
-        // fallback sang mock session an toàn để phục vụ dev/demo UI mà không làm gián đoạn.
-        console.warn("[TemporaryLogin] Backend /auth/fake-login không khả dụng, sử dụng Dev Mock Session:", beErr);
-      }
-
-      // 2. Thiết lập đối tượng User phù hợp với role được bấm
-      const targetUser: User = {
-        id: loggedUser?.id || account.id,
-        email: account.email,
-        name: account.name,
-        role: account.role,
-        credits: loggedUser?.credits ?? account.credits,
-        storage_used: loggedUser?.storage_used ?? 1024 * 1024 * 12,
-        first_use: loggedUser?.first_use ?? new Date().toISOString(),
-        disable: false,
-      };
-
-      // 3. Đưa thông tin vào đúng AuthContext và localStorage để tương thích Route Guard
-      const mockToken = `mock_dev_token_${account.role}_${Date.now()}`;
-      setStoredToken(loggedUser ? (localStorage.getItem("access_token") || mockToken) : mockToken);
-      localStorage.setItem("dev_mock_user", JSON.stringify(targetUser));
-      setUser(targetUser);
-
-      // 4. Điều hướng tới trang đích (nếu là admin và đích mặc định, cho phép vào /chat hoặc /admin)
+      // Chỉ gửi yêu cầu xác thực thật tới backend (/api/auth/fake-login)
+      await devLogin(account.email, account.name);
       navigate(redirectTo, { replace: true });
     } catch (err) {
-      setError((err as Error).message || "Đăng nhập thử nghiệm thất bại. Vui lòng thử lại.");
+      setError(
+        (err as Error).message ||
+          "Đăng nhập phát triển thất bại. Backend không hỗ trợ endpoint /api/auth/fake-login hoặc đang tắt chế độ DEV."
+      );
     } finally {
       setLoadingRole(null);
     }
