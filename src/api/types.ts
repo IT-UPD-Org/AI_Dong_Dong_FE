@@ -89,11 +89,11 @@ export interface ChatSource {
   url?: string;
 }
 
+/** A tool the assistant used. The API sends only its user-facing name, never its arguments or result. */
 export interface BEToolCall {
   id: string;
-  tool_name: string;
-  parameters: string;
-  response?: string | null;
+  /** e.g. "Search My Files"; null for tool calls saved before names were recorded. */
+  display_name: string | null;
 }
 
 export interface BEUserMessage {
