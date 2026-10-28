@@ -2,7 +2,7 @@ import { FormEvent, useEffect, useState, useRef, Fragment } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   streamChatMessage,
-  getConversationMessages,
+  getConversationState,
 } from "../services/chat.service";
 import {
   AgentLevel,
@@ -205,9 +205,14 @@ export function ChatPage() {
     setComposerKey((key) => key + 1);
 
     if (conversationId) {
-      getConversationMessages(conversationId)
-        .then((messages) => {
-          if (!cancelled) setMsgs(messages);
+      getConversationState(conversationId)
+        .then(({ messages, asyncStatus }) => {
+          if (cancelled) return;
+          setMsgs(messages);
+          // A reply is queued or being written in the background (for example
+          // after a reload, or opening the chat from the sidebar while other
+          // chats are busy): follow it so the user sees it arrive.
+          if (asyncStatus !== "none") void followRunningReply();
         })
         .catch(() => {
           if (!cancelled) setError("Không thể tải cuộc trò chuyện. Vui lòng thử lại.");
@@ -426,7 +431,7 @@ export function ChatPage() {
     }
   }
 
-  /** Follow the reply that is already running, chosen by the user. */
+  /** Follow the reply that is queued or running: on opening the chat, or when the user asks to. */
   async function followRunningReply() {
     const id = conversationIdRef.current;
     if (!id || streamControllerRef.current) return;
@@ -477,7 +482,7 @@ export function ChatPage() {
       );
     } catch (err) {
       if (!isCurrent()) return;
-      // 400/409: nothing running (or still starting). Drop the placeholder.
+      // 400/409: the reply finished before we connected. Drop the placeholder.
       setMsgs((prev) => prev.filter((msg) => msg.id !== assistantMsgId));
       setError((err as Error).message || "Không thể theo dõi câu trả lời.");
     } finally {

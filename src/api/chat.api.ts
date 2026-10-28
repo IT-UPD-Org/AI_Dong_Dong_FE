@@ -99,8 +99,8 @@ export const chatApi = {
   },
 
   /**
-   * Follow a reply that is already running, from its start (`GET /resume`).
-   * The caller decides when to call this; it is never started automatically.
+   * Follow a queued or running reply from its start (`GET /resume`).
+   * ChatPage calls it when the chat is opened with `async_status` other than `none`.
    */
   resumeReply(
     conversationId: string,
