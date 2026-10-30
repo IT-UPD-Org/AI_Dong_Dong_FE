@@ -16,6 +16,13 @@ const CONFIG_CACHE_KEY = 'auth_methods';
 // Public settings change only when the Azure app changes; refresh them hourly.
 const CONFIG_CACHE_MS = 60 * 60 * 1000;
 
+// Earlier builds kept this in localStorage; it now lives per tab in sessionStorage.
+try {
+  localStorage.removeItem(CONFIG_CACHE_KEY);
+} catch {
+  // Storage unavailable: nothing to clean up.
+}
+
 /** Page Microsoft sends the browser back to; registered as a redirect URI in Azure. */
 export const CALLBACK_PATH = '/callback';
 
@@ -54,7 +61,7 @@ let methodsPromise: Promise<AuthMethods> | null = null;
 
 function readCachedMethods(): AuthMethods | null {
   try {
-    const raw = localStorage.getItem(CONFIG_CACHE_KEY);
+    const raw = sessionStorage.getItem(CONFIG_CACHE_KEY);
     if (!raw) return null;
     const cached = JSON.parse(raw) as CachedMethods;
     return Date.now() - cached.savedAt < CONFIG_CACHE_MS ? cached.methods : null;
@@ -65,7 +72,7 @@ function readCachedMethods(): AuthMethods | null {
 
 /**
  * The login options and Microsoft settings from `GET /api/auth/methods`: one
- * request, cached in memory and in localStorage for an hour. The login page
+ * request, cached in memory and in sessionStorage (this tab, up to an hour). The login page
  * renders from it, and "Đăng nhập bằng Microsoft" redirects at once instead of
  * waiting for the backend.
  */
@@ -76,7 +83,7 @@ export function loadAuthMethods(): Promise<AuthMethods> {
       ? Promise.resolve(cached)
       : authApi.getMethods().then((methods) => {
           try {
-            localStorage.setItem(CONFIG_CACHE_KEY, JSON.stringify({ methods, savedAt: Date.now() } satisfies CachedMethods));
+            sessionStorage.setItem(CONFIG_CACHE_KEY, JSON.stringify({ methods, savedAt: Date.now() } satisfies CachedMethods));
           } catch {
             // Private mode or full storage: the in-memory copy is enough.
           }
@@ -94,7 +101,7 @@ export function loadAuthMethods(): Promise<AuthMethods> {
 export function clearAuthMethodsCache(): void {
   methodsPromise = null;
   try {
-    localStorage.removeItem(CONFIG_CACHE_KEY);
+    sessionStorage.removeItem(CONFIG_CACHE_KEY);
   } catch {
     // Nothing cached.
   }
