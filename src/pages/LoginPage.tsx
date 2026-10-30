@@ -14,8 +14,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
-import { startMicrosoftLogin } from "../lib/microsoftAuth";
-import { authApi } from "../api/auth.api";
+import { loadAuthMethods, startMicrosoftLogin } from "../lib/microsoftAuth";
 import { ApiError } from "../api/client";
 import type { AuthMethods } from "../api/types";
 
@@ -27,6 +26,25 @@ function MicrosoftLogo() {
       <rect x="1" y="11" width="9" height="9" fill="#00a4ef" />
       <rect x="11" y="11" width="9" height="9" fill="#ffb900" />
     </svg>
+  );
+}
+
+/** Placeholder while /api/auth/methods loads: the shape of the login form, pulsing. */
+function LoginFormSkeleton() {
+  return (
+    <div className="mt-6 space-y-4 animate-pulse" role="status" aria-label="Đang tải phương thức đăng nhập">
+      <div className="h-12 w-full rounded-xl bg-black/10" />
+      <div className="space-y-2">
+        <div className="h-3 w-28 rounded bg-black/10" />
+        <div className="h-11 w-full rounded-xl bg-black/[0.07]" />
+      </div>
+      <div className="space-y-2">
+        <div className="h-3 w-20 rounded bg-black/10" />
+        <div className="h-11 w-full rounded-xl bg-black/[0.07]" />
+      </div>
+      <div className="h-12 w-full rounded-xl bg-[#04714a]/20" />
+      <span className="sr-only">Đang tải phương thức đăng nhập...</span>
+    </div>
   );
 }
 
@@ -60,25 +78,34 @@ export function LoginPage() {
 
   useEffect(() => {
     let cancelled = false;
-    authApi
-      .getMethods()
-      .then((m) => {
-        if (!cancelled) {
-          setMethods(m);
-        }
-      })
-      .catch(() => {
-        // Nếu backend chưa kết nối được methods, giữ methods = null
-      });
+    let retry: ReturnType<typeof setTimeout> | undefined;
+    let attempt = 0;
+    // Keep the form in its loading state until the backend says which methods exist;
+    // retry with backoff instead of guessing (a wrong guess shows a form that cannot work).
+    const load = () => {
+      // One cached request gives both the login options and the Microsoft settings,
+      // so the Microsoft button redirects without another round trip.
+      loadAuthMethods()
+        .then((m) => {
+          if (!cancelled) setMethods(m);
+        })
+        .catch(() => {
+          if (cancelled) return;
+          attempt += 1;
+          retry = setTimeout(load, Math.min(1000 * 2 ** attempt, 15000));
+        });
+    };
+    load();
     return () => {
       cancelled = true;
+      if (retry) clearTimeout(retry);
     };
   }, []);
 
   const roleInfo = getRoleInfo(email);
+  const methodsLoading = methods === null;
   const microsoftReady = Boolean(methods?.microsoft);
-  // Khi methods chưa tải xong hoặc backend cho phép password, hiển thị form mật khẩu
-  const showPasswordForm = methods ? Boolean(methods.password) : true;
+  const showPasswordForm = Boolean(methods?.password);
 
   async function handlePasswordLogin(e: FormEvent) {
     e.preventDefault();
@@ -183,6 +210,9 @@ export function LoginPage() {
             <span>{error}</span>
           </div>
         )}
+
+        {/* Login options load from the backend; until then show a placeholder of the form */}
+        {methodsLoading && <LoginFormSkeleton />}
 
         {/* Microsoft OAuth Login button */}
         {microsoftReady && (
@@ -328,7 +358,7 @@ export function LoginPage() {
               </button>
             </div>
           </form>
-        ) : (
+        ) : methodsLoading ? null : (
           /* Khi backend tắt password và chỉ cho phép Microsoft */
           <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 text-xs text-emerald-900 leading-relaxed">
             <p className="font-semibold mb-1">Phương thức xác thực Microsoft SSO</p>

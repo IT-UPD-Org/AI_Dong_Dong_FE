@@ -38,18 +38,17 @@ export interface LoginResponse {
 }
 
 /** `GET /api/auth/methods`: which login options the backend allows. */
+/** `GET /api/auth/methods`: which login options to show. `microsoft` is `false` when off, or its settings when on. */
 export interface AuthMethods {
-  microsoft: boolean;
+  microsoft: MicrosoftConfig | false;
   password: boolean;
   dev: boolean;
 }
 
-/** `GET /api/auth/microsoft`: public values needed to start Microsoft login. */
+/** Public values needed to start Microsoft login. The redirect URI is built by the frontend: `{origin}/callback`. */
 export interface MicrosoftConfig {
   tenant_id: string;
   client_id: string;
-  /** Null unless the backend pins one; the frontend then uses `{origin}/callback`. */
-  redirect_uri: string | null;
   authorize_url: string;
   scopes: string;
 }

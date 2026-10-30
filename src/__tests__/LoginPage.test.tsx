@@ -4,6 +4,7 @@ import { MemoryRouter } from "react-router-dom";
 import { LoginPage } from "../pages/LoginPage";
 import { authApi } from "../api/auth.api";
 import { ApiError } from "../api/client";
+import { clearAuthMethodsCache } from "../lib/microsoftAuth";
 
 // Mock useAuth
 const mockPasswordLogin = vi.fn();
@@ -28,13 +29,14 @@ vi.mock("../api/auth.api", () => ({
   authApi: {
     getMethods: vi.fn(),
     passwordLogin: vi.fn(),
-    getMicrosoftConfig: vi.fn(),
   },
 }));
 
 describe("LoginPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Login options are cached across page loads; each test starts without them.
+    clearAuthMethodsCache();
     vi.mocked(authApi.getMethods).mockResolvedValue({
       microsoft: false,
       password: true,
@@ -179,7 +181,12 @@ describe("LoginPage", () => {
 
   it("renders Microsoft login button when microsoft is available from backend methods", async () => {
     vi.mocked(authApi.getMethods).mockResolvedValueOnce({
-      microsoft: true,
+      microsoft: {
+        tenant_id: "t-1",
+        client_id: "c-1",
+        authorize_url: "https://login.microsoftonline.com/t-1/oauth2/v2.0/authorize",
+        scopes: "openid profile email",
+      },
       password: true,
       dev: false,
     });
