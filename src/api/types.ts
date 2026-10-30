@@ -6,6 +6,9 @@ import type { ReplyStep } from '../lib/groupMessages';
 
 export type UserRole = 'student' | 'teacher' | 'admin';
 
+/** Account state: only `disable` blocks sign-in; `pending` is a new account not yet approved. */
+export type UserState = 'active' | 'pending' | 'disable';
+
 /** Shape of `UserModel` returned by the backend. */
 export interface BEUser {
   id: string;
@@ -13,7 +16,7 @@ export interface BEUser {
   name: string;
   email: string;
   first_use: string | null;
-  disable: boolean;
+  state: UserState;
   credits: number;
   storage_used: number;
   microsoft_tenant_id?: string | null;
@@ -28,7 +31,16 @@ export interface User {
   credits: number;
   storage_used: number;
   first_use: string | null;
-  disable: boolean;
+  state: UserState;
+}
+
+/** `PATCH /api/admin/users/{id}`: only the sent fields change. */
+export interface AdminUserUpdate {
+  name?: string;
+  email?: string;
+  role?: UserRole;
+  state?: UserState;
+  credits?: number;
 }
 
 /** Response of every login endpoint (`fake-login`, `login`, `microsoft/callback`). */

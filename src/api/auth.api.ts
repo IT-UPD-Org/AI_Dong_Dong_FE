@@ -17,7 +17,7 @@ export function toUser(user: BEUser): User {
     credits: user.credits,
     storage_used: user.storage_used,
     first_use: user.first_use,
-    disable: user.disable,
+    state: user.state,
   };
 }
 

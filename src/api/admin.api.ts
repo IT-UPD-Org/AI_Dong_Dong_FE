@@ -3,6 +3,7 @@ import { toUser } from './auth.api';
 import { toConversation } from './chat.api';
 import type {
   AdminConversation,
+  AdminUserUpdate,
   AdminConversationSummary,
   AdminFile,
   BEUser,
@@ -28,20 +29,12 @@ export const adminApi = {
     return users.map(toUser);
   },
 
-  async setUserRole(userId: string, role: 'student' | 'teacher'): Promise<User> {
+  /** Edit any user (an admin cannot change their own role or state). Only the given fields change. */
+  async updateUser(userId: string, changes: AdminUserUpdate): Promise<User> {
     return toUser(
-      await apiClient<BEUser>(`/api/admin/users/${userId}/role`, {
+      await apiClient<BEUser>(`/api/admin/users/${userId}`, {
         method: 'PATCH',
-        body: JSON.stringify({ role }),
-      }),
-    );
-  },
-
-  async setUserDisabled(userId: string, disable: boolean): Promise<User> {
-    return toUser(
-      await apiClient<BEUser>(`/api/admin/users/${userId}/status`, {
-        method: 'PATCH',
-        body: JSON.stringify({ disable }),
+        body: JSON.stringify(changes),
       }),
     );
   },
