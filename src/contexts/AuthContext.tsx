@@ -25,8 +25,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const trackedUserId = useRef<string | null>(null);
 
-  // Tie error reports and analytics to the signed-in account. Only the opaque
-  // ID and role are sent, so names and emails stay out of both services.
+  // Tie error reports and analytics to the signed-in account. Sentry (self-hosted
+  // Rustrak) gets the name and email so events show who hit them; analytics only
+  // gets the opaque ID and role.
   useEffect(() => {
     if (!user) {
       Sentry.setUser(null);
@@ -34,7 +35,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    Sentry.setUser({ id: user.id });
+    Sentry.setUser({ id: user.id, username: user.name, email: user.email });
 
     if (trackedUserId.current !== user.id) {
       trackedUserId.current = user.id;
