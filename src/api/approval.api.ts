@@ -45,6 +45,9 @@ export interface BugReportInput {
   title: string;
   description: string;
   affectedPage?: string;
+  /** Who sent it, so the report isn't shown as Anonymous. */
+  name?: string;
+  email?: string;
 }
 
 const withStringId = <T extends { id: string | number }>(item: T): T => ({ ...item, id: String(item.id) });
@@ -90,6 +93,8 @@ export const requestApi = {
         .filter(Boolean)
         .join("\n\n"),
       url: window.location.href,
+      name: input.name,
+      email: input.email,
       associatedEventId: eventId,
     });
     return eventId;

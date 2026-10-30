@@ -119,7 +119,7 @@ describe("ApprovePage", () => {
     fireEvent.change(screen.getByLabelText(/Mô tả lỗi/i), { target: { value: "Bấm gửi thì không có gì xảy ra." } });
     fireEvent.click(screen.getByRole("button", { name: /Gửi báo lỗi/i }));
     expect(requestApi.reportBug).toHaveBeenCalledWith(
-      expect.objectContaining({ title: "Không gửi được tin nhắn" }),
+      expect.objectContaining({ title: "Không gửi được tin nhắn", name: "An", email: "a@pduni.edu.vn" }),
     );
     expect(await screen.findByText(/Báo lỗi đã được gửi/i)).toBeInTheDocument();
   });

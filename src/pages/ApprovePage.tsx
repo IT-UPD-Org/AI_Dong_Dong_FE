@@ -383,6 +383,7 @@ function StorageRequestPanel({ limit, used }: { limit: number; used: number }) {
 
 /** ACTIVE: report a bug through Sentry user feedback. */
 function BugReportPanel() {
+  const { user } = useAuth();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [affectedPage, setAffectedPage] = useState("");
@@ -395,7 +396,13 @@ function BugReportPanel() {
     if (title.trim().length < 5) return setError("Tiêu đề cần ít nhất 5 ký tự.");
     if (description.trim().length < 10) return setError("Mô tả cần ít nhất 10 ký tự.");
     try {
-      setSentId(requestApi.reportBug({ title: title.trim(), description: description.trim(), affectedPage: affectedPage.trim() }));
+      setSentId(requestApi.reportBug({
+          title: title.trim(),
+          description: description.trim(),
+          affectedPage: affectedPage.trim(),
+          name: user?.name,
+          email: user?.email,
+        }));
       setTitle("");
       setDescription("");
       setAffectedPage("");
