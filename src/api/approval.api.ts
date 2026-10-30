@@ -86,12 +86,17 @@ export const requestApi = {
   reportBug(input: BugReportInput): string {
     const eventId = Sentry.captureMessage(`Bug report: ${input.title}`, {
       level: "info",
-      tags: { kind: "bug_report", affected_page: input.affectedPage || "unspecified" },
+      extra: {
+        title: input.title,
+        description: input.description,
+        affectedPage: input.affectedPage || "unspecified"
+      },
+      tags: { 
+        kind: "bug_report"
+      },
     });
     Sentry.captureFeedback({
-      message: [input.title, input.affectedPage ? `Trang: ${input.affectedPage}` : "", input.description]
-        .filter(Boolean)
-        .join("\n\n"),
+      message: `Title: ${input.title}\n\nPage: ${input.affectedPage || "unspecified"}\n\nDescription: ${input.description}`,
       url: window.location.href,
       name: input.name,
       email: input.email,
