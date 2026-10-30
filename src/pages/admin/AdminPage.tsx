@@ -1,13 +1,15 @@
-import { Bot, FolderOpen, MessagesSquare, Server, Users } from "lucide-react";
+import { Bot, FolderOpen, Inbox, MessagesSquare, Server, Users } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import { ChatsTab } from "./ChatsTab";
 import { FilesTab } from "./FilesTab";
 import { ModelsTab } from "./ModelsTab";
 import { ProvidersTab } from "./ProvidersTab";
+import { RequestsTab } from "./RequestsTab";
 import { UsersTab } from "./UsersTab";
 
 const TABS = [
   { id: "users", label: "Người dùng", Icon: Users, Component: UsersTab },
+  { id: "requests", label: "Yêu cầu", Icon: Inbox, Component: RequestsTab },
   { id: "files", label: "Tệp", Icon: FolderOpen, Component: FilesTab },
   { id: "chats", label: "Trò chuyện", Icon: MessagesSquare, Component: ChatsTab },
   { id: "models", label: "Models", Icon: Bot, Component: ModelsTab },

@@ -1,14 +1,22 @@
+import * as Sentry from "@sentry/react";
 import { apiClient } from "./client";
 
-export type ApprovalRequestType =
-  | "account_request"
-  | "storage_increase"
-  | "bug_report";
+export type RequestStatus = "pending" | "approved" | "rejected";
+export type StudentStatus = "student" | "teacher";
 
-export type StudentStatus = "student" | "alumni_other";
+/** Sizes a user may ask for, in MB (236 MB is everyone's default). */
+export const STORAGE_REQUEST_SIZES_MB = [512, 1080] as const;
+export type StorageRequestSize = (typeof STORAGE_REQUEST_SIZES_MB)[number];
 
-export interface ApprovalSubmitPayload {
-  request_type: ApprovalRequestType;
+interface RequestBase {
+  id: string;
+  status: RequestStatus;
+  created_at: string;
+  reviewed_at: string | null;
+  admin_note: string | null;
+}
+
+export interface AccountRequestInput {
   full_name: string;
   date_of_birth: string;
   student_status: StudentStatus;
@@ -17,62 +25,73 @@ export interface ApprovalSubmitPayload {
   major?: string;
   faculty?: string;
   phone_number?: string;
-  description?: string;
-  storage_mb?: number;
-  bug_title?: string;
-  bug_description?: string;
-  affected_page?: string;
-  file?: File | null;
+  reason: string;
 }
 
-export interface ApprovalSubmitResponse {
-  success: boolean;
-  message: string;
-  request_code: string;
-  request_type: string;
-  email_sent: boolean;
-  status: string;
-  created_at: string;
+export interface AccountRequest extends RequestBase, Required<Omit<AccountRequestInput, "student_id" | "class_code" | "major" | "faculty" | "phone_number">> {
+  student_id: string | null;
+  class_code: string | null;
+  major: string | null;
+  faculty: string | null;
+  phone_number: string | null;
 }
 
-export const approvalApi = {
-  async submit(payload: ApprovalSubmitPayload): Promise<ApprovalSubmitResponse> {
-    const formData = new FormData();
-    formData.append("request_type", payload.request_type);
-    formData.append("full_name", payload.full_name.trim());
-    formData.append("date_of_birth", payload.date_of_birth);
-    formData.append("student_status", payload.student_status);
+export interface StorageRequest extends RequestBase {
+  storage_mb: number;
+  reason: string;
+}
 
-    if (payload.student_status === "student") {
-      if (payload.student_id) formData.append("student_id", payload.student_id.trim());
-      if (payload.class_code) formData.append("class_code", payload.class_code.trim());
-      if (payload.major) formData.append("major", payload.major.trim());
-      if (payload.faculty) formData.append("faculty", payload.faculty.trim());
-    } else if (payload.student_status === "alumni_other") {
-      if (payload.phone_number) formData.append("phone_number", payload.phone_number.trim());
-    }
+export interface BugReportInput {
+  title: string;
+  description: string;
+  affectedPage?: string;
+}
 
-    if (payload.description) {
-      formData.append("description", payload.description.trim());
-    }
+const withStringId = <T extends { id: string | number }>(item: T): T => ({ ...item, id: String(item.id) });
 
-    if (payload.request_type === "storage_increase" && payload.storage_mb) {
-      formData.append("storage_mb", String(payload.storage_mb));
-    }
+export const requestApi = {
+  /** The signed-in user's access requests, newest first. */
+  async listAccount(): Promise<AccountRequest[]> {
+    return (await apiClient<AccountRequest[]>("/api/request/account")).map(withStringId);
+  },
 
-    if (payload.request_type === "bug_report") {
-      if (payload.bug_title) formData.append("bug_title", payload.bug_title.trim());
-      if (payload.bug_description) formData.append("bug_description", payload.bug_description.trim());
-      if (payload.affected_page) formData.append("affected_page", payload.affected_page.trim());
-    }
+  /** Ask for access (INACTIVE accounts only); the account becomes PENDING. */
+  async createAccount(input: AccountRequestInput): Promise<AccountRequest> {
+    return withStringId(
+      await apiClient<AccountRequest>("/api/request/account", { method: "POST", body: JSON.stringify(input) }),
+    );
+  },
 
-    if (payload.file) {
-      formData.append("file", payload.file);
-    }
+  /** The user's storage requests, newest first (active users only). */
+  async listStorage(): Promise<StorageRequest[]> {
+    return (await apiClient<StorageRequest[]>("/api/request/storage")).map(withStringId);
+  },
 
-    return apiClient<ApprovalSubmitResponse>("/api/approve/submit", {
-      method: "POST",
-      body: formData,
+  async createStorage(storage_mb: StorageRequestSize, reason: string): Promise<StorageRequest> {
+    return withStringId(
+      await apiClient<StorageRequest>("/api/request/storage", {
+        method: "POST",
+        body: JSON.stringify({ storage_mb, reason }),
+      }),
+    );
+  },
+
+  /**
+   * Report a bug through Sentry user feedback, attached to a new event so the
+   * report carries the page, browser, session replay and signed-in user.
+   */
+  reportBug(input: BugReportInput): string {
+    const eventId = Sentry.captureMessage(`Bug report: ${input.title}`, {
+      level: "info",
+      tags: { kind: "bug_report", affected_page: input.affectedPage || "unspecified" },
     });
+    Sentry.captureFeedback({
+      message: [input.title, input.affectedPage ? `Trang: ${input.affectedPage}` : "", input.description]
+        .filter(Boolean)
+        .join("\n\n"),
+      url: window.location.href,
+      associatedEventId: eventId,
+    });
+    return eventId;
   },
 };

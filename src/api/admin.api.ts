@@ -1,6 +1,7 @@
 import { apiClient } from './client';
 import { toUser } from './auth.api';
 import { toConversation } from './chat.api';
+import type { AccountRequest, RequestStatus, StorageRequest } from './approval.api';
 import type {
   AdminConversation,
   AdminUserUpdate,
@@ -22,6 +23,36 @@ function withStringIds<T extends { id: string | number }>(item: T): T {
   return { ...item, id: String(item.id) };
 }
 
+export type RequestKind = 'account' | 'storage';
+
+/** Who sent a request, shown in the admin queue. */
+interface RequestOwner {
+  user_id: string;
+  user_name: string;
+  user_email: string;
+}
+export type AdminAccountRequest = AccountRequest & RequestOwner;
+export type AdminStorageRequest = StorageRequest & RequestOwner;
+
+/** Snowflake IDs can arrive as numbers; keep them as strings. */
+function withRequestIds<T extends { id: string; user_id: string }>(item: T): T {
+  return { ...item, id: String(item.id), user_id: String(item.user_id) };
+}
+
+function requestsUrl(kind: RequestKind, status: RequestStatus | null, page: number): string {
+  const query = new URLSearchParams({ p: String(page) });
+  if (status) query.set('status', status);
+  return `/api/admin/requests/${kind}?${query}`;
+}
+
+function reviewUrl(kind: RequestKind, requestId: string): string {
+  return `/api/admin/requests/${kind}/${requestId}/review`;
+}
+
+function reviewBody(approve: boolean, note?: string): RequestInit {
+  return { method: 'POST', body: JSON.stringify({ approve, note: note?.trim() || null }) };
+}
+
 export const adminApi = {
   // ---- Users ----------------------------------------------------------------
   async getUsers(page = 1): Promise<User[]> {
@@ -37,6 +68,26 @@ export const adminApi = {
         body: JSON.stringify(changes),
       }),
     );
+  },
+
+  // ---- Requests -------------------------------------------------------------
+  /** Access requests, newest first, 20 per page; `status` null lists all. */
+  async getAccountRequests(status: RequestStatus | null, page = 1): Promise<AdminAccountRequest[]> {
+    return (await apiClient<AdminAccountRequest[]>(requestsUrl('account', status, page))).map(withRequestIds);
+  },
+
+  async getStorageRequests(status: RequestStatus | null, page = 1): Promise<AdminStorageRequest[]> {
+    return (await apiClient<AdminStorageRequest[]>(requestsUrl('storage', status, page))).map(withRequestIds);
+  },
+
+  /** Approve (user becomes active) or reject (user can ask again) an access request. */
+  async reviewAccountRequest(requestId: string, approve: boolean, note?: string): Promise<AdminAccountRequest> {
+    return withRequestIds(await apiClient<AdminAccountRequest>(reviewUrl('account', requestId), reviewBody(approve, note)));
+  },
+
+  /** Approve (raises the user's storage limit) or reject a storage request. */
+  async reviewStorageRequest(requestId: string, approve: boolean, note?: string): Promise<AdminStorageRequest> {
+    return withRequestIds(await apiClient<AdminStorageRequest>(reviewUrl('storage', requestId), reviewBody(approve, note)));
   },
 
   // ---- Files ----------------------------------------------------------------

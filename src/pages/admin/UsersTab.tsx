@@ -7,8 +7,14 @@ import { useAuth } from "../../contexts/AuthContext";
 import { ListState, Pager, formatBytes, usePagedList } from "./shared";
 
 const ROLE_LABEL: Record<UserRole, string> = { student: "Sinh viên", teacher: "Giảng viên", admin: "Quản trị" };
-const STATE_LABEL: Record<UserState, string> = { active: "Hoạt động", pending: "Chờ duyệt", disable: "Đã khoá" };
+const STATE_LABEL: Record<UserState, string> = {
+  inactive: "Chưa kích hoạt",
+  pending: "Chờ duyệt",
+  active: "Hoạt động",
+  disable: "Đã khoá",
+};
 const STATE_STYLE: Record<UserState, string> = {
+  inactive: "border-black/15 bg-black/5 text-black/60",
   active: "border-green-200 bg-green-50 text-green-700",
   pending: "border-amber-200 bg-amber-50 text-amber-700",
   disable: "border-red-200 bg-red-50 text-red-700",
@@ -48,7 +54,7 @@ export function UsersTab() {
   return (
     <section>
       <p className="mb-4 text-sm text-black/55">
-        Quản lý mọi tài khoản: vai trò, trạng thái và credits. Bạn không thể đổi vai trò hay trạng thái của chính mình.
+        Quản lý mọi tài khoản: vai trò, trạng thái và credits. Duyệt yêu cầu cấp quyền ở thẻ Yêu cầu.
       </p>
       <ListState loading={list.loading} error={list.error} empty={list.items.length === 0} emptyText="Chưa có người dùng.">
         <div className="rounded-2xl border border-black/10 bg-white">
@@ -77,8 +83,7 @@ export function UsersTab() {
                     <TableCell>
                       <select
                         value={user.role}
-                        disabled={busy || isMe}
-                        title={isMe ? "Không thể đổi vai trò của chính bạn" : undefined}
+                        disabled={busy}
                         onChange={(e) => {
                           const role = e.target.value as UserRole;
                           if (role !== user.role) void update(user, { role }, `Đã đổi vai trò của ${user.name}.`);
@@ -112,8 +117,7 @@ export function UsersTab() {
                     <TableCell className="text-right">
                       <select
                         value={user.state}
-                        disabled={busy || isMe}
-                        title={isMe ? "Không thể đổi trạng thái của chính bạn" : undefined}
+                        disabled={busy}
                         onChange={(e) => {
                           const state = e.target.value as UserState;
                           if (state !== user.state)
