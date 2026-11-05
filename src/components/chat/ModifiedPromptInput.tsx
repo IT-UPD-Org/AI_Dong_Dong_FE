@@ -230,7 +230,7 @@ export function ModifiedPromptInput({
   );
 
   return (
-    <div className="relative shrink-0">
+    <div className="relative">
       {/* Upload Popup */}
       {isUploadOpen && (
         <DocumentUploadPopup
@@ -261,137 +261,144 @@ export function ModifiedPromptInput({
 
       <form
         onSubmit={handleSubmit}
-        className="shrink-0 border-t border-black/10 bg-white px-3 py-2"
+        className="w-full"
       >
-        <div className="mx-auto flex w-full max-w-4xl flex-col gap-2">
-          {/* Attachments Display with X to remove */}
-          {attachedDocs.length > 0 && (
-            <div className="flex flex-wrap gap-2 px-1">
-              {attachedDocs.map((doc) => (
-                <div
-                  key={doc.document_id}
-                  className="flex items-center gap-2 rounded-xl border border-[#04714a]/20 bg-[#e8f7ef] px-3 py-1.5 text-xs text-[#013422] shadow-xs"
-                >
-                  <FileText size={14} className="text-[#04714a] shrink-0" />
-                  <span className="max-w-[200px] truncate font-medium">
-                    {doc.filename}
-                  </span>
-                  <button
-                    type="button"
-                    disabled={loading || uploading}
-                    onClick={() => {
-                      const updatedIds = attachmentIds.filter((id) => id !== doc.document_id);
-                      attachmentIdsRef.current = updatedIds;
-                      if (onAttachmentChange) onAttachmentChange(updatedIds);
-                      if (onMentionChange) {
-                        onMentionChange(
-                          mentionedDocumentIds.filter((id) => id !== doc.document_id),
-                        );
-                      }
-                    }}
-                    className="ml-1 rounded-full p-0.5 text-black/40 hover:bg-black/10 hover:text-black transition-colors cursor-pointer"
-                    title="Xóa tài liệu đính kèm"
-                  >
-                    <X size={13} />
-                  </button>
-                </div>
-              ))}
-            </div>
+        <div className="mx-auto flex w-full max-w-4xl flex-col px-3 sm:px-4">
+          {(uploading || processing) && (
+            <p role="status" className="pb-1 text-center text-xs text-black/50">
+              Đang xử lý tài liệu, vui lòng đợi trước khi gửi.
+            </p>
+          )}
+          {documentFailed && (
+            <p role="alert" className="pb-1 text-center text-xs text-red-600">
+              Tài liệu xử lý không thành công. Hãy xóa tài liệu lỗi và thử tải lại.
+            </p>
+          )}
+          {voiceError && (
+            <p role="alert" className="pb-1 text-center text-xs text-red-600">
+              {voiceError}
+            </p>
           )}
 
-          {/* Ô nhập — chứa nút Effort, Mic, Textarea, Send */}
-          <div className="flex items-end gap-1.5 rounded-2xl border border-black/10 bg-white p-1.5 shadow-sm transition-all">
-            <button
-              type="button"
-              onClick={() => setIsUploadOpen(!isUploadOpen)}
-              disabled={loading || uploading}
-              className="flex size-8 shrink-0 items-center justify-center rounded-full text-black/50 hover:bg-black/5 hover:text-black/80 transition-colors cursor-pointer focus:outline-none disabled:opacity-40"
-              title="Tải lên tài liệu"
-            >
-              <PlusIcon />
-            </button>
+          {/* Ô nhập chính — Glassmorphism với bo góc lớn, shadow nhẹ và viền mảnh */}
+          <div className="flex flex-col rounded-[24px] sm:rounded-[26px] border border-black/[0.12] bg-white/75 backdrop-blur-xl p-1.5 shadow-[0_4px_20px_rgba(0,0,0,0.06)] transition-all focus-within:border-[#04714a]/45 focus-within:bg-white/90 focus-within:shadow-[0_6px_24px_rgba(0,168,107,0.12)]">
+            {/* Danh sách file đính kèm hiển thị gọn gàng bên trong card */}
+            {attachedDocs.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 px-2 pt-1 pb-1.5">
+                {attachedDocs.map((doc) => (
+                  <div
+                    key={doc.document_id}
+                    className="flex items-center gap-1.5 rounded-lg border border-[#04714a]/20 bg-[#e8f7ef]/80 px-2.5 py-1 text-xs text-[#013422] shadow-2xs backdrop-blur-xs"
+                  >
+                    <FileText size={13} className="text-[#04714a] shrink-0" />
+                    <span className="max-w-[180px] truncate font-medium text-[11px]">
+                      {doc.filename}
+                    </span>
+                    <button
+                      type="button"
+                      disabled={loading || uploading}
+                      onClick={() => {
+                        const updatedIds = attachmentIds.filter((id) => id !== doc.document_id);
+                        attachmentIdsRef.current = updatedIds;
+                        if (onAttachmentChange) onAttachmentChange(updatedIds);
+                        if (onMentionChange) {
+                          onMentionChange(
+                            mentionedDocumentIds.filter((id) => id !== doc.document_id),
+                          );
+                        }
+                      }}
+                      className="ml-0.5 rounded-full p-0.5 text-black/40 hover:bg-black/10 hover:text-black transition-colors cursor-pointer"
+                      title="Xóa tài liệu đính kèm"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
 
-            {/* Nút Effort lồng trong Input Bar */}
-            <button
-              type="button"
-              onClick={() => setIsModalOpen(true)}
-              title={`Cấu hình Effort (${currentConfig.label})`}
-              className="flex h-8 shrink-0 items-center gap-1 rounded-xl bg-black/5 px-2.5 text-xs font-semibold text-[#04714a] transition-colors hover:bg-black/10 cursor-pointer focus:outline-none"
-            >
-              <SlidersIcon />
-              <span>{currentConfig.label}</span>
-            </button>
+            {/* Hàng điều khiển: Nút (+), Nút Standard, Textarea, Mic, Send */}
+            <div className="flex items-end gap-1 sm:gap-1.5">
+              <button
+                type="button"
+                onClick={() => setIsUploadOpen(!isUploadOpen)}
+                disabled={loading || uploading}
+                className="flex size-9 shrink-0 items-center justify-center rounded-full text-black/55 hover:bg-black/5 hover:text-black/85 transition-colors cursor-pointer focus:outline-none disabled:opacity-40"
+                title="Tải lên tài liệu"
+              >
+                <PlusIcon />
+              </button>
 
-            {/* Input Textarea */}
-            <textarea
-              ref={textareaRef}
-              aria-label="Nội dung câu hỏi"
-              rows={1}
-              value={value}
-              placeholder={placeholder}
-              onChange={(e) => handleTextChange(e.target.value)}
-              onKeyDown={handleKeyDown}
-              onPaste={(event) => {
-                const files = Array.from(event.clipboardData.files);
-                if (files.length > 0) {
-                  event.preventDefault();
-                  void uploadFiles(files);
+              {/* Nút Effort / Chế độ AI (Standard) */}
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(true)}
+                title={`Cấu hình Effort (${currentConfig.label})`}
+                className="flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-black/[0.04] px-3 text-xs font-semibold text-[#04714a] transition-colors hover:bg-black/[0.08] cursor-pointer focus:outline-none"
+              >
+                <SlidersIcon />
+                <span>{currentConfig.label}</span>
+              </button>
+
+              {/* Input Textarea tự động mở rộng theo nội dung */}
+              <textarea
+                ref={textareaRef}
+                aria-label="Nội dung câu hỏi"
+                rows={1}
+                value={value}
+                placeholder={placeholder}
+                onChange={(e) => handleTextChange(e.target.value)}
+                onKeyDown={handleKeyDown}
+                onPaste={(event) => {
+                  const files = Array.from(event.clipboardData.files);
+                  if (files.length > 0) {
+                    event.preventDefault();
+                    void uploadFiles(files);
+                  }
+                }}
+                disabled={loading}
+                style={{ outline: "none", boxShadow: "none" }}
+                className="max-h-[140px] min-w-0 flex-1 resize-none bg-transparent py-2 text-sm text-[#11130f] border-0 outline-none ring-0 focus:border-0 focus:outline-none focus:ring-0 focus:shadow-none focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-black/40 px-2"
+              />
+
+              {/* Nút Giọng nói */}
+              <button
+                type="button"
+                onClick={toggle}
+                disabled={!supported || loading}
+                title={
+                  supported
+                    ? listening
+                      ? "Dừng ghi âm"
+                      : "Nói để nhập"
+                    : "Trình duyệt không hỗ trợ giọng nói"
                 }
-              }}
-              disabled={loading}
-              style={{ outline: "none", boxShadow: "none" }}
-              className="max-h-[120px] min-w-0 flex-1 resize-none bg-transparent py-1.5 text-sm text-[#11130f] border-0 outline-none ring-0 focus:border-0 focus:outline-none focus:ring-0 focus:shadow-none focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-black/35 px-1"
-            />
+                className={`flex size-9 shrink-0 items-center justify-center rounded-full transition-colors disabled:opacity-30 cursor-pointer focus:outline-none ${
+                  listening
+                    ? "bg-red-500 text-white animate-pulse"
+                    : "text-black/45 hover:bg-black/5 hover:text-black/75"
+                }`}
+              >
+                <MicIcon />
+              </button>
 
-            {/* Nút Giọng nói */}
-            <button
-              type="button"
-              onClick={toggle}
-              disabled={!supported || loading}
-              title={
-                supported
-                  ? listening
-                    ? "Dừng ghi âm"
-                    : "Nói để nhập"
-                  : "Trình duyệt không hỗ trợ giọng nói"
-              }
-              className={`flex size-8 shrink-0 items-center justify-center rounded-full transition-colors disabled:opacity-30 cursor-pointer focus:outline-none ${
-                listening
-                  ? "bg-red-500 text-white animate-pulse"
-                  : "text-black/40 hover:bg-black/5 hover:text-black/70"
-              }`}
-            >
-              <MicIcon />
-            </button>
-
-            {/* Nút Gửi */}
-            <button
-              type="submit"
-              disabled={submitDisabled}
-              title="Gửi"
-              className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#04714a] text-white transition-opacity disabled:opacity-30 hover:bg-[#035e3f] cursor-pointer focus:outline-none"
-            >
-              <SendIcon />
-            </button>
+              {/* Nút Gửi với màu xanh thương hiệu Đông Đông */}
+              <button
+                type="submit"
+                disabled={submitDisabled}
+                title="Gửi"
+                className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#04714a] text-white transition-all shadow-xs disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#035e3f] cursor-pointer focus:outline-none"
+              >
+                <SendIcon />
+              </button>
+            </div>
           </div>
+
+          <p className="mt-1.5 text-center text-[11px] text-black/35 select-none tracking-tight">
+            IT UPD GenAI có thể đưa ra câu trả lời chưa chính xác. Hãy kiểm tra lại thông tin quan trọng.
+          </p>
         </div>
       </form>
-
-      {(uploading || processing) && (
-        <p role="status" className="px-4 pb-2 text-xs text-black/50">
-          Đang xử lý tài liệu, vui lòng đợi trước khi gửi.
-        </p>
-      )}
-      {documentFailed && (
-        <p role="alert" className="px-4 pb-2 text-xs text-red-600">
-          Tài liệu xử lý không thành công. Hãy xóa tài liệu lỗi và thử tải lại.
-        </p>
-      )}
-      {voiceError && (
-        <p role="alert" className="px-4 pb-2 text-xs text-red-600">
-          {voiceError}
-        </p>
-      )}
 
       <AgentEffortModal
         isOpen={isModalOpen}

@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useState, useRef, Fragment } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { Loader2 } from "lucide-react";
 import {
   streamChatMessage,
   getConversationMessages,
@@ -546,7 +547,7 @@ export function ChatPage() {
     <div className="relative flex h-full min-w-0 flex-row overflow-hidden">
       {/* Chat Column */}
       <div
-        className={`flex h-full min-w-0 flex-col overflow-hidden transition-all duration-200 ${
+        className={`relative flex h-full min-w-0 flex-col overflow-hidden transition-all duration-200 ${
           previewFile
             ? isPreviewExpanded
               ? "hidden md:flex md:w-[35%] lg:w-[35%] shrink-0 border-r border-black/10"
@@ -554,11 +555,12 @@ export function ChatPage() {
             : "w-full"
         }`}
       >
+        {/* Scrollable message area — pb ensures content clears the fixed input */}
         <div className="relative min-h-0 flex-1">
           <div
             ref={scrollRef}
             onScroll={handleScroll}
-            className="h-full overflow-y-auto py-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="h-full overflow-y-auto pt-8 pb-40 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
             <div
               className={`mx-auto w-full px-2 md:pr-8 transition-all ${
@@ -632,54 +634,74 @@ export function ChatPage() {
           )}
         </div>
 
-        {isEmpty && <EmptyStatePrompt />}
-
-        {error && (
-          <p role="alert" className="shrink-0 px-4 py-2 text-sm text-red-600">
-            {error}
-          </p>
-        )}
-
-        {runningElsewhere && (
-          <div className="mx-auto flex w-full max-w-4xl shrink-0 items-center justify-between gap-3 px-4 py-2 text-sm">
-            <span className="text-black/60">Một câu trả lời khác đang chạy. Tin nhắn của bạn chưa được gửi.</span>
-            <button
-              type="button"
-              onClick={followRunningReply}
-              className="rounded-full border border-black/15 px-3 py-1 font-medium text-[#04714a] hover:bg-[#e8f7ef] cursor-pointer"
-            >
-              Theo dõi câu trả lời
-            </button>
+        {loading && msgs.length === 0 && conversationId ? (
+          <div className="flex justify-center py-12">
+            <div className="flex items-center gap-2 rounded-full border border-black/10 bg-white/80 px-4 py-2 text-xs font-medium text-black/60 shadow-xs backdrop-blur-xs">
+              <Loader2 className="size-3.5 animate-spin text-[#04714a]" />
+              <span>Đang tải cuộc trò chuyện...</span>
+            </div>
           </div>
+        ) : (
+          isEmpty && <EmptyStatePrompt />
         )}
 
-        {streaming && (
-          <div className="mx-auto flex w-full max-w-4xl shrink-0 justify-center px-4 pb-1">
-            <button
-              type="button"
-              onClick={stopReply}
-              className="flex items-center gap-1.5 rounded-full border border-black/15 bg-white px-3 py-1 text-sm font-medium text-black/70 shadow-sm hover:bg-black/5 cursor-pointer"
-            >
-              <span className="size-2.5 rounded-sm bg-current" aria-hidden />
-              Dừng trả lời
-            </button>
+        {/* Fixed Glassmorphism Chat Input — always anchored to bottom */}
+        <div
+          className="absolute bottom-0 inset-x-0 z-20 pointer-events-none pb-2 sm:pb-3 md:pb-4 pt-10"
+          style={{
+            background: "linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.35) 40%, rgba(255,255,255,0.7) 100%)",
+          }}
+        >
+          {/* Status banners above the input */}
+          {error && (
+            <p role="alert" className="pointer-events-auto px-4 pb-2 text-sm text-red-600 text-center font-medium">
+              {error}
+            </p>
+          )}
+
+          {runningElsewhere && (
+            <div className="pointer-events-auto mx-auto mb-2 flex w-full max-w-4xl items-center justify-between gap-3 rounded-2xl border border-black/10 bg-white/85 px-4 py-2 text-sm shadow-sm backdrop-blur-md">
+              <span className="text-black/70">Một câu trả lời khác đang chạy. Tin nhắn của bạn chưa được gửi.</span>
+              <button
+                type="button"
+                onClick={followRunningReply}
+                className="rounded-full border border-black/15 bg-white px-3 py-1 font-medium text-[#04714a] hover:bg-[#e8f7ef] cursor-pointer"
+              >
+                Theo dõi câu trả lời
+              </button>
+            </div>
+          )}
+
+          {streaming && (
+            <div className="pointer-events-auto mx-auto mb-2 flex w-full max-w-4xl justify-center px-4">
+              <button
+                type="button"
+                onClick={stopReply}
+                className="flex items-center gap-1.5 rounded-full border border-black/15 bg-white/90 px-3.5 py-1.5 text-xs font-semibold text-black/70 shadow-sm backdrop-blur-md hover:bg-white cursor-pointer"
+              >
+                <span className="size-2 rounded-xs bg-current" aria-hidden />
+                Dừng trả lời
+              </button>
+            </div>
+          )}
+
+          <div className="pointer-events-auto">
+            <ModifiedPromptInput
+              key={composerKey}
+              value={input}
+              onChange={setInput}
+              onSubmit={submit}
+              loading={loading}
+              level={level}
+              onLevelChange={setLevel}
+              attachmentIds={attachmentIds}
+              onAttachmentChange={setAttachmentIds}
+              mentionedDocumentIds={mentionedDocumentIds}
+              onMentionChange={setMentionedDocumentIds}
+              onUploadError={setError}
+            />
           </div>
-        )}
-
-        <ModifiedPromptInput
-          key={composerKey}
-          value={input}
-          onChange={setInput}
-          onSubmit={submit}
-          loading={loading}
-          level={level}
-          onLevelChange={setLevel}
-          attachmentIds={attachmentIds}
-          onAttachmentChange={setAttachmentIds}
-          mentionedDocumentIds={mentionedDocumentIds}
-          onMentionChange={setMentionedDocumentIds}
-          onUploadError={setError}
-        />
+        </div>
       </div>
 
       {/* File Preview Workspace Column */}

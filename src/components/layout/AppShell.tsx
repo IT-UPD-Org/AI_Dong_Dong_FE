@@ -132,6 +132,27 @@ export function AppShell() {
     try {
       const chats = await chatApi.getConversations(1);
       setRecentChats(chats);
+
+      // Background-migrate legacy "New Conversation" titles.
+      // Fire-and-forget: failures are swallowed so they never block the UI.
+      for (const chat of chats) {
+        if (chat.title === 'New Conversation') {
+          void (async () => {
+            try {
+              const detail = await chatApi.getConversation(chat.id);
+              const firstUserMsg = detail.messages.find((m) => m.type === 'user');
+              if (firstUserMsg && 'content' in firstUserMsg && firstUserMsg.content.trim()) {
+                await chatApi.patchTitle(chat.id, firstUserMsg.content);
+                // Refresh list once to show the updated title.
+                const updated = await chatApi.getConversations(1);
+                setRecentChats(updated);
+              }
+            } catch {
+              // Ignore errors — title update is best-effort.
+            }
+          })();
+        }
+      }
     } catch {
       setRecentChats([]);
     }

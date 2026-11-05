@@ -15,6 +15,25 @@ export function HistoryPage() {
       try {
         const chats = await chatApi.getConversations(1);
         setConversations(chats);
+
+        // Background-migrate legacy "New Conversation" titles
+        for (const chat of chats) {
+          if (chat.title === 'New Conversation' || chat.title === 'Cuộc trò chuyện mới') {
+            void (async () => {
+              try {
+                const detail = await chatApi.getConversation(chat.id);
+                const firstUserMsg = detail.messages.find((m) => m.type === 'user');
+                if (firstUserMsg && 'content' in firstUserMsg && firstUserMsg.content.trim()) {
+                  await chatApi.patchTitle(chat.id, firstUserMsg.content);
+                  const updated = await chatApi.getConversations(1);
+                  setConversations(updated);
+                }
+              } catch {
+                // Ignore errors
+              }
+            })();
+          }
+        }
       } catch (err) {
         console.error("Failed to load history:", err);
       } finally {

@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import AppRouter from './router/AppRouter';
 import { PageLoader } from './components/layout/PageLoader';
@@ -10,12 +11,21 @@ const PageLoaderPreview = import.meta.env.DEV
 
 function AppContent() {
   const { isLoading } = useAuth();
-  const [showLoader, setShowLoader] = useState(true);
-  const loaderVisible = isLoading || showLoader;
+  const location = useLocation();
+  // The full-screen brand loader is only for the Landing Page.
+  // All other pages render immediately (or show inline skeletons) without blocking.
+  const isLandingPage = location.pathname === '/';
+  const [showLoader, setShowLoader] = useState(isLandingPage);
+  const loaderVisible = isLandingPage && (isLoading || showLoader);
 
   useEffect(() => {
-    if (isLoading) setShowLoader(true);
-  }, [isLoading]);
+    if (isLandingPage && isLoading) setShowLoader(true);
+  }, [isLoading, isLandingPage]);
+
+  // For non-landing pages: render immediately without any loading overlay.
+  if (!isLandingPage) {
+    return <AppRouter />;
+  }
 
   return (
     <>

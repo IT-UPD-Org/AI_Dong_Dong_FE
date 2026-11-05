@@ -98,6 +98,15 @@ export const chatApi = {
     return apiClient<void>(`/api/chats/${conversationId}`, { method: 'DELETE' });
   },
 
+  /** Update a conversation title. Used to fix legacy "New Conversation" entries. */
+  patchTitle(conversationId: string, title: string): Promise<void> {
+    return apiClient<void>(`/api/chats/${conversationId}/title`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title }),
+    });
+  },
+
   /**
    * Follow a reply that is already running, from its start (`GET /resume`).
    * The caller decides when to call this; it is never started automatically.
