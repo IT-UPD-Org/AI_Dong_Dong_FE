@@ -3,7 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
 
 export function ProtectedRoute() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
 
   // Chờ AuthContext khởi tạo xong mới quyết định
@@ -21,6 +21,12 @@ export function ProtectedRoute() {
   if (!isAuthenticated) {
     // Lưu lại trang user muốn vào để redirect về sau khi đăng nhập thành công
     return <Navigate to="/login" state={{ from: location.pathname }} replace />;
+  }
+
+  // Accounts not yet approved can only use /approve (request access, see their request).
+  // Admins keep access unless disabled; the backend enforces the same rule.
+  if (user && user.role !== 'admin' && user.state !== 'active') {
+    return <Navigate to="/approve" replace />;
   }
 
   return <Outlet />;

@@ -1,12 +1,15 @@
 // src\components\chat\MessageBubble.tsx
 import { forwardRef, useState, useEffect, useRef } from "react";
-import { RotateCcw, ThumbsDown, ThumbsUp, Edit2, Copy, Check } from "lucide-react";
+import { RotateCcw, ThumbsDown, ThumbsUp, Edit2, Copy, Check, Flag } from "lucide-react";
 import type { ChatMessage } from "../../api/types";
 import { SafeMarkdown } from "./SafeMarkdown";
 import { FileCard } from "./FileCard";
 import { PreviewFile } from "../../lib/filePreviewUtils";
 import { copyToClipboard } from "../../lib/clipboard";
 import { toast } from "sonner";
+import type { ReplyStep } from "../../lib/groupMessages";
+import { replyText } from "../../lib/groupMessages";
+import { ToolCallList } from "./ToolCallList";
 
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -14,10 +17,14 @@ interface MessageBubbleProps {
   onLike?: () => void;
   onDislike?: () => void;
   onRegenerate?: () => void;
+  /** Opens the feedback panel on its "report an issue" tab. */
+  onReport?: () => void;
   onEdit?: (newContent: string) => void;
   regenerateDisabled?: boolean;
   onPreviewFile?: (file: PreviewFile) => void;
   attachedFiles?: PreviewFile[];
+  /** For an assistant reply: its steps (text, then the tools that step called), in order. */
+  steps?: ReplyStep[];
 }
 
 export const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
@@ -28,10 +35,12 @@ export const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
       onLike,
       onDislike,
       onRegenerate,
+      onReport,
       onEdit,
       regenerateDisabled,
       onPreviewFile,
       attachedFiles = [],
+      steps,
     },
     ref,
   ) {
@@ -57,9 +66,14 @@ export const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
       setIsEditing(false);
     };
 
+    // An assistant reply may be several saved messages (one per tool round); show them as one.
+    const replySteps: ReplyStep[] = steps ?? [{ id: message.id, content: message.content, toolCalls: message.toolCalls ?? [] }];
+    const fullText = isUser ? message.content : replyText(replySteps);
+    const isRunning = Boolean(message.status && !["completed", "idle", "error", "stopped"].includes(message.status));
+
     const handleCopyMessage = async () => {
-      if (!message.content) return;
-      const ok = await copyToClipboard(message.content);
+      if (!fullText) return;
+      const ok = await copyToClipboard(fullText);
       if (ok) {
         setCopiedMessage(true);
         setTimeout(() => setCopiedMessage(false), 2000);
@@ -155,13 +169,22 @@ export const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
             >
               {message.content}
             </div>
-          ) : /* AI messages: SafeMarkdown (no images, no dangerous HTML, safe links, enhanced typography) */
-          message.content ? (
-            <SafeMarkdown
-              content={message.content}
-              className="min-w-0 [overflow-wrap:anywhere]"
-              onPreviewFile={onPreviewFile}
-            />
+          ) : /* AI replies: each step's text (SafeMarkdown), then the tools it called */
+          replySteps.some((step) => step.content || step.toolCalls.length) ? (
+            <div className="flex flex-col gap-1.5">
+              {replySteps.map((step, i) => (
+                <div key={step.id}>
+                  {step.content && (
+                    <SafeMarkdown
+                      content={step.content}
+                      className="min-w-0 [overflow-wrap:anywhere]"
+                      onPreviewFile={onPreviewFile}
+                    />
+                  )}
+                  <ToolCallList toolCalls={step.toolCalls} running={isRunning && i === replySteps.length - 1} />
+                </div>
+              ))}
+            </div>
           ) : (
             <span className="inline-flex items-center gap-1.5 py-1 text-black/40">
               <span className="size-1.5 rounded-full bg-[#04714a] animate-bounce [animation-delay:-0.3s]" />
@@ -183,12 +206,12 @@ export const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
             )}
 
           {!isUser &&
-            (onLike || onDislike || onRegenerate || message.content) &&
+            (onLike || onDislike || onRegenerate || onReport || fullText) &&
             (!message.status ||
               message.status === "completed" ||
               message.status === "error") && (
               <div className="mt-2.5 flex items-center gap-1 text-black/40">
-                {message.content && (
+                {fullText && (
                   <button
                     type="button"
                     title={copiedMessage ? "Đã sao chép" : "Sao chép câu trả lời"}
@@ -240,6 +263,17 @@ export const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
                     className="rounded-md p-1.5 transition-colors hover:bg-black/5 hover:text-black disabled:opacity-30 cursor-pointer"
                   >
                     <RotateCcw size={14} />
+                  </button>
+                )}
+                {onReport && (
+                  <button
+                    type="button"
+                    title="Báo cáo câu trả lời"
+                    aria-label="Báo cáo câu trả lời"
+                    onClick={onReport}
+                    className="rounded-md p-1.5 transition-colors hover:bg-black/5 hover:text-black cursor-pointer"
+                  >
+                    <Flag size={14} />
                   </button>
                 )}
               </div>

@@ -3,10 +3,12 @@ import { AlertTriangle, Lightbulb, Star, X } from "lucide-react";
 
 import { IssueImagePicker } from "./IssueImagePicker";
 
-type FeedbackMode = "suggestion" | "issue";
+export type FeedbackMode = "suggestion" | "issue";
 
 interface MessageFeedbackPanelProps {
   onClose: () => void;
+  /** Tab to open on: "suggestion" after like/dislike, "issue" from the report button. */
+  initialMode?: FeedbackMode;
 }
 
 const issueTypes = [
@@ -24,8 +26,8 @@ const ratingLabels = [
   "Rất hài lòng",
 ];
 
-export function MessageFeedbackPanel({ onClose }: MessageFeedbackPanelProps) {
-  const [mode, setMode] = useState<FeedbackMode>("suggestion");
+export function MessageFeedbackPanel({ onClose, initialMode = "suggestion" }: MessageFeedbackPanelProps) {
+  const [mode, setMode] = useState<FeedbackMode>(initialMode);
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [suggestion, setSuggestion] = useState("");

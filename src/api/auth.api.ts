@@ -4,7 +4,6 @@ import type {
   BEUser,
   CreateAccountInput,
   LoginResponse,
-  MicrosoftConfig,
   Session,
   User,
 } from './types';
@@ -17,8 +16,9 @@ export function toUser(user: BEUser): User {
     role: user.role,
     credits: user.credits,
     storage_used: user.storage_used,
+    storage_limit: user.storage_limit,
     first_use: user.first_use,
-    disable: user.disable,
+    state: user.state,
   };
 }
 
@@ -29,14 +29,9 @@ async function completeLogin(request: Promise<LoginResponse>): Promise<User> {
 }
 
 export const authApi = {
-  /** Which login options to show. */
+  /** Which login options to show, with the Microsoft settings when Microsoft is on. */
   getMethods(): Promise<AuthMethods> {
     return apiClient<AuthMethods>('/api/auth/methods');
-  },
-
-  /** Public Microsoft settings; the backend returns 404 when Microsoft isn't configured. */
-  getMicrosoftConfig(): Promise<MicrosoftConfig> {
-    return apiClient<MicrosoftConfig>('/api/auth/microsoft');
   },
 
   /** Email and password login, available only while Microsoft isn't configured. */

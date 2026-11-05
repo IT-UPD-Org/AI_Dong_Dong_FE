@@ -1,8 +1,13 @@
+import type { ReplyStep } from '../lib/groupMessages';
+
 // ---------------------------------------------------------------------------
 // Users & auth
 // ---------------------------------------------------------------------------
 
 export type UserRole = 'student' | 'teacher' | 'admin';
+
+/** Account state: `inactive` (new) -> `pending` (access requested) -> `active`; `disable` is blocked. */
+export type UserState = 'inactive' | 'pending' | 'active' | 'disable';
 
 /** Shape of `UserModel` returned by the backend. */
 export interface BEUser {
@@ -11,9 +16,10 @@ export interface BEUser {
   name: string;
   email: string;
   first_use: string | null;
-  disable: boolean;
+  state: UserState;
   credits: number;
   storage_used: number;
+  storage_limit: number;
   microsoft_tenant_id?: string | null;
   microsoft_object_id?: string | null;
 }
@@ -25,8 +31,19 @@ export interface User {
   role: UserRole;
   credits: number;
   storage_used: number;
+  storage_limit: number;
   first_use: string | null;
-  disable: boolean;
+  state: UserState;
+}
+
+/** `PATCH /api/admin/users/{id}`: only the sent fields change. */
+export interface AdminUserUpdate {
+  name?: string;
+  email?: string;
+  role?: UserRole;
+  state?: UserState;
+  credits?: number;
+  storage_limit?: number;
 }
 
 /** Response of every login endpoint (`fake-login`, `login`, `microsoft/callback`). */
@@ -36,18 +53,17 @@ export interface LoginResponse {
 }
 
 /** `GET /api/auth/methods`: which login options the backend allows. */
+/** `GET /api/auth/methods`: which login options to show. `microsoft` is `false` when off, or its settings when on. */
 export interface AuthMethods {
-  microsoft: boolean;
+  microsoft: MicrosoftConfig | false;
   password: boolean;
   dev: boolean;
 }
 
-/** `GET /api/auth/microsoft`: public values needed to start Microsoft login. */
+/** Public values needed to start Microsoft login. The redirect URI is built by the frontend: `{origin}/callback`. */
 export interface MicrosoftConfig {
   tenant_id: string;
   client_id: string;
-  /** Null unless the backend pins one; the frontend then uses `{origin}/callback`. */
-  redirect_uri: string | null;
   authorize_url: string;
   scopes: string;
 }
@@ -89,11 +105,11 @@ export interface ChatSource {
   url?: string;
 }
 
+/** A tool the assistant used. The API sends only its user-facing name, never its arguments or result. */
 export interface BEToolCall {
   id: string;
-  tool_name: string;
-  parameters: string;
-  response?: string | null;
+  /** e.g. "Search My Files"; null for tool calls saved before names were recorded. */
+  display_name: string | null;
 }
 
 export interface BEUserMessage {
@@ -150,6 +166,8 @@ export interface ChatMessage {
   files?: string[];
   /** The reply was hidden by moderation; content holds the notice instead. */
   hidden?: boolean;
+  /** A streamed reply's steps (text, then that round's tool calls), kept while it is shown live. */
+  steps?: ReplyStep[];
 }
 
 export interface SendMessagePayload {
@@ -169,6 +187,8 @@ export interface ChatStreamChunk {
   conversationId?: string;
   title?: string;
   toolCalls?: BEToolCall[];
+  /** The reply so far, one step per assistant message (text, then that round's tool calls). */
+  steps?: ReplyStep[];
   /** Another reply is already running; this message was not saved. Offer to follow it with resume. */
   runInProgress?: boolean;
   /** Moderation rejected the user's message; it was not saved. Holds the reason to show. */

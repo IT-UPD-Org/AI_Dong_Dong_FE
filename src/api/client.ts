@@ -73,6 +73,12 @@ export function describeError(body: unknown, status: number): string {
         })
         .join('; ');
     }
+    if (detail && typeof detail === 'object' && 'code' in detail) {
+      if ((detail as { code: unknown }).code === 'account_not_active') {
+        return 'Tài khoản chưa được kích hoạt. Hãy gửi yêu cầu cấp quyền tại trang Cấp phép tài khoản.';
+      }
+      if ('message' in detail) return String((detail as { message: unknown }).message);
+    }
     if (detail) return JSON.stringify(detail);
   }
   return `Request failed with status ${status}`;
