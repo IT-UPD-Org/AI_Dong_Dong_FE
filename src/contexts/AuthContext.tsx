@@ -22,7 +22,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  // Without a stored token there is nothing to verify, so auth is ready at once.
+  const [isLoading, setIsLoading] = useState<boolean>(() => Boolean(getStoredToken()));
   const trackedUserId = useRef<string | null>(null);
 
   // Tie error reports and analytics to the signed-in account. Sentry (self-hosted
