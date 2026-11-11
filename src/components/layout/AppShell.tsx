@@ -393,49 +393,54 @@ export function AppShell() {
           </div>
 
           {user && (
-            <div className="flex items-center gap-2.5 px-2 py-1.5 rounded-xl bg-black/[0.02] dark:bg-white/[0.04]">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#04714a]/10 dark:bg-[#04714a]/25 text-[#04714a] dark:text-[#4ade80] font-bold text-xs">
-                {user.email.charAt(0).toUpperCase()}
-              </div>
-              <div className="flex min-w-0 flex-1 flex-col">
-                <span className="truncate text-xs font-semibold text-black/80 dark:text-gray-200">
-                  {user.name || user.email}
-                </span>
-                <span className="truncate text-[10px] text-black/45 dark:text-gray-400">
-                  {user.role === "teacher"
-                    ? t("roleTeacher")
-                    : user.role === "admin"
-                      ? t("roleAdmin")
-                      : t("roleStudent")}
-                </span>
-              </div>
-            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                aria-label={`Menu tài khoản ${user.name || user.email}`}
+                className="flex w-full items-center gap-2.5 rounded-xl bg-black/[0.02] dark:bg-white/[0.04] px-2 py-1.5 text-left outline-none transition-colors hover:bg-[#e8f7ef] dark:hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-[#04714a] data-popup-open:bg-[#e8f7ef] dark:data-popup-open:bg-white/5 cursor-pointer"
+              >
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#04714a]/10 dark:bg-[#04714a]/25 text-[#04714a] dark:text-[#4ade80] font-bold text-xs">
+                  {user.email.charAt(0).toUpperCase()}
+                </div>
+                <div className="flex min-w-0 flex-1 flex-col">
+                  <span className="truncate text-xs font-semibold text-black/80 dark:text-gray-200">
+                    {user.name || user.email}
+                  </span>
+                  <span className="truncate text-[10px] text-black/45 dark:text-gray-400">
+                    {user.role === "teacher"
+                      ? t("roleTeacher")
+                      : user.role === "admin"
+                        ? t("roleAdmin")
+                        : t("roleStudent")}
+                  </span>
+                </div>
+                <ChevronsUpDown size={14} aria-hidden="true" className="shrink-0 text-black/35 dark:text-gray-500" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                side="top"
+                align="start"
+                sideOffset={8}
+                className="w-56 rounded-xl p-1.5"
+              >
+                <DropdownMenuItem render={<NavLink to="/profile" />} className="gap-2.5 rounded-lg px-2 py-2 text-xs">
+                  <UserRoundIcon size={15} />
+                  {t("profile")}
+                </DropdownMenuItem>
+                <DropdownMenuItem render={<NavLink to="/settings" />} className="gap-2.5 rounded-lg px-2 py-2 text-xs">
+                  <SettingsIcon size={15} />
+                  {t("settings")}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  variant="destructive"
+                  onClick={handleLogout}
+                  className="gap-2.5 rounded-lg px-2 py-2 text-xs"
+                >
+                  <LogOutIcon size={15} />
+                  {t("logout")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
-
-          <div className="flex flex-col gap-0.5">
-            <NavLink
-              to="/profile"
-              className="flex items-center gap-3 rounded-xl px-3 py-2 text-xs text-black/60 dark:text-gray-400 hover:bg-[#e8f7ef] dark:hover:bg-white/5 hover:text-[#04714a] dark:hover:text-[#4ade80] transition-colors"
-            >
-              <UserRoundIcon size={15} />
-              {t("profile")}
-            </NavLink>
-            <NavLink
-              to="/settings"
-              className="flex items-center gap-3 rounded-xl px-3 py-2 text-xs text-black/60 dark:text-gray-400 hover:bg-[#e8f7ef] dark:hover:bg-white/5 hover:text-[#04714a] dark:hover:text-[#4ade80] transition-colors"
-            >
-              <SettingsIcon size={15} />
-              {t("settings")}
-            </NavLink>
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="flex items-center gap-3 rounded-xl px-3 py-2 text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors w-full text-left cursor-pointer"
-            >
-              <LogOutIcon size={15} />
-              {t("logout")}
-            </button>
-          </div>
         </div>
       </aside>
 
