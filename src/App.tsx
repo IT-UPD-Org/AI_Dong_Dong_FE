@@ -24,11 +24,8 @@ function AppContent() {
     if (isLandingPage && isLoading) setShowLoader(true);
   }, [isLoading, isLandingPage]);
 
-  // For non-landing pages: render immediately without any loading overlay.
-  if (!isLandingPage) {
-    return <AppRouter />;
-  }
-
+  // Same tree on every route so navigating to or from "/" never remounts the app;
+  // the overlay only ever appears on the landing page.
   return (
     <>
       <div inert={loaderVisible} aria-busy={loaderVisible}>

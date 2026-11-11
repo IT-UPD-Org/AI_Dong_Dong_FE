@@ -1,6 +1,14 @@
 import { useState } from "react";
-import { ArrowUpRight, Menu, MessageCircle, X } from "lucide-react";
-import { Link, Outlet, useLocation } from "react-router-dom";
+import {
+  ArrowUpRight,
+  ChevronDown,
+  LogOut,
+  Menu,
+  MessageCircle,
+  UserRound,
+  X,
+} from "lucide-react";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { ThemeToggle, LanguageToggle } from "../theme/ThemeToggle";
@@ -10,6 +18,12 @@ export function PublicLayout() {
   const { isAuthenticated, isLoading } = useAuth();
   const { t } = useLanguage();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const accountName = user?.name || user?.email || "Tài khoản";
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login", { replace: true });
+  };
 
   const navLinks = [
     { to: "/", label: t("home") },
@@ -35,7 +49,9 @@ export function PublicLayout() {
                 key={link.to}
                 to={link.to}
                 className={`transition-colors hover:text-[#04714a] dark:hover:text-[#4ade80] ${
-                  location.pathname === link.to ? "font-semibold text-[#04714a] dark:text-[#4ade80]" : ""
+                  location.pathname === link.to
+                    ? "font-semibold text-[#04714a] dark:text-[#4ade80]"
+                    : ""
                 }`}
               >
                 {link.label}
@@ -89,7 +105,9 @@ export function PublicLayout() {
           >
             <div className="flex flex-col gap-1">
               <div className="flex items-center justify-between px-3 py-1 mb-1 border-b border-black/5 dark:border-white/10 xs:hidden">
-                <span className="text-xs text-gray-500 font-mono uppercase">{t("preferences")}</span>
+                <span className="text-xs text-gray-500 font-mono uppercase">
+                  {t("preferences")}
+                </span>
                 <div className="flex items-center gap-1">
                   <LanguageToggle />
                   <ThemeToggle compact />

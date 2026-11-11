@@ -1,5 +1,6 @@
 import { useEffect, useState, type SVGProps } from "react";
 import { NavLink, Outlet, useMatch, useNavigate } from "react-router-dom";
+import { ChevronsUpDown } from "lucide-react";
 
 import { useAuth } from "../../contexts/AuthContext";
 import { chatApi } from "../../api/chat.api";
@@ -8,6 +9,13 @@ import { useDeleteChat } from "../../lib/deleteChat";
 import { DocumentProcessingNotifications } from "./DocumentProcessingNotifications";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { ThemeToggle, LanguageToggle } from "../theme/ThemeToggle";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 
 type IconProps = SVGProps<SVGSVGElement> & {
   size?: number;
@@ -133,7 +141,9 @@ export function AppShell() {
   const currentChatId = useMatch("/c/:id")?.params.id ?? null;
   const { user, isAdmin, logout } = useAuth();
   const [recentChats, setRecentChats] = useState<Conversation[]>([]);
-  const [promptSnippets, setPromptSnippets] = useState<Record<string, string>>({});
+  const [promptSnippets, setPromptSnippets] = useState<Record<string, string>>(
+    {},
+  );
 
   const loadRecentChats = async () => {
     try {
@@ -156,7 +166,8 @@ export function AppShell() {
               });
               if (userMsg && userMsg.content) {
                 const cleaned = userMsg.content.trim().replace(/\s+/g, " ");
-                const snippet = cleaned.length > 40 ? cleaned.slice(0, 40) + "..." : cleaned;
+                const snippet =
+                  cleaned.length > 40 ? cleaned.slice(0, 40) + "..." : cleaned;
                 try {
                   localStorage.setItem(`chat_first_prompt_${chat.id}`, snippet);
                 } catch {
@@ -178,22 +189,33 @@ export function AppShell() {
     loadRecentChats();
 
     const handleChatsUpdated = (e: Event) => {
-      const custom = e as CustomEvent<{ conversationId?: string; prompt?: string }>;
+      const custom = e as CustomEvent<{
+        conversationId?: string;
+        prompt?: string;
+      }>;
       if (custom.detail?.conversationId && custom.detail?.prompt) {
         const cleaned = custom.detail.prompt.trim().replace(/\s+/g, " ");
-        const snippet = cleaned.length > 40 ? cleaned.slice(0, 40) + "..." : cleaned;
+        const snippet =
+          cleaned.length > 40 ? cleaned.slice(0, 40) + "..." : cleaned;
         try {
-          localStorage.setItem(`chat_first_prompt_${custom.detail.conversationId}`, snippet);
+          localStorage.setItem(
+            `chat_first_prompt_${custom.detail.conversationId}`,
+            snippet,
+          );
         } catch {
           // ignore
         }
-        setPromptSnippets((prev) => ({ ...prev, [custom.detail!.conversationId!]: snippet }));
+        setPromptSnippets((prev) => ({
+          ...prev,
+          [custom.detail!.conversationId!]: snippet,
+        }));
       }
       loadRecentChats();
     };
 
     window.addEventListener("chats:updated", handleChatsUpdated);
-    return () => window.removeEventListener("chats:updated", handleChatsUpdated);
+    return () =>
+      window.removeEventListener("chats:updated", handleChatsUpdated);
   }, []);
 
   const handleLogout = async () => {
@@ -205,10 +227,12 @@ export function AppShell() {
     navigate("/chat", { state: { newChatKey: crypto.randomUUID() } });
   };
 
-  const { requestDelete: handleDeleteChat, dialog: deleteChatDialog } = useDeleteChat((id) => {
-    // Leaving a chat that no longer exists.
-    if (currentChatId === id) navigate("/chat", { state: { newChatKey: crypto.randomUUID() } });
-  });
+  const { requestDelete: handleDeleteChat, dialog: deleteChatDialog } =
+    useDeleteChat((id) => {
+      // Leaving a chat that no longer exists.
+      if (currentChatId === id)
+        navigate("/chat", { state: { newChatKey: crypto.randomUUID() } });
+    });
 
   const links = [
     ["/chat", t("navChat"), MessageCircleIcon],
@@ -221,7 +245,10 @@ export function AppShell() {
   return (
     <div className="flex h-screen w-full flex-col overflow-hidden bg-white dark:bg-[#111215] text-[#11130f] dark:text-gray-100 transition-colors md:flex-row">
       <aside className="hidden h-full w-64 shrink-0 flex-col border-r border-black/10 dark:border-white/10 bg-white dark:bg-[#16181b] p-5 md:flex transition-colors">
-        <NavLink to="/" className="mb-6 shrink-0 text-lg font-extrabold text-[#11130f] dark:text-gray-100">
+        <NavLink
+          to="/"
+          className="mb-6 shrink-0 text-lg font-extrabold text-[#11130f] dark:text-gray-100"
+        >
           IT UPD GenAI<span className="text-[#00a86b]">.</span>
         </NavLink>
         <button
@@ -303,9 +330,15 @@ export function AppShell() {
                 const cachedSnippet =
                   promptSnippets[conversation.id] ||
                   (typeof window !== "undefined"
-                    ? localStorage.getItem(`chat_first_prompt_${conversation.id}`)
+                    ? localStorage.getItem(
+                        `chat_first_prompt_${conversation.id}`,
+                      )
                     : null);
-                const displayTitle = cachedSnippet || (!isGenericTitle(conversation.title) ? conversation.title : t("newChat"));
+                const displayTitle =
+                  cachedSnippet ||
+                  (!isGenericTitle(conversation.title)
+                    ? conversation.title
+                    : t("newChat"));
 
                 return (
                   <div key={conversation.id} className="group relative">
@@ -332,7 +365,9 @@ export function AppShell() {
                       type="button"
                       aria-label={`${t("delete")} ${displayTitle}`}
                       title={t("delete")}
-                      onClick={() => handleDeleteChat(conversation.id, displayTitle)}
+                      onClick={() =>
+                        handleDeleteChat(conversation.id, displayTitle)
+                      }
                       className="absolute right-1 top-1/2 -translate-y-1/2 rounded-md p-1 text-black/40 dark:text-gray-500 opacity-0 transition-opacity hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600 dark:hover:text-red-400 focus:opacity-100 group-hover:opacity-100 cursor-pointer"
                     >
                       <Trash2Icon size={13} />
@@ -370,8 +405,8 @@ export function AppShell() {
                   {user.role === "teacher"
                     ? t("roleTeacher")
                     : user.role === "admin"
-                    ? t("roleAdmin")
-                    : t("roleStudent")}
+                      ? t("roleAdmin")
+                      : t("roleStudent")}
                 </span>
               </div>
             </div>
@@ -407,7 +442,10 @@ export function AppShell() {
       <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
         {/* Mobile Header */}
         <header className="flex h-14 shrink-0 items-center justify-between border-b border-black/10 dark:border-white/10 bg-white dark:bg-[#16181b] px-4 md:hidden transition-colors">
-          <NavLink to="/" className="text-base font-extrabold text-[#11130f] dark:text-gray-100">
+          <NavLink
+            to="/"
+            className="text-base font-extrabold text-[#11130f] dark:text-gray-100"
+          >
             IT UPD GenAI<span className="text-[#00a86b]">.</span>
           </NavLink>
           <div className="flex items-center gap-1 sm:gap-2">
@@ -421,7 +459,10 @@ export function AppShell() {
             >
               <PlusIcon size={18} />
             </button>
-            <NavLink to="/profile" className="p-1.5 text-black/70 dark:text-gray-300 hover:text-[#04714a] dark:hover:text-[#4ade80]">
+            <NavLink
+              to="/profile"
+              className="p-1.5 text-black/70 dark:text-gray-300 hover:text-[#04714a] dark:hover:text-[#4ade80]"
+            >
               <UserRoundIcon size={18} />
             </NavLink>
             <button
@@ -459,7 +500,11 @@ export function AppShell() {
               <>
                 <Icon
                   size={20}
-                  className={isActive && (to !== "/chat" || !currentChatId) ? "text-[#04714a] dark:text-[#4ade80]" : ""}
+                  className={
+                    isActive && (to !== "/chat" || !currentChatId)
+                      ? "text-[#04714a] dark:text-[#4ade80]"
+                      : ""
+                  }
                 />
                 <span className="leading-none">{label}</span>
               </>
@@ -471,13 +516,20 @@ export function AppShell() {
             to="/admin"
             className={({ isActive }) =>
               `flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] transition-colors ${
-                isActive ? "text-[#04714a] dark:text-[#4ade80] font-semibold" : "text-black/45 dark:text-gray-400 hover:text-[#04714a] dark:hover:text-[#4ade80]"
+                isActive
+                  ? "text-[#04714a] dark:text-[#4ade80] font-semibold"
+                  : "text-black/45 dark:text-gray-400 hover:text-[#04714a] dark:hover:text-[#4ade80]"
               }`
             }
           >
             {({ isActive }) => (
               <>
-                <ShieldCheckIcon size={20} className={isActive ? "text-[#04714a] dark:text-[#4ade80]" : ""} />
+                <ShieldCheckIcon
+                  size={20}
+                  className={
+                    isActive ? "text-[#04714a] dark:text-[#4ade80]" : ""
+                  }
+                />
                 <span className="leading-none">{t("navAdmin")}</span>
               </>
             )}

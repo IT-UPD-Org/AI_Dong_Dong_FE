@@ -11,7 +11,6 @@ import {
   Lock,
   Mail,
   RefreshCw,
-  Sparkles,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { loadAuthMethods, startMicrosoftLogin } from "../lib/microsoftAuth";
@@ -377,14 +376,6 @@ export function LoginPage() {
               Cấp phép tài khoản
             </Link>
           </span>
-        </div>
-
-        {/* Security and privacy note */}
-        <div className="mt-8 rounded-2xl border border-black/5 bg-[#fcfcfb] p-4 text-xs text-black/55 leading-relaxed">
-          <p className="font-semibold text-black/75 mb-1 flex items-center gap-1.5">
-            <Sparkles size={14} className="text-[#04714a]" /> Bảo mật & Tiện ích:
-          </p>
-          Tài khoản Phương Đông gồm email sinh viên (<code>@pduni.edu.vn</code>) và giảng viên (<code>@phuongdong.edu.vn</code>). Phiên đăng nhập được duy trì an toàn và phân quyền chính xác theo tài khoản đã được phê duyệt.
         </div>
       </div>
     </main>
