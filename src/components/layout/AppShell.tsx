@@ -249,9 +249,22 @@ export function AppShell() {
     });
 
   const location = useLocation();
-  const isMoreActive = ["/knowledge", "/documents", "/contributors", "/admin"].some(
+  const isMoreActive = ["/contributors", "/admin"].some(
     (path) => location.pathname === path || location.pathname.startsWith(`${path}/`),
   );
+
+  // Phần A (Thêm...): drop và push down (đẩy Phần B - Gần đây lùi xuống)
+  const [isMoreOpen, setIsMoreOpen] = useState(() =>
+    ["/contributors", "/admin"].some(
+      (path) => location.pathname === path || location.pathname.startsWith(`${path}/`),
+    ),
+  );
+
+  useEffect(() => {
+    if (isMoreActive) {
+      setIsMoreOpen(true);
+    }
+  }, [isMoreActive]);
 
   return (
     <div className="flex h-screen w-full flex-col overflow-hidden bg-white dark:bg-[#121212] text-[#11130f] dark:text-gray-100 transition-colors md:flex-row">
@@ -297,12 +310,29 @@ export function AppShell() {
             <span>{t("navHistory")}</span>
           </NavLink>
 
-          {/* Thêm... (Kho tri thức, Tài liệu, Người đóng góp, Quản trị) - Dropdown Menu */}
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              aria-label={t("navMore")}
+          {/* Tài liệu */}
+          <NavLink
+            to="/documents"
+            className={({ isActive }) =>
+              `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${
+                isActive
+                  ? "bg-[#e8f7ef] dark:bg-[#04714a]/25 font-semibold text-[#013422] dark:text-[#4ade80]"
+                  : "text-black/60 dark:text-gray-400 hover:bg-[#e8f7ef] dark:hover:bg-white/5 hover:text-[#04714a] dark:hover:text-[#4ade80]"
+              }`
+            }
+          >
+            <FileTextIcon size={17} />
+            <span>{t("navDocuments")}</span>
+          </NavLink>
+
+          {/* Thêm... (Phần A: drop & push down - Người đóng góp, Quản trị) */}
+          <div className="flex flex-col">
+            <button
+              type="button"
+              onClick={() => setIsMoreOpen((prev) => !prev)}
+              aria-expanded={isMoreOpen}
               className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-sm transition-colors cursor-pointer outline-none ${
-                isMoreActive
+                isMoreActive && !isMoreOpen
                   ? "bg-[#e8f7ef] dark:bg-[#04714a]/25 font-semibold text-[#013422] dark:text-[#4ade80]"
                   : "text-black/60 dark:text-gray-400 hover:bg-[#e8f7ef] dark:hover:bg-white/5 hover:text-[#04714a] dark:hover:text-[#4ade80]"
               }`}
@@ -311,62 +341,49 @@ export function AppShell() {
                 <MoreHorizontalIcon size={17} />
                 <span className="truncate">{t("navMore")}</span>
               </div>
-              <ChevronDownIcon size={14} className="opacity-60 transition-transform data-popup-open:rotate-180" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              side="bottom"
-              align="start"
-              sideOffset={4}
-              className="w-56 rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#1e1e1e] p-1.5 shadow-xl text-[#11130f] dark:text-gray-100 z-50 animate-in fade-in-0 zoom-in-95"
-            >
-              <DropdownMenuItem
-                render={<NavLink to="/knowledge" />}
-                className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors cursor-pointer ${
-                  location.pathname === "/knowledge"
-                    ? "bg-[#e8f7ef] dark:bg-[#04714a]/25 font-semibold text-[#013422] dark:text-[#4ade80]"
-                    : "text-black/70 dark:text-gray-300 hover:bg-[#e8f7ef] dark:hover:bg-white/10 hover:text-[#04714a] dark:hover:text-[#4ade80]"
+              <ChevronDownIcon
+                size={14}
+                className={`opacity-60 transition-transform duration-200 ${
+                  isMoreOpen ? "rotate-180" : ""
                 }`}
-              >
-                <BookOpenIcon size={16} />
-                <span>{t("navKnowledge")}</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                render={<NavLink to="/documents" />}
-                className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors cursor-pointer ${
-                  location.pathname === "/documents"
-                    ? "bg-[#e8f7ef] dark:bg-[#04714a]/25 font-semibold text-[#013422] dark:text-[#4ade80]"
-                    : "text-black/70 dark:text-gray-300 hover:bg-[#e8f7ef] dark:hover:bg-white/10 hover:text-[#04714a] dark:hover:text-[#4ade80]"
-                }`}
-              >
-                <FileTextIcon size={16} />
-                <span>{t("navDocuments")}</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                render={<NavLink to="/contributors" />}
-                className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors cursor-pointer ${
-                  location.pathname === "/contributors"
-                    ? "bg-[#e8f7ef] dark:bg-[#04714a]/25 font-semibold text-[#013422] dark:text-[#4ade80]"
-                    : "text-black/70 dark:text-gray-300 hover:bg-[#e8f7ef] dark:hover:bg-white/10 hover:text-[#04714a] dark:hover:text-[#4ade80]"
-                }`}
-              >
-                <UsersIcon size={16} />
-                <span>{t("navContributors")}</span>
-              </DropdownMenuItem>
-              {isAdmin && (
-                <DropdownMenuItem
-                  render={<NavLink to="/admin" />}
-                  className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors cursor-pointer ${
-                    location.pathname === "/admin"
-                      ? "bg-[#e8f7ef] dark:bg-[#04714a]/25 font-semibold text-[#013422] dark:text-[#4ade80]"
-                      : "text-black/70 dark:text-gray-300 hover:bg-[#e8f7ef] dark:hover:bg-white/10 hover:text-[#04714a] dark:hover:text-[#4ade80]"
-                  }`}
+              />
+            </button>
+
+            {/* Khi mở ra: Phần A nằm trong flow DOM sẽ tự động đẩy Phần B (Gần đây) lùi xuống */}
+            {isMoreOpen && (
+              <div className="mt-1 flex flex-col gap-1 pl-4 animate-in slide-in-from-top-1 duration-150">
+                <NavLink
+                  to="/contributors"
+                  className={({ isActive }) =>
+                    `flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs transition-colors ${
+                      isActive
+                        ? "bg-[#e8f7ef] dark:bg-[#04714a]/25 font-semibold text-[#013422] dark:text-[#4ade80]"
+                        : "text-black/60 dark:text-gray-400 hover:bg-[#e8f7ef] dark:hover:bg-white/5 hover:text-[#04714a] dark:hover:text-[#4ade80]"
+                    }`
+                  }
                 >
-                  <ShieldCheckIcon size={16} />
-                  <span>{t("navAdmin")}</span>
-                </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+                  <UsersIcon size={15} />
+                  <span>{t("navContributors")}</span>
+                </NavLink>
+
+                {isAdmin && (
+                  <NavLink
+                    to="/admin"
+                    className={({ isActive }) =>
+                      `flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs transition-colors ${
+                        isActive
+                          ? "bg-[#e8f7ef] dark:bg-[#04714a]/25 font-semibold text-[#013422] dark:text-[#4ade80]"
+                          : "text-black/60 dark:text-gray-400 hover:bg-[#e8f7ef] dark:hover:bg-white/5 hover:text-[#04714a] dark:hover:text-[#4ade80]"
+                      }`
+                    }
+                  >
+                    <ShieldCheckIcon size={15} />
+                    <span>{t("navAdmin")}</span>
+                  </NavLink>
+                )}
+              </div>
+            )}
+          </div>
         </nav>
 
         {/* Section: GẦN ĐÂY (Recent) */}
@@ -575,6 +592,20 @@ export function AppShell() {
           <span className="leading-none">{t("navHistory")}</span>
         </NavLink>
 
+        <NavLink
+          to="/documents"
+          className={({ isActive }) =>
+            `flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] transition-colors ${
+              isActive
+                ? "text-[#04714a] dark:text-[#4ade80] font-semibold"
+                : "text-black/55 dark:text-gray-400 hover:text-[#04714a] dark:hover:text-[#4ade80]"
+            }`
+          }
+        >
+          <FileTextIcon size={20} />
+          <span className="leading-none">{t("navDocuments")}</span>
+        </NavLink>
+
         <DropdownMenu>
           <DropdownMenuTrigger
             className={`flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] transition-colors cursor-pointer outline-none ${
@@ -590,30 +621,8 @@ export function AppShell() {
             side="top"
             align="end"
             sideOffset={8}
-            className="w-52 rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#1e1e1e] p-1.5 shadow-xl text-[#11130f] dark:text-gray-100 z-50 animate-in fade-in-0 zoom-in-95"
+            className="w-48 rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#1e1e1e] p-1.5 shadow-xl text-[#11130f] dark:text-gray-100 z-50 animate-in fade-in-0 zoom-in-95"
           >
-            <DropdownMenuItem
-              render={<NavLink to="/knowledge" />}
-              className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors cursor-pointer ${
-                location.pathname === "/knowledge"
-                  ? "bg-[#e8f7ef] dark:bg-[#04714a]/25 font-semibold text-[#013422] dark:text-[#4ade80]"
-                  : "text-black/70 dark:text-gray-300 hover:bg-[#e8f7ef] dark:hover:bg-white/10 hover:text-[#04714a] dark:hover:text-[#4ade80]"
-              }`}
-            >
-              <BookOpenIcon size={16} />
-              <span>{t("navKnowledge")}</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              render={<NavLink to="/documents" />}
-              className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors cursor-pointer ${
-                location.pathname === "/documents"
-                  ? "bg-[#e8f7ef] dark:bg-[#04714a]/25 font-semibold text-[#013422] dark:text-[#4ade80]"
-                  : "text-black/70 dark:text-gray-300 hover:bg-[#e8f7ef] dark:hover:bg-white/10 hover:text-[#04714a] dark:hover:text-[#4ade80]"
-              }`}
-            >
-              <FileTextIcon size={16} />
-              <span>{t("navDocuments")}</span>
-            </DropdownMenuItem>
             <DropdownMenuItem
               render={<NavLink to="/contributors" />}
               className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors cursor-pointer ${
