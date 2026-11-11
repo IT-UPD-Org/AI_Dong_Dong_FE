@@ -177,7 +177,7 @@ export function SafeMarkdown({ content, className, onPreviewFile }: SafeMarkdown
 
     table({ children }) {
       return (
-        <div className="my-3 overflow-x-auto rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#181a1e] shadow-2xs">
+        <div className="my-3 overflow-x-auto rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#1e1e1e] shadow-2xs">
           <table className="w-full border-collapse text-xs sm:text-sm">{children}</table>
         </div>
       );

@@ -582,7 +582,7 @@ export function ChatPage() {
   }
 
   return (
-    <div className="relative flex h-full min-w-0 flex-row overflow-hidden bg-white dark:bg-[#111215] text-[#11130f] dark:text-gray-100 transition-colors">
+    <div className="relative flex h-full min-w-0 flex-row overflow-hidden bg-white dark:bg-[#121212] text-[#11130f] dark:text-gray-100 transition-colors">
       {/* Chat Column */}
       <div
         className={`relative flex h-full min-w-0 flex-col overflow-hidden transition-all duration-200 ${
@@ -698,7 +698,7 @@ export function ChatPage() {
 
         {loading && msgs.length === 0 && conversationId && (
           <div className="flex justify-center py-12">
-            <div className="flex items-center gap-2 rounded-full border border-black/10 dark:border-white/10 bg-white/80 dark:bg-[#1a1d21]/80 px-4 py-2 text-xs font-medium text-black/60 dark:text-gray-300 shadow-xs backdrop-blur-xs">
+            <div className="flex items-center gap-2 rounded-full border border-black/10 dark:border-white/10 bg-white/80 dark:bg-[#1e1e1e]/80 px-4 py-2 text-xs font-medium text-black/60 dark:text-gray-300 shadow-xs backdrop-blur-xs">
               <Loader2 className="size-3.5 animate-spin text-[#04714a] dark:text-[#4ade80]" />
               <span>{t("loadingConversation")}</span>
             </div>
@@ -707,7 +707,7 @@ export function ChatPage() {
 
         {/* Fixed Glassmorphism Chat Input — always anchored to bottom */}
         <div
-          className="absolute bottom-0 inset-x-0 z-20 pointer-events-none pb-2 sm:pb-3 md:pb-4 pt-10 bg-gradient-to-t from-white via-white/85 to-transparent dark:from-[#111215] dark:via-[#111215]/85 dark:to-transparent"
+          className="absolute bottom-0 inset-x-0 z-20 pointer-events-none pb-2 sm:pb-3 md:pb-4 pt-10 bg-gradient-to-t from-white via-white/85 to-transparent dark:from-[#121212] dark:via-[#121212]/85 dark:to-transparent"
         >
           {/* Status banners above the input */}
           {error && (
@@ -717,12 +717,12 @@ export function ChatPage() {
           )}
 
           {runningElsewhere && (
-            <div className="pointer-events-auto mx-auto mb-2 flex w-full max-w-4xl items-center justify-between gap-3 rounded-2xl border border-black/10 dark:border-white/10 bg-white/85 dark:bg-[#1a1d21]/90 px-4 py-2 text-sm shadow-sm backdrop-blur-md">
+            <div className="pointer-events-auto mx-auto mb-2 flex w-full max-w-4xl items-center justify-between gap-3 rounded-2xl border border-black/10 dark:border-white/10 bg-white/85 dark:bg-[#1e1e1e]/90 px-4 py-2 text-sm shadow-sm backdrop-blur-md">
               <span className="text-black/70 dark:text-gray-300">{t("replyRunningElsewhere")}</span>
               <button
                 type="button"
                 onClick={followRunningReply}
-                className="rounded-full border border-black/15 dark:border-white/15 bg-white dark:bg-[#202328] px-3 py-1 font-medium text-[#04714a] dark:text-[#4ade80] hover:bg-[#e8f7ef] dark:hover:bg-[#04714a]/20 cursor-pointer"
+                className="rounded-full border border-black/15 dark:border-white/15 bg-white dark:bg-[#242424] px-3 py-1 font-medium text-[#04714a] dark:text-[#4ade80] hover:bg-[#e8f7ef] dark:hover:bg-[#04714a]/20 cursor-pointer"
               >
                 {t("followReply")}
               </button>
@@ -734,7 +734,7 @@ export function ChatPage() {
               <button
                 type="button"
                 onClick={stopReply}
-                className="flex items-center gap-1.5 rounded-full border border-black/15 dark:border-white/15 bg-white/90 dark:bg-[#202328]/90 px-3.5 py-1.5 text-xs font-semibold text-black/70 dark:text-gray-200 shadow-sm backdrop-blur-md hover:bg-white dark:hover:bg-[#252930] cursor-pointer"
+                className="flex items-center gap-1.5 rounded-full border border-black/15 dark:border-white/15 bg-white/90 dark:bg-[#242424]/90 px-3.5 py-1.5 text-xs font-semibold text-black/70 dark:text-gray-200 shadow-sm backdrop-blur-md hover:bg-white dark:hover:bg-[#2e2e2e] cursor-pointer"
               >
                 <span className="size-2 rounded-xs bg-current" aria-hidden />
                 {t("stopReply")}
@@ -771,7 +771,7 @@ export function ChatPage() {
       {/* File Preview Workspace Column */}
       {previewFile && (
         <div
-          className={`fixed inset-0 z-50 bg-white dark:bg-[#16181b] md:static md:z-auto md:flex md:h-full md:min-w-0 transition-all duration-200 ${
+          className={`fixed inset-0 z-50 bg-white dark:bg-[#181818] md:static md:z-auto md:flex md:h-full md:min-w-0 transition-all duration-200 ${
             isPreviewExpanded ? "md:w-[65%] lg:w-[65%]" : "md:flex-1"
           }`}
         >

@@ -61,7 +61,7 @@ export function HistoryPage() {
             ))}
           </div>
         ) : conversations.length === 0 ? (
-          <div className="rounded-3xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#181a1e] p-12 text-center transition-colors">
+          <div className="rounded-3xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#1e1e1e] p-12 text-center transition-colors">
             <MessageSquare className="mx-auto text-black/30 dark:text-white/30" size={36} />
             <h2 className="mt-4 font-semibold text-gray-900 dark:text-gray-100">
               {t("noRecentChats")}
@@ -73,7 +73,7 @@ export function HistoryPage() {
             </p>
             <Link
               to="/chat"
-              className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#11130f] dark:bg-[#22252a] px-5 py-3 text-sm font-semibold text-white hover:bg-[#04714a] dark:hover:bg-[#04714a] transition-colors"
+              className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#11130f] dark:bg-[#242424] px-5 py-3 text-sm font-semibold text-white hover:bg-[#04714a] dark:hover:bg-[#04714a] transition-colors"
             >
               {language === "vi" ? "Bắt đầu trò chuyện" : "Start chatting"}
               <ArrowRight size={16} />
@@ -89,7 +89,7 @@ export function HistoryPage() {
                 <Link
                   key={c.id}
                   to={`/c/${c.id}`}
-                  className="group flex items-center justify-between rounded-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#181a1e] p-5 transition-all hover:border-[#04714a]/30 hover:bg-[#e8f7ef]/20 dark:hover:bg-white/5 hover:shadow-xs"
+                  className="group flex items-center justify-between rounded-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#1e1e1e] p-5 transition-all hover:border-[#04714a]/30 hover:bg-[#e8f7ef]/20 dark:hover:bg-white/5 hover:shadow-xs"
                 >
                   <div className="flex items-center gap-3.5 min-w-0">
                     <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#04714a]/10 dark:bg-[#04714a]/20 text-[#04714a] dark:text-[#4ade80] transition-colors group-hover:bg-[#04714a] group-hover:text-white">

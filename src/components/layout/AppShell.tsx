@@ -1,5 +1,5 @@
 import { useEffect, useState, type SVGProps } from "react";
-import { NavLink, Outlet, useMatch, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useLocation, useMatch, useNavigate } from "react-router-dom";
 import { ChevronsUpDown } from "lucide-react";
 
 import { useAuth } from "../../contexts/AuthContext";
@@ -123,6 +123,20 @@ const LogOutIcon = ({ size, ...props }: IconProps) => (
   </BaseIcon>
 );
 
+const ChevronDownIcon = ({ size = 14, ...props }: IconProps) => (
+  <BaseIcon size={size} {...props}>
+    <path d="m6 9 6 6 6-6" />
+  </BaseIcon>
+);
+
+const MoreHorizontalIcon = ({ size = 16, ...props }: IconProps) => (
+  <BaseIcon size={size} {...props}>
+    <circle cx="12" cy="12" r="1.5" />
+    <circle cx="19" cy="12" r="1.5" />
+    <circle cx="5" cy="12" r="1.5" />
+  </BaseIcon>
+);
+
 function isGenericTitle(title?: string): boolean {
   if (!title) return true;
   const lower = title.trim().toLowerCase();
@@ -234,17 +248,14 @@ export function AppShell() {
         navigate("/chat", { state: { newChatKey: crypto.randomUUID() } });
     });
 
-  const links = [
-    ["/chat", t("navChat"), MessageCircleIcon],
-    ["/history", t("navHistory"), HistoryIcon],
-    ["/knowledge", t("navKnowledge"), BookOpenIcon],
-    ["/documents", t("navDocuments"), FileTextIcon],
-    ["/contributors", t("navContributors"), UsersIcon],
-  ] as const;
+  const location = useLocation();
+  const isMoreActive = ["/knowledge", "/documents", "/contributors", "/admin"].some(
+    (path) => location.pathname === path || location.pathname.startsWith(`${path}/`),
+  );
 
   return (
-    <div className="flex h-screen w-full flex-col overflow-hidden bg-white dark:bg-[#111215] text-[#11130f] dark:text-gray-100 transition-colors md:flex-row">
-      <aside className="hidden h-full w-64 shrink-0 flex-col border-r border-black/10 dark:border-white/10 bg-white dark:bg-[#16181b] p-5 md:flex transition-colors">
+    <div className="flex h-screen w-full flex-col overflow-hidden bg-white dark:bg-[#121212] text-[#11130f] dark:text-gray-100 transition-colors md:flex-row">
+      <aside className="hidden h-full w-64 shrink-0 flex-col border-r border-black/10 dark:border-white/10 bg-white dark:bg-[#181818] p-5 md:flex transition-colors">
         <NavLink
           to="/"
           className="mb-6 shrink-0 text-lg font-extrabold text-[#11130f] dark:text-gray-100"
@@ -257,7 +268,7 @@ export function AppShell() {
           className="
             mb-5 flex w-full shrink-0 items-center gap-2
             rounded-full
-            bg-[#11130f] dark:bg-[#22252a]
+            bg-[#11130f] dark:bg-[#242424]
             px-3 py-2.5
             text-left text-sm font-medium text-white
             transition-all
@@ -271,38 +282,91 @@ export function AppShell() {
         </button>
 
         <nav className="flex shrink-0 flex-col gap-1">
-          {links.map(([to, label, Icon]) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={to === "/chat"}
-              className={({ isActive }) =>
-                `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${
-                  isActive && (to !== "/chat" || !currentChatId)
-                    ? "bg-[#e8f7ef] dark:bg-[#04714a]/25 font-semibold text-[#013422] dark:text-[#4ade80]"
-                    : "text-black/60 dark:text-gray-400 hover:bg-[#e8f7ef] dark:hover:bg-white/5 hover:text-[#04714a] dark:hover:text-[#4ade80]"
-                }`
-              }
+          {/* Lịch sử */}
+          <NavLink
+            to="/history"
+            className={({ isActive }) =>
+              `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${
+                isActive
+                  ? "bg-[#e8f7ef] dark:bg-[#04714a]/25 font-semibold text-[#013422] dark:text-[#4ade80]"
+                  : "text-black/60 dark:text-gray-400 hover:bg-[#e8f7ef] dark:hover:bg-white/5 hover:text-[#04714a] dark:hover:text-[#4ade80]"
+              }`
+            }
+          >
+            <HistoryIcon size={17} />
+            <span>{t("navHistory")}</span>
+          </NavLink>
+
+          {/* Thêm... (Kho tri thức, Tài liệu, Người đóng góp, Quản trị) - Dropdown Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              aria-label={t("navMore")}
+              className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-sm transition-colors cursor-pointer outline-none ${
+                isMoreActive
+                  ? "bg-[#e8f7ef] dark:bg-[#04714a]/25 font-semibold text-[#013422] dark:text-[#4ade80]"
+                  : "text-black/60 dark:text-gray-400 hover:bg-[#e8f7ef] dark:hover:bg-white/5 hover:text-[#04714a] dark:hover:text-[#4ade80]"
+              }`}
             >
-              <Icon size={17} />
-              {label}
-            </NavLink>
-          ))}
-          {isAdmin && (
-            <NavLink
-              to="/admin"
-              className={({ isActive }) =>
-                `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${
-                  isActive
-                    ? "bg-[#e8f7ef] dark:bg-[#04714a]/25 font-semibold text-[#013422] dark:text-[#4ade80]"
-                    : "text-black/60 dark:text-gray-400 hover:bg-[#e8f7ef] dark:hover:bg-white/5 hover:text-[#04714a] dark:hover:text-[#4ade80]"
-                }`
-              }
+              <div className="flex items-center gap-3 min-w-0">
+                <MoreHorizontalIcon size={17} />
+                <span className="truncate">{t("navMore")}</span>
+              </div>
+              <ChevronDownIcon size={14} className="opacity-60 transition-transform data-popup-open:rotate-180" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              side="bottom"
+              align="start"
+              sideOffset={4}
+              className="w-56 rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#1e1e1e] p-1.5 shadow-xl text-[#11130f] dark:text-gray-100 z-50 animate-in fade-in-0 zoom-in-95"
             >
-              <ShieldCheckIcon size={17} />
-              {t("navAdmin")}
-            </NavLink>
-          )}
+              <DropdownMenuItem
+                render={<NavLink to="/knowledge" />}
+                className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors cursor-pointer ${
+                  location.pathname === "/knowledge"
+                    ? "bg-[#e8f7ef] dark:bg-[#04714a]/25 font-semibold text-[#013422] dark:text-[#4ade80]"
+                    : "text-black/70 dark:text-gray-300 hover:bg-[#e8f7ef] dark:hover:bg-white/10 hover:text-[#04714a] dark:hover:text-[#4ade80]"
+                }`}
+              >
+                <BookOpenIcon size={16} />
+                <span>{t("navKnowledge")}</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                render={<NavLink to="/documents" />}
+                className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors cursor-pointer ${
+                  location.pathname === "/documents"
+                    ? "bg-[#e8f7ef] dark:bg-[#04714a]/25 font-semibold text-[#013422] dark:text-[#4ade80]"
+                    : "text-black/70 dark:text-gray-300 hover:bg-[#e8f7ef] dark:hover:bg-white/10 hover:text-[#04714a] dark:hover:text-[#4ade80]"
+                }`}
+              >
+                <FileTextIcon size={16} />
+                <span>{t("navDocuments")}</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                render={<NavLink to="/contributors" />}
+                className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors cursor-pointer ${
+                  location.pathname === "/contributors"
+                    ? "bg-[#e8f7ef] dark:bg-[#04714a]/25 font-semibold text-[#013422] dark:text-[#4ade80]"
+                    : "text-black/70 dark:text-gray-300 hover:bg-[#e8f7ef] dark:hover:bg-white/10 hover:text-[#04714a] dark:hover:text-[#4ade80]"
+                }`}
+              >
+                <UsersIcon size={16} />
+                <span>{t("navContributors")}</span>
+              </DropdownMenuItem>
+              {isAdmin && (
+                <DropdownMenuItem
+                  render={<NavLink to="/admin" />}
+                  className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors cursor-pointer ${
+                    location.pathname === "/admin"
+                      ? "bg-[#e8f7ef] dark:bg-[#04714a]/25 font-semibold text-[#013422] dark:text-[#4ade80]"
+                      : "text-black/70 dark:text-gray-300 hover:bg-[#e8f7ef] dark:hover:bg-white/10 hover:text-[#04714a] dark:hover:text-[#4ade80]"
+                  }`}
+                >
+                  <ShieldCheckIcon size={16} />
+                  <span>{t("navAdmin")}</span>
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </nav>
 
         {/* Section: GẦN ĐÂY (Recent) */}
@@ -419,7 +483,7 @@ export function AppShell() {
                 side="top"
                 align="start"
                 sideOffset={8}
-                className="w-56 rounded-xl p-1.5"
+                className="w-56 rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#1e1e1e] p-1.5 shadow-xl text-[#11130f] dark:text-gray-100 z-50"
               >
                 <DropdownMenuItem render={<NavLink to="/profile" />} className="gap-2.5 rounded-lg px-2 py-2 text-xs">
                   <UserRoundIcon size={15} />
@@ -446,7 +510,7 @@ export function AppShell() {
 
       <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
         {/* Mobile Header */}
-        <header className="flex h-14 shrink-0 items-center justify-between border-b border-black/10 dark:border-white/10 bg-white dark:bg-[#16181b] px-4 md:hidden transition-colors">
+        <header className="flex h-14 shrink-0 items-center justify-between border-b border-black/10 dark:border-white/10 bg-white dark:bg-[#181818] px-4 md:hidden transition-colors">
           <NavLink
             to="/"
             className="text-base font-extrabold text-[#11130f] dark:text-gray-100"
@@ -487,59 +551,95 @@ export function AppShell() {
       </div>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="fixed bottom-0 inset-x-0 z-40 flex md:hidden border-t border-black/10 dark:border-white/10 bg-white dark:bg-[#16181b] safe-area-inset-bottom transition-colors">
-        {links.map(([to, label, Icon]) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={to === "/chat"}
-            className={({ isActive }) =>
-              `flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] transition-colors ${
-                isActive && (to !== "/chat" || !currentChatId)
-                  ? "text-[#04714a] dark:text-[#4ade80] font-semibold"
-                  : "text-black/45 dark:text-gray-400 hover:text-[#04714a] dark:hover:text-[#4ade80]"
-              }`
-            }
+      <nav className="fixed bottom-0 inset-x-0 z-40 flex md:hidden border-t border-black/10 dark:border-white/10 bg-white dark:bg-[#181818] safe-area-inset-bottom transition-colors">
+        <button
+          type="button"
+          onClick={handleNewChat}
+          className="flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] text-black/55 dark:text-gray-400 hover:text-[#04714a] dark:hover:text-[#4ade80] transition-colors cursor-pointer"
+        >
+          <PlusIcon size={20} />
+          <span className="leading-none">{t("newChat")}</span>
+        </button>
+
+        <NavLink
+          to="/history"
+          className={({ isActive }) =>
+            `flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] transition-colors ${
+              isActive
+                ? "text-[#04714a] dark:text-[#4ade80] font-semibold"
+                : "text-black/55 dark:text-gray-400 hover:text-[#04714a] dark:hover:text-[#4ade80]"
+            }`
+          }
+        >
+          <HistoryIcon size={20} />
+          <span className="leading-none">{t("navHistory")}</span>
+        </NavLink>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            className={`flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] transition-colors cursor-pointer outline-none ${
+              isMoreActive
+                ? "text-[#04714a] dark:text-[#4ade80] font-semibold"
+                : "text-black/55 dark:text-gray-400 hover:text-[#04714a] dark:hover:text-[#4ade80]"
+            }`}
           >
-            {({ isActive }) => (
-              <>
-                <Icon
-                  size={20}
-                  className={
-                    isActive && (to !== "/chat" || !currentChatId)
-                      ? "text-[#04714a] dark:text-[#4ade80]"
-                      : ""
-                  }
-                />
-                <span className="leading-none">{label}</span>
-              </>
-            )}
-          </NavLink>
-        ))}
-        {isAdmin && (
-          <NavLink
-            to="/admin"
-            className={({ isActive }) =>
-              `flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] transition-colors ${
-                isActive
-                  ? "text-[#04714a] dark:text-[#4ade80] font-semibold"
-                  : "text-black/45 dark:text-gray-400 hover:text-[#04714a] dark:hover:text-[#4ade80]"
-              }`
-            }
+            <MoreHorizontalIcon size={20} />
+            <span className="leading-none">{t("navMore")}</span>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            side="top"
+            align="end"
+            sideOffset={8}
+            className="w-52 rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#1e1e1e] p-1.5 shadow-xl text-[#11130f] dark:text-gray-100 z-50 animate-in fade-in-0 zoom-in-95"
           >
-            {({ isActive }) => (
-              <>
-                <ShieldCheckIcon
-                  size={20}
-                  className={
-                    isActive ? "text-[#04714a] dark:text-[#4ade80]" : ""
-                  }
-                />
-                <span className="leading-none">{t("navAdmin")}</span>
-              </>
+            <DropdownMenuItem
+              render={<NavLink to="/knowledge" />}
+              className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors cursor-pointer ${
+                location.pathname === "/knowledge"
+                  ? "bg-[#e8f7ef] dark:bg-[#04714a]/25 font-semibold text-[#013422] dark:text-[#4ade80]"
+                  : "text-black/70 dark:text-gray-300 hover:bg-[#e8f7ef] dark:hover:bg-white/10 hover:text-[#04714a] dark:hover:text-[#4ade80]"
+              }`}
+            >
+              <BookOpenIcon size={16} />
+              <span>{t("navKnowledge")}</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              render={<NavLink to="/documents" />}
+              className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors cursor-pointer ${
+                location.pathname === "/documents"
+                  ? "bg-[#e8f7ef] dark:bg-[#04714a]/25 font-semibold text-[#013422] dark:text-[#4ade80]"
+                  : "text-black/70 dark:text-gray-300 hover:bg-[#e8f7ef] dark:hover:bg-white/10 hover:text-[#04714a] dark:hover:text-[#4ade80]"
+              }`}
+            >
+              <FileTextIcon size={16} />
+              <span>{t("navDocuments")}</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              render={<NavLink to="/contributors" />}
+              className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors cursor-pointer ${
+                location.pathname === "/contributors"
+                  ? "bg-[#e8f7ef] dark:bg-[#04714a]/25 font-semibold text-[#013422] dark:text-[#4ade80]"
+                  : "text-black/70 dark:text-gray-300 hover:bg-[#e8f7ef] dark:hover:bg-white/10 hover:text-[#04714a] dark:hover:text-[#4ade80]"
+              }`}
+            >
+              <UsersIcon size={16} />
+              <span>{t("navContributors")}</span>
+            </DropdownMenuItem>
+            {isAdmin && (
+              <DropdownMenuItem
+                render={<NavLink to="/admin" />}
+                className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors cursor-pointer ${
+                  location.pathname === "/admin"
+                    ? "bg-[#e8f7ef] dark:bg-[#04714a]/25 font-semibold text-[#013422] dark:text-[#4ade80]"
+                    : "text-black/70 dark:text-gray-300 hover:bg-[#e8f7ef] dark:hover:bg-white/10 hover:text-[#04714a] dark:hover:text-[#4ade80]"
+                }`}
+              >
+                <ShieldCheckIcon size={16} />
+                <span>{t("navAdmin")}</span>
+              </DropdownMenuItem>
             )}
-          </NavLink>
-        )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </nav>
 
       <DocumentProcessingNotifications />

@@ -285,7 +285,7 @@ export function ModifiedPromptInput({
           )}
 
           {/* Ô nhập chính — Glassmorphism với bo góc lớn, shadow nhẹ và viền mảnh */}
-          <div className="flex flex-col rounded-[24px] sm:rounded-[26px] border border-black/[0.12] dark:border-white/15 bg-white/80 dark:bg-[#1a1d21]/80 backdrop-blur-xl p-1.5 shadow-[0_4px_20px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.35)] transition-all focus-within:border-[#04714a]/45 focus-within:bg-white/95 dark:focus-within:bg-[#202328]/95 focus-within:shadow-[0_6px_24px_rgba(0,168,107,0.12)]">
+          <div className="flex flex-col rounded-[24px] sm:rounded-[26px] border border-black/[0.12] dark:border-white/15 bg-white/80 dark:bg-[#1e1e1e]/80 backdrop-blur-xl p-1.5 shadow-[0_4px_20px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.35)] transition-all focus-within:border-[#04714a]/45 focus-within:bg-white/95 dark:focus-within:bg-[#242424]/95 focus-within:shadow-[0_6px_24px_rgba(0,168,107,0.12)]">
             {/* Danh sách file đính kèm hiển thị gọn gàng bên trong card */}
             {attachedDocs.length > 0 && (
               <div className="flex flex-wrap gap-1.5 px-2 pt-1 pb-1.5">

@@ -35,7 +35,7 @@ export function ProfilePage() {
         {isEn ? "Account" : "Tài khoản"}
       </h1>
 
-      <div className="mt-10 max-w-xl rounded-3xl border border-black/10 bg-white p-7 shadow-sm dark:border-white/10 dark:bg-[#1a1d21]">
+      <div className="mt-10 max-w-xl rounded-3xl border border-black/10 bg-white p-7 shadow-sm dark:border-white/10 dark:bg-[#1e1e1e]">
         {/* Avatar */}
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#04714a]/10 text-[#04714a] dark:bg-emerald-500/20 dark:text-emerald-400 font-bold text-2xl">
           {user?.email?.charAt(0).toUpperCase() ?? "?"}

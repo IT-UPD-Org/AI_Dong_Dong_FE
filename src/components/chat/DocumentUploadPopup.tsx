@@ -47,7 +47,7 @@ export function DocumentUploadPopup({ onClose, onUploadFiles }: DocumentUploadPo
   return (
     <div
       ref={popupRef}
-      className="absolute bottom-full left-0 z-50 mb-2 w-80 max-w-full rounded-2xl border border-black/10 bg-white p-4 shadow-xl dark:border-white/10 dark:bg-[#1a1d21] dark:text-gray-100 animate-in fade-in slide-in-from-bottom-2 duration-200"
+      className="absolute bottom-full left-0 z-50 mb-2 w-80 max-w-full rounded-2xl border border-black/10 bg-white p-4 shadow-xl dark:border-white/10 dark:bg-[#1e1e1e] dark:text-gray-100 animate-in fade-in slide-in-from-bottom-2 duration-200"
     >
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold text-gray-900 dark:text-white">

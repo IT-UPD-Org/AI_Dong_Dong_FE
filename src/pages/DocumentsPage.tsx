@@ -140,7 +140,7 @@ export function DocumentsPage() {
       </h1>
 
       {storage && (
-        <div className="mt-10 flex flex-col md:flex-row items-center gap-6 rounded-3xl border border-black/10 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-[#1a1d21]">
+        <div className="mt-10 flex flex-col md:flex-row items-center gap-6 rounded-3xl border border-black/10 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-[#1e1e1e]">
           <div className="relative h-24 w-24 shrink-0">
             <svg className="h-full w-full -rotate-90 transform" viewBox="0 0 100 100">
               <circle
@@ -186,7 +186,7 @@ export function DocumentsPage() {
       )}
 
       <div 
-        className="mt-6 cursor-pointer rounded-3xl border border-dashed border-black/20 bg-white p-10 text-center transition-colors hover:border-[#04714a] hover:bg-[#04714a]/5 dark:border-white/15 dark:bg-[#1a1d21]/60 dark:hover:border-emerald-500 dark:hover:bg-emerald-500/5"
+        className="mt-6 cursor-pointer rounded-3xl border border-dashed border-black/20 bg-white p-10 text-center transition-colors hover:border-[#04714a] hover:bg-[#04714a]/5 dark:border-white/15 dark:bg-[#1e1e1e]/60 dark:hover:border-emerald-500 dark:hover:bg-emerald-500/5"
         onClick={() => fileInputRef.current?.click()}
       >
         <UploadCloud className="mx-auto text-[#00a86b] dark:text-emerald-400" size={30} />
@@ -220,7 +220,7 @@ export function DocumentsPage() {
           <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">{isEn ? "No documents yet." : "Chưa có tài liệu nào."}</p>
         )}
         {docs.map(d => (
-          <div key={d.document_id} className="flex items-center gap-4 rounded-2xl border border-black/10 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#1a1d21]">
+          <div key={d.document_id} className="flex items-center gap-4 rounded-2xl border border-black/10 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#1e1e1e]">
             <div className="shrink-0 p-2 bg-gray-50 dark:bg-white/5 rounded-lg">
               {getFileIcon(d.filename, d.file_type)}
             </div>

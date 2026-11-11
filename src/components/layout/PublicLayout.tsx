@@ -41,7 +41,7 @@ export function PublicLayout() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 border-b border-black/10 dark:border-white/10 bg-white/85 dark:bg-[#111215]/85 px-4 sm:px-6 md:px-12 backdrop-blur-md transition-colors">
+      <header className="sticky top-0 z-50 border-b border-black/10 dark:border-white/10 bg-white/85 dark:bg-[#121212]/85 px-4 sm:px-6 md:px-12 backdrop-blur-md transition-colors">
         <div className="flex h-16 sm:h-20 items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
@@ -119,7 +119,7 @@ export function PublicLayout() {
             ) : (
               <Link
                 to="/login"
-                className="rounded-full bg-[#11130f] dark:bg-[#22252a] px-3.5 py-2 sm:px-5 sm:py-2.5 text-xs sm:text-sm font-semibold text-white transition-all hover:bg-[#04714a] dark:hover:bg-[#04714a] hover:shadow-md flex items-center justify-center"
+                className="rounded-full bg-[#11130f] dark:bg-[#242424] px-3.5 py-2 sm:px-5 sm:py-2.5 text-xs sm:text-sm font-semibold text-white transition-all hover:bg-[#04714a] dark:hover:bg-[#04714a] hover:shadow-md flex items-center justify-center"
               >
                 {t("login")} <ArrowUpRight className="ml-1 inline" size={15} />
               </Link>
@@ -142,7 +142,7 @@ export function PublicLayout() {
         {mobileMenuOpen && (
           <nav
             aria-label="Điều hướng di động"
-            className="border-t border-black/5 dark:border-white/10 py-3 md:hidden animate-in slide-in-from-top-2 duration-200 bg-white dark:bg-[#16181b]"
+            className="border-t border-black/5 dark:border-white/10 py-3 md:hidden animate-in slide-in-from-top-2 duration-200 bg-white dark:bg-[#181818]"
           >
             <div className="flex flex-col gap-1">
               <div className="flex items-center justify-between px-3 py-1 mb-1 border-b border-black/5 dark:border-white/10 xs:hidden">

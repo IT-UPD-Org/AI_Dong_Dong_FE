@@ -223,9 +223,9 @@ export function FilePreviewPanel({
   if (!file) return null;
 
   return (
-    <div className="flex h-full w-full flex-col bg-white dark:bg-[#15171a] dark:text-gray-100">
+    <div className="flex h-full w-full flex-col bg-white dark:bg-[#181818] dark:text-gray-100">
       {/* Panel Toolbar */}
-      <div className="flex h-14 shrink-0 items-center justify-between border-b border-black/10 px-4 bg-zinc-50/70 dark:border-white/10 dark:bg-[#1a1d21]">
+      <div className="flex h-14 shrink-0 items-center justify-between border-b border-black/10 px-4 bg-zinc-50/70 dark:border-white/10 dark:bg-[#1e1e1e]">
         <div className="flex min-w-0 flex-1 items-center gap-2.5 mr-2">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-black/5 dark:bg-white/10">
             {category === "pdf" ? (
@@ -298,7 +298,7 @@ export function FilePreviewPanel({
       </div>
 
       {/* Panel Body Content */}
-      <div className="relative min-h-0 flex-1 overflow-auto bg-zinc-50/30 dark:bg-[#111215]">
+      <div className="relative min-h-0 flex-1 overflow-auto bg-zinc-50/30 dark:bg-[#121212]">
         {loading && (
           <div className="flex h-full flex-col items-center justify-center p-8 text-center">
             <Loader2 size={32} className="animate-spin text-[#04714a] mb-3" />
@@ -368,7 +368,7 @@ export function FilePreviewPanel({
         {/* Word .docx Viewer */}
         {!loading && !error && ext === "docx" && docxHtml && (
           <div className="p-4 sm:p-8 flex justify-center">
-            <div className="w-full max-w-3xl rounded-xl border border-black/10 bg-white p-6 sm:p-10 shadow-xs dark:border-white/10 dark:bg-[#1a1d21]">
+            <div className="w-full max-w-3xl rounded-xl border border-black/10 bg-white p-6 sm:p-10 shadow-xs dark:border-white/10 dark:bg-[#1e1e1e]">
               <div
                 className="docx-content text-zinc-900 dark:text-gray-100 text-[14.5px] leading-relaxed [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mt-6 [&_h1]:mb-3 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:mt-5 [&_h2]:mb-2 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-2 [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-3 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-3 [&_table]:w-full [&_table]:border-collapse [&_table]:my-4 [&_table]:border [&_table]:border-black/15 dark:[&_table]:border-white/15 [&_th]:border [&_th]:border-black/15 dark:[&_th]:border-white/15 [&_th]:bg-black/5 dark:[&_th]:bg-white/5 [&_th]:p-2 [&_td]:border [&_td]:border-black/15 dark:[&_td]:border-white/15 [&_td]:p-2"
                 dangerouslySetInnerHTML={{ __html: docxHtml }}
@@ -382,7 +382,7 @@ export function FilePreviewPanel({
           <div className="flex h-full flex-col">
             {/* Excel Sheet selector tabs */}
             {(ext === "xlsx" || ext === "xls") && excelData && excelData.sheetNames.length > 1 && (
-              <div className="flex shrink-0 items-center gap-1 overflow-x-auto border-b border-black/10 bg-white px-3 py-1.5 dark:border-white/10 dark:bg-[#1a1d21]">
+              <div className="flex shrink-0 items-center gap-1 overflow-x-auto border-b border-black/10 bg-white px-3 py-1.5 dark:border-white/10 dark:bg-[#1e1e1e]">
                 <span className="text-[11px] font-medium text-zinc-500 dark:text-gray-400 mr-1 shrink-0">
                   {isEn ? "Sheets:" : "Trang tính:"}
                 </span>
@@ -407,7 +407,7 @@ export function FilePreviewPanel({
             )}
 
             {/* Table Search & Metrics Bar */}
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-black/10 bg-white px-4 py-2 dark:border-white/10 dark:bg-[#1a1d21]">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-black/10 bg-white px-4 py-2 dark:border-white/10 dark:bg-[#1e1e1e]">
               <div className="relative min-w-[180px] max-w-xs flex-1">
                 <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400" />
                 <input
@@ -418,7 +418,7 @@ export function FilePreviewPanel({
                     setPage(1);
                   }}
                   placeholder={isEn ? "Search in table..." : "Tìm kiếm trong bảng..."}
-                  className="w-full rounded-lg border border-black/15 bg-zinc-50 py-1 pl-8 pr-3 text-xs outline-none focus:border-[#04714a] focus:bg-white dark:border-white/15 dark:bg-white/5 dark:text-white dark:placeholder:text-gray-500 dark:focus:bg-[#111215]"
+                  className="w-full rounded-lg border border-black/15 bg-zinc-50 py-1 pl-8 pr-3 text-xs outline-none focus:border-[#04714a] focus:bg-white dark:border-white/15 dark:bg-white/5 dark:text-white dark:placeholder:text-gray-500 dark:focus:bg-[#121212]"
                 />
               </div>
 
@@ -437,14 +437,14 @@ export function FilePreviewPanel({
             </div>
 
             {/* Table Body with horizontal & vertical scroll */}
-            <div className="min-h-0 flex-1 overflow-auto bg-white dark:bg-[#111215]">
+            <div className="min-h-0 flex-1 overflow-auto bg-white dark:bg-[#121212]">
               {filteredRows.length === 0 ? (
                 <div className="flex h-40 flex-col items-center justify-center p-4 text-center text-xs text-zinc-400">
                   <p>{isEn ? "No rows matching search query" : "Không tìm thấy dòng nào khớp với từ khóa tìm kiếm"}</p>
                 </div>
               ) : (
                 <table className="w-full border-collapse text-left text-xs">
-                  <thead className="sticky top-0 z-10 border-b border-black/10 bg-zinc-100 font-semibold text-zinc-800 shadow-2xs dark:border-white/10 dark:bg-[#1a1d21] dark:text-gray-200">
+                  <thead className="sticky top-0 z-10 border-b border-black/10 bg-zinc-100 font-semibold text-zinc-800 shadow-2xs dark:border-white/10 dark:bg-[#1e1e1e] dark:text-gray-200">
                     <tr>
                       <th className="w-10 px-3 py-2 text-center text-zinc-400 select-none border-r border-black/5 dark:border-white/5">
                         #
@@ -492,7 +492,7 @@ export function FilePreviewPanel({
 
             {/* Table Pagination Bar */}
             {totalPages > 1 && (
-              <div className="flex shrink-0 items-center justify-between border-t border-black/10 bg-white px-4 py-2 text-xs dark:border-white/10 dark:bg-[#1a1d21] dark:text-gray-300">
+              <div className="flex shrink-0 items-center justify-between border-t border-black/10 bg-white px-4 py-2 text-xs dark:border-white/10 dark:bg-[#1e1e1e] dark:text-gray-300">
                 <div className="flex items-center gap-1.5">
                   <span className="text-zinc-500 dark:text-gray-400">{isEn ? "Per page:" : "Mỗi trang:"}</span>
                   <select
@@ -501,7 +501,7 @@ export function FilePreviewPanel({
                       setPageSize(Number(e.target.value));
                       setPage(1);
                     }}
-                    className="rounded border border-black/15 bg-white px-1.5 py-0.5 text-xs outline-none dark:border-white/15 dark:bg-[#111215] dark:text-white"
+                    className="rounded border border-black/15 bg-white px-1.5 py-0.5 text-xs outline-none dark:border-white/15 dark:bg-[#121212] dark:text-white"
                   >
                     <option value={25}>25</option>
                     <option value={50}>50</option>

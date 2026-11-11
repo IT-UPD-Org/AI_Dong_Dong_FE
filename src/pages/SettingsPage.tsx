@@ -16,7 +16,7 @@ export function SettingsPage() {
           {t("settingsTitle")}
         </h1>
 
-        <div className="mt-8 divide-y divide-black/10 dark:divide-white/10 rounded-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#181a1e] shadow-xs transition-colors">
+        <div className="mt-8 divide-y divide-black/10 dark:divide-white/10 rounded-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#1e1e1e] shadow-xs transition-colors">
           {/* Ngôn ngữ giao diện (Interface Language) */}
           <div className="flex flex-wrap items-center justify-between gap-4 p-5 sm:p-6">
             <div className="flex items-start gap-3">
@@ -39,7 +39,7 @@ export function SettingsPage() {
                 onClick={() => setLanguage("vi")}
                 className={`rounded-lg px-3 py-1.5 transition-all cursor-pointer ${
                   language === "vi"
-                    ? "bg-white dark:bg-[#25282c] font-bold text-[#04714a] shadow-xs"
+                    ? "bg-white dark:bg-[#242424] font-bold text-[#04714a] shadow-xs"
                     : "text-black/60 dark:text-white/70 hover:text-black dark:hover:text-white"
                 }`}
               >
@@ -50,7 +50,7 @@ export function SettingsPage() {
                 onClick={() => setLanguage("en")}
                 className={`rounded-lg px-3 py-1.5 transition-all cursor-pointer ${
                   language === "en"
-                    ? "bg-white dark:bg-[#25282c] font-bold text-[#04714a] shadow-xs"
+                    ? "bg-white dark:bg-[#242424] font-bold text-[#04714a] shadow-xs"
                     : "text-black/60 dark:text-white/70 hover:text-black dark:hover:text-white"
                 }`}
               >
@@ -81,7 +81,7 @@ export function SettingsPage() {
                 onClick={() => setTheme("light")}
                 className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition-all cursor-pointer ${
                   theme === "light"
-                    ? "bg-white dark:bg-[#25282c] font-bold text-[#04714a] shadow-xs"
+                    ? "bg-white dark:bg-[#242424] font-bold text-[#04714a] shadow-xs"
                     : "text-black/60 dark:text-white/70 hover:text-black dark:hover:text-white"
                 }`}
               >
@@ -93,7 +93,7 @@ export function SettingsPage() {
                 onClick={() => setTheme("dark")}
                 className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition-all cursor-pointer ${
                   theme === "dark"
-                    ? "bg-white dark:bg-[#25282c] font-bold text-[#04714a] shadow-xs"
+                    ? "bg-white dark:bg-[#242424] font-bold text-[#04714a] shadow-xs"
                     : "text-black/60 dark:text-white/70 hover:text-black dark:hover:text-white"
                 }`}
               >
@@ -105,7 +105,7 @@ export function SettingsPage() {
                 onClick={() => setTheme("system")}
                 className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition-all cursor-pointer ${
                   theme === "system"
-                    ? "bg-white dark:bg-[#25282c] font-bold text-[#04714a] shadow-xs"
+                    ? "bg-white dark:bg-[#242424] font-bold text-[#04714a] shadow-xs"
                     : "text-black/60 dark:text-white/70 hover:text-black dark:hover:text-white"
                 }`}
               >

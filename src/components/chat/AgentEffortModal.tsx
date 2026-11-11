@@ -83,7 +83,7 @@ export function AgentEffortModal({
 
       <div
         ref={modalRef}
-        className="relative z-10 w-full max-w-md rounded-2xl bg-white dark:bg-[#1a1d21] p-5 shadow-xl border border-black/10 dark:border-white/10 transition-colors"
+        className="relative z-10 w-full max-w-md rounded-2xl bg-white dark:bg-[#1e1e1e] p-5 shadow-xl border border-black/10 dark:border-white/10 transition-colors"
       >
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-black/10 dark:border-white/10">
@@ -146,8 +146,8 @@ export function AgentEffortModal({
                   onClick={() => onLevelChange(key)}
                   className={`size-5 rounded-full border-2 transition-all cursor-pointer ${
                     index <= currentIndex
-                      ? "border-[#04714a] dark:border-[#4ade80] bg-white dark:bg-[#1a1d21] ring-2 ring-[#04714a]/20"
-                      : "border-gray-300 dark:border-gray-600 bg-white dark:bg-[#1a1d21]"
+                      ? "border-[#04714a] dark:border-[#4ade80] bg-white dark:bg-[#1e1e1e] ring-2 ring-[#04714a]/20"
+                      : "border-gray-300 dark:border-gray-600 bg-white dark:bg-[#1e1e1e]"
                   } ${level === key ? "scale-125 bg-[#04714a] dark:bg-[#4ade80]" : ""}`}
                 />
               ))}

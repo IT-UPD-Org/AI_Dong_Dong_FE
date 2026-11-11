@@ -50,6 +50,8 @@ export function ThemeToggle({ compact = false }: { compact?: boolean }) {
     );
   }
 
+  const { t } = useLanguage();
+
   return (
     <div className="flex items-center rounded-xl bg-black/[0.04] dark:bg-white/[0.06] p-1 text-xs">
       <button
@@ -57,12 +59,12 @@ export function ThemeToggle({ compact = false }: { compact?: boolean }) {
         onClick={() => setTheme("light")}
         className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 transition-all cursor-pointer ${
           theme === "light"
-            ? "bg-white dark:bg-[#25282c] font-semibold text-[#04714a] shadow-xs"
+            ? "bg-white dark:bg-[#242424] font-semibold text-[#04714a] shadow-xs"
             : "text-black/55 dark:text-white/60 hover:text-black dark:hover:text-white"
         }`}
       >
         <Sun size={13} className={theme === "light" ? "text-amber-600" : ""} />
-        <span>Sáng</span>
+        <span>{t("themeLight")}</span>
       </button>
 
       <button
@@ -70,12 +72,12 @@ export function ThemeToggle({ compact = false }: { compact?: boolean }) {
         onClick={() => setTheme("dark")}
         className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 transition-all cursor-pointer ${
           theme === "dark"
-            ? "bg-white dark:bg-[#25282c] font-semibold text-[#04714a] shadow-xs"
+            ? "bg-white dark:bg-[#242424] font-semibold text-[#04714a] shadow-xs"
             : "text-black/55 dark:text-white/60 hover:text-black dark:hover:text-white"
         }`}
       >
         <Moon size={13} className={theme === "dark" ? "text-amber-400" : ""} />
-        <span>Tối</span>
+        <span>{t("themeDark")}</span>
       </button>
 
       <button
@@ -83,12 +85,12 @@ export function ThemeToggle({ compact = false }: { compact?: boolean }) {
         onClick={() => setTheme("system")}
         className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 transition-all cursor-pointer ${
           theme === "system"
-            ? "bg-white dark:bg-[#25282c] font-semibold text-[#04714a] shadow-xs"
+            ? "bg-white dark:bg-[#242424] font-semibold text-[#04714a] shadow-xs"
             : "text-black/55 dark:text-white/60 hover:text-black dark:hover:text-white"
         }`}
       >
         <Monitor size={13} />
-        <span>Hệ thống</span>
+        <span>{t("themeSystem")}</span>
       </button>
     </div>
   );

@@ -76,7 +76,7 @@ export function MessageFeedbackPanel({ onClose, initialMode = "suggestion" }: Me
   return (
     <section
       aria-label={isEn ? "Feedback on response" : "Phản hồi về câu trả lời"}
-      className="mt-4 w-full animate-in rounded-2xl border border-black/10 bg-[#f7f8f5] p-4 shadow-sm dark:border-white/10 dark:bg-[#1a1d21] dark:text-gray-100 fade-in slide-in-from-bottom-2 duration-300 md:max-w-[88%]"
+      className="mt-4 w-full animate-in rounded-2xl border border-black/10 bg-[#f7f8f5] p-4 shadow-sm dark:border-white/10 dark:bg-[#1e1e1e] dark:text-gray-100 fade-in slide-in-from-bottom-2 duration-300 md:max-w-[88%]"
     >
       <div className="flex items-start justify-between gap-4">
         <div>

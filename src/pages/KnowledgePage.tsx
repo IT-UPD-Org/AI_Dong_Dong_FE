@@ -33,7 +33,7 @@ export function KnowledgePage() {
         {categories.map((cat, i) => (
           <div
             key={cat.title}
-            className="rounded-3xl border border-black/10 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-[#1a1d21]"
+            className="rounded-3xl border border-black/10 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-[#1e1e1e]"
           >
             <span className="font-mono text-xs text-[#00a86b] dark:text-emerald-400">0{i + 1}</span>
             <h2 className="mt-16 text-xl font-semibold text-gray-900 dark:text-white">{cat.title}</h2>
