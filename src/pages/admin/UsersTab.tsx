@@ -14,10 +14,10 @@ const STATE_LABEL: Record<UserState, string> = {
   disable: "Đã khoá",
 };
 const STATE_STYLE: Record<UserState, string> = {
-  inactive: "border-black/15 bg-black/5 text-black/60",
-  active: "border-green-200 bg-green-50 text-green-700",
-  pending: "border-amber-200 bg-amber-50 text-amber-700",
-  disable: "border-red-200 bg-red-50 text-red-700",
+  inactive: "border-border bg-muted text-muted-foreground",
+  active: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300",
+  pending: "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300",
+  disable: "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-300",
 };
 
 export function UsersTab() {
@@ -53,11 +53,11 @@ export function UsersTab() {
 
   return (
     <section>
-      <p className="mb-4 text-sm text-black/55">
+      <p className="mb-4 text-sm text-muted-foreground">
         Quản lý mọi tài khoản: vai trò, trạng thái và credits. Duyệt yêu cầu cấp quyền ở thẻ Yêu cầu.
       </p>
       <ListState loading={list.loading} error={list.error} empty={list.items.length === 0} emptyText="Chưa có người dùng.">
-        <div className="rounded-2xl border border-black/10 bg-white">
+        <div className="rounded-2xl border border-border bg-card">
           <Table>
             <TableHeader>
               <TableRow>
@@ -75,11 +75,11 @@ export function UsersTab() {
                 const isMe = me?.id === user.id;
                 return (
                   <TableRow key={user.id}>
-                    <TableCell className="font-medium">
+                    <TableCell className="font-medium text-foreground">
                       {user.name}
-                      {isMe && <span className="ml-1.5 text-xs font-normal text-black/40">(bạn)</span>}
+                      {isMe && <span className="ml-1.5 text-xs font-normal text-muted-foreground">(bạn)</span>}
                     </TableCell>
-                    <TableCell className="text-black/60">{user.email}</TableCell>
+                    <TableCell className="text-muted-foreground">{user.email}</TableCell>
                     <TableCell>
                       <select
                         value={user.role}
@@ -88,16 +88,16 @@ export function UsersTab() {
                           const role = e.target.value as UserRole;
                           if (role !== user.role) void update(user, { role }, `Đã đổi vai trò của ${user.name}.`);
                         }}
-                        className="rounded-md border border-black/15 bg-white px-2 py-1 text-sm disabled:opacity-60"
+                        className="rounded-md border border-border bg-field text-foreground px-2 py-1 text-sm disabled:opacity-60"
                       >
                         {(Object.keys(ROLE_LABEL) as UserRole[]).map((role) => (
-                          <option key={role} value={role}>
+                          <option key={role} value={role} className="bg-field text-foreground">
                             {ROLE_LABEL[role]}
                           </option>
                         ))}
                       </select>
                     </TableCell>
-                    <TableCell>{formatBytes(user.storage_used)}</TableCell>
+                    <TableCell className="text-foreground">{formatBytes(user.storage_used)}</TableCell>
                     <TableCell>
                       <input
                         key={`${user.id}-${user.credits}`}
@@ -111,7 +111,7 @@ export function UsersTab() {
                         onKeyDown={(e) => {
                           if (e.key === "Enter") e.currentTarget.blur();
                         }}
-                        className="w-24 rounded-md border border-black/15 bg-white px-2 py-1 text-sm"
+                        className="w-24 rounded-md border border-border bg-field text-foreground px-2 py-1 text-sm outline-none focus:border-brand-bright"
                       />
                     </TableCell>
                     <TableCell className="text-right">
@@ -126,7 +126,7 @@ export function UsersTab() {
                         className={`rounded-full border px-3 py-1 text-xs font-semibold cursor-pointer disabled:opacity-60 ${STATE_STYLE[user.state]}`}
                       >
                         {(Object.keys(STATE_LABEL) as UserState[]).map((state) => (
-                          <option key={state} value={state}>
+                          <option key={state} value={state} className="bg-field text-foreground">
                             {STATE_LABEL[state]}
                           </option>
                         ))}

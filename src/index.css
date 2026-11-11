@@ -2,31 +2,271 @@
 @import 'tailwindcss';
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "@fontsource-variable/geist";
 
 @custom-variant dark (&:is(.dark *));
-:root { font-family: 'Manrope', sans-serif; color: #10120f; background: #ffffff; font-synthesis: none; text-rendering: optimizeLegibility; --background: oklch(1 0 0); --foreground: oklch(0.145 0 0); --card: oklch(1 0 0); --card-foreground: oklch(0.145 0 0); --popover: oklch(1 0 0); --popover-foreground: oklch(0.145 0 0); --primary: oklch(0.205 0 0); --primary-foreground: oklch(0.985 0 0); --secondary: oklch(0.97 0 0); --secondary-foreground: oklch(0.205 0 0); --muted: oklch(0.97 0 0); --muted-foreground: oklch(0.556 0 0); --accent: oklch(0.97 0 0); --accent-foreground: oklch(0.205 0 0); --destructive: oklch(0.577 0.245 27.325); --border: oklch(0.922 0 0); --input: oklch(0.922 0 0); --ring: oklch(0.708 0 0); --chart-1: oklch(0.87 0 0); --chart-2: oklch(0.556 0 0); --chart-3: oklch(0.439 0 0); --chart-4: oklch(0.371 0 0); --chart-5: oklch(0.269 0 0); --radius: 0.625rem; --sidebar: oklch(0.985 0 0); --sidebar-foreground: oklch(0.145 0 0); --sidebar-primary: oklch(0.205 0 0); --sidebar-primary-foreground: oklch(0.985 0 0); --sidebar-accent: oklch(0.97 0 0); --sidebar-accent-foreground: oklch(0.205 0 0); --sidebar-border: oklch(0.922 0 0); --sidebar-ring: oklch(0.708 0 0); }
-* { box-sizing: border-box; }
-html { background-color: #ffffff; color-scheme: light; }
-html.dark { background-color: #121212; color-scheme: dark; }
-body { margin: 0; min-width: 320px; background-color: inherit; color: inherit; }
-button, input, textarea { font: inherit; }
-button { cursor: pointer; }
-a { transition: color .2s ease, background-color .2s ease, border-color .2s ease, transform .2s ease; }
-a:hover { color: #04714a; }
-::selection { background: #a7e8c9; color: #10120f; }
-.dark ::selection { background: #04714a; color: #ffffff; }
-.mono { font-family: 'DM Mono', monospace; }
-:focus-visible { outline: 3px solid #00a86b; outline-offset: 3px; }
 
-@theme inline { --font-heading: var(--font-sans); --font-sans: 'Geist Variable', sans-serif; --color-sidebar-ring: var(--sidebar-ring); --color-sidebar-border: var(--sidebar-border); --color-sidebar-accent-foreground: var(--sidebar-accent-foreground); --color-sidebar-accent: var(--sidebar-accent); --color-sidebar-primary-foreground: var(--sidebar-primary-foreground); --color-sidebar-primary: var(--sidebar-primary); --color-sidebar-foreground: var(--sidebar-foreground); --color-sidebar: var(--sidebar); --color-chart-5: var(--chart-5); --color-chart-4: var(--chart-4); --color-chart-3: var(--chart-3); --color-chart-2: var(--chart-2); --color-chart-1: var(--chart-1); --color-ring: var(--ring); --color-input: var(--input); --color-border: var(--border); --color-destructive: var(--destructive); --color-accent-foreground: var(--accent-foreground); --color-accent: var(--accent); --color-muted-foreground: var(--muted-foreground); --color-muted: var(--muted); --color-secondary-foreground: var(--secondary-foreground); --color-secondary: var(--secondary); --color-primary-foreground: var(--primary-foreground); --color-primary: var(--primary); --color-popover-foreground: var(--popover-foreground); --color-popover: var(--popover); --color-card-foreground: var(--card-foreground); --color-card: var(--card); --color-foreground: var(--foreground); --color-background: var(--background); --radius-sm: calc(var(--radius) * 0.6); --radius-md: calc(var(--radius) * 0.8); --radius-lg: var(--radius); --radius-xl: calc(var(--radius) * 1.4); --radius-2xl: calc(var(--radius) * 1.8); --radius-3xl: calc(var(--radius) * 2.2); --radius-4xl: calc(var(--radius) * 2.6); }
+/*
+ * ============================================================================
+ * GLOBAL THEME TOKENS — the single source of truth for every color.
+ *
+ * Use the semantic utilities generated below instead of hard-coded colors:
+ *   Surfaces : bg-background, bg-surface, bg-card, bg-elevated, bg-field
+ *   Text     : text-foreground, text-fg-secondary, text-muted-foreground,
+ *              text-fg-disabled
+ *   Borders  : border-border, border-border-subtle
+ *   Brand    : bg-brand, hover:bg-brand-hover, text-brand-foreground,
+ *              bg-brand-soft, text-brand-text, text-brand-bright
+ *   States   : bg-hover (hover wash), bg-active (selected/pressed wash),
+ *              bg-overlay (modal backdrop)
+ *
+ * Light keeps the existing ITUPD identity. Dark follows the mandated palette.
+ * Brand green (#04714a / #00a86b) is identical in both themes; only the
+ * readable brand text tone lightens on dark backgrounds.
+ * ============================================================================
+ */
+:root {
+  --background: #ffffff;
+  --surface: #fafaf9;
+  --card: #ffffff;
+  --elevated: #ffffff;
+  --field: #ffffff;
 
-.dark { --background: oklch(0.18 0 0); --foreground: oklch(0.985 0 0); --card: oklch(0.23 0 0); --card-foreground: oklch(0.985 0 0); --popover: oklch(0.23 0 0); --popover-foreground: oklch(0.985 0 0); --primary: oklch(0.922 0 0); --primary-foreground: oklch(0.205 0 0); --secondary: oklch(0.269 0 0); --secondary-foreground: oklch(0.985 0 0); --muted: oklch(0.269 0 0); --muted-foreground: oklch(0.708 0 0); --accent: oklch(0.269 0 0); --accent-foreground: oklch(0.985 0 0); --destructive: oklch(0.704 0.191 22.216); --border: oklch(1 0 0 / 10%); --input: oklch(1 0 0 / 15%); --ring: oklch(0.556 0 0); --chart-1: oklch(0.87 0 0); --chart-2: oklch(0.556 0 0); --chart-3: oklch(0.439 0 0); --chart-4: oklch(0.371 0 0); --chart-5: oklch(0.269 0 0); --sidebar: oklch(0.21 0 0); --sidebar-foreground: oklch(0.985 0 0); --sidebar-primary: oklch(0.488 0.243 264.376); --sidebar-primary-foreground: oklch(0.985 0 0); --sidebar-accent: oklch(0.269 0 0); --sidebar-accent-foreground: oklch(0.985 0 0); --sidebar-border: oklch(1 0 0 / 10%); --sidebar-ring: oklch(0.556 0 0); }
+  --foreground: #11130f;
+  --fg-secondary: #4a4d47;
+  --muted-foreground: #6b6e68;
+  --fg-disabled: #a3a5a0;
 
+  --border: #e4e5e2;
+  --border-subtle: #efefed;
+
+  --hover: rgb(17 19 15 / 0.05);
+  --active: rgb(17 19 15 / 0.08);
+  --overlay: rgb(17 19 15 / 0.45);
+
+  /* Code samples intentionally keep one dark, legible reading surface. */
+  --code: #161b18;
+  --code-header: #101412;
+  --code-foreground: #f5f5f5;
+  --code-muted: #bdbdbd;
+  --code-border: #333333;
+  --code-hover: rgb(255 255 255 / 0.06);
+
+  /* The public footer keeps its intentionally dark brand treatment in light. */
+  --footer: #11130f;
+  --footer-foreground: #f5f5f5;
+  --footer-muted: #bdbdbd;
+  --footer-border: #333333;
+  --footer-brand: #68d9a7;
+
+  /* ITUPD brand identity — do not change. */
+  --brand: #04714a;
+  --brand-hover: #035e3f;
+  --brand-foreground: #ffffff;
+  --brand-soft: #e8f7ef;
+  --brand-text: #04714a;
+  --brand-bright: #00a86b;
+
+  /* shadcn/ui contract, mapped onto the tokens above. */
+  --card-foreground: var(--foreground);
+  --popover: var(--elevated);
+  --popover-foreground: var(--foreground);
+  --primary: var(--brand);
+  --primary-foreground: var(--brand-foreground);
+  --secondary: #f3f4f2;
+  --secondary-foreground: var(--foreground);
+  --muted: #f3f4f2;
+  --accent: var(--brand-soft);
+  --accent-foreground: var(--brand-text);
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --input: var(--border);
+  --ring: var(--brand-bright);
+
+  --chart-1: #04714a;
+  --chart-2: #00a86b;
+  --chart-3: #68d9a7;
+  --chart-4: #4a4d47;
+  --chart-5: #a3a5a0;
+  --radius: 0.625rem;
+
+  --sidebar: var(--surface);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--brand);
+  --sidebar-primary-foreground: var(--brand-foreground);
+  --sidebar-accent: var(--brand-soft);
+  --sidebar-accent-foreground: var(--brand-text);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
+
+  font-family: 'Manrope', sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  color-scheme: light;
+}
+
+.dark {
+  --background: #121212;
+  --surface: #181818;
+  --footer: #181818;
+  --card: #1e1e1e;
+  --elevated: #242424;
+  --field: #1a1a1a;
+
+  --foreground: #f5f5f5;
+  --fg-secondary: #bdbdbd;
+  --muted-foreground: #909090;
+  --fg-disabled: #666666;
+
+  --border: #333333;
+  --border-subtle: #292929;
+
+  --hover: rgb(255 255 255 / 0.06);
+  --active: rgb(255 255 255 / 0.1);
+  --overlay: rgb(0 0 0 / 0.6);
+
+  --brand: #04714a;
+  --brand-hover: #035e3f;
+  --brand-foreground: #ffffff;
+  --brand-soft: rgb(74 222 128 / 0.12);
+  --brand-text: #4ade80;
+  --brand-bright: #00a86b;
+
+  --secondary: #242424;
+  --muted: #242424;
+  --destructive: #f87171;
+  --destructive-foreground: #121212;
+
+  --chart-3: #4ade80;
+  --chart-4: #bdbdbd;
+  --chart-5: #666666;
+
+  color-scheme: dark;
+}
+
+@theme inline {
+  --font-heading: var(--font-sans);
+  --font-sans: 'Geist Variable', sans-serif;
+
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-card: var(--card);
+  --color-elevated: var(--elevated);
+  --color-field: var(--field);
+
+  --color-foreground: var(--foreground);
+  --color-fg-secondary: var(--fg-secondary);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-fg-disabled: var(--fg-disabled);
+
+  --color-border: var(--border);
+  --color-border-subtle: var(--border-subtle);
+
+  --color-hover: var(--hover);
+  --color-active: var(--active);
+  --color-overlay: var(--overlay);
+
+  --color-code: var(--code);
+  --color-code-header: var(--code-header);
+  --color-code-foreground: var(--code-foreground);
+  --color-code-muted: var(--code-muted);
+  --color-code-border: var(--code-border);
+  --color-code-hover: var(--code-hover);
+
+  --color-footer: var(--footer);
+  --color-footer-foreground: var(--footer-foreground);
+  --color-footer-muted: var(--footer-muted);
+  --color-footer-border: var(--footer-border);
+  --color-footer-brand: var(--footer-brand);
+
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-text: var(--brand-text);
+  --color-brand-bright: var(--brand-bright);
+
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+
+  --breakpoint-xs: 26rem;
+}
+
+/*
+ * Element defaults live in the base layer so Tailwind utilities always win.
+ * (Unlayered rules here previously beat utilities: `a:hover` recolored
+ * brand buttons green-on-green and the global outline overrode outline-none.)
+ */
 @layer base {
   * {
-    @apply border-border outline-ring/50; }
-  body {
-    @apply bg-background text-foreground; }
+    @apply border-border outline-ring/50;
+    box-sizing: border-box;
+  }
   html {
-    @apply font-sans; } }
+    background-color: var(--background);
+    color: var(--foreground);
+  }
+  body {
+    @apply bg-background text-foreground;
+    margin: 0;
+    min-width: 320px;
+  }
+  button, input, textarea { font: inherit; }
+  button { cursor: pointer; }
+  a { transition: color .2s ease, background-color .2s ease, border-color .2s ease, transform .2s ease; }
+  ::selection { background: #a7e8c9; color: #11130f; }
+  .dark ::selection { background: #04714a; color: #ffffff; }
+  :focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+}
+
+.mono { font-family: 'DM Mono', monospace; }
+
+/*
+ * Smooth, flash-free theme switch. next-themes disables transitions for the
+ * frame the class flips; afterwards only color properties animate.
+ */
+.theme-transition,
+.theme-transition *,
+.theme-transition *::before,
+.theme-transition *::after {
+  transition: background-color .25s ease, border-color .25s ease, color .25s ease, fill .25s ease !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-transition,
+  .theme-transition * { transition: none !important; }
+}

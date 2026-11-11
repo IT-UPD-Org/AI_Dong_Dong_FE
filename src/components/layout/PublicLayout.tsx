@@ -41,24 +41,24 @@ export function PublicLayout() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 border-b border-black/10 dark:border-white/10 bg-white/85 dark:bg-[#121212]/85 px-4 sm:px-6 md:px-12 backdrop-blur-md transition-colors">
-        <div className="flex h-16 sm:h-20 items-center justify-between">
+      <header className="sticky top-0 z-50 border-b border-border bg-background/85 px-3 sm:px-6 md:px-12 backdrop-blur-md transition-colors">
+        <div className="flex h-16 sm:h-20 items-center justify-between gap-2">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
-            <span className="font-extrabold leading-none text-[#04714a] dark:text-[#4ade80] text-base sm:text-lg tracking-tight">
-              IT UPD GenAI<span className="text-[#00a86b]">.</span>
+          <Link to="/" className="flex min-w-0 shrink items-center gap-2">
+            <span className="truncate font-extrabold leading-none text-brand-text text-base sm:text-lg tracking-tight">
+              IT UPD GenAI<span className="text-brand-bright">.</span>
             </span>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden items-center gap-8 text-sm font-medium text-black/70 dark:text-gray-300 md:flex">
+          <nav className="hidden items-center gap-8 text-sm font-medium text-fg-secondary md:flex">
             {navLinks.map((link) => (
               <Link
                 key={link.to}
                 to={link.to}
-                className={`transition-colors hover:text-[#04714a] dark:hover:text-[#4ade80] ${
+                className={`transition-colors hover:text-brand-text ${
                   location.pathname === link.to
-                    ? "font-semibold text-[#04714a] dark:text-[#4ade80]"
+                    ? "font-semibold text-brand-text"
                     : ""
                 }`}
               >
@@ -68,21 +68,21 @@ export function PublicLayout() {
           </nav>
 
           {/* Action Button & Mobile Menu Toggle */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="hidden xs:flex items-center gap-1">
+          <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+            <span className="hidden sm:flex">
               <LanguageToggle />
-              <ThemeToggle compact />
-            </div>
+            </span>
+            <ThemeToggle />
 
             {!isLoading && isAuthenticated ? (
               <DropdownMenu>
                 <DropdownMenuTrigger
                   aria-label={`Tài khoản ${accountName}`}
-                  className="flex max-w-[11rem] sm:max-w-[16rem] items-center gap-2 rounded-full bg-[#04714a] py-1.5 pl-1.5 pr-3 sm:pr-4 text-xs sm:text-sm font-semibold text-white outline-none transition-all hover:bg-[#035e3f] hover:shadow-md focus-visible:ring-2 focus-visible:ring-[#04714a] focus-visible:ring-offset-2 data-popup-open:bg-[#035e3f] cursor-pointer"
+                  className="flex max-w-[8.5rem] xs:max-w-[11rem] sm:max-w-[16rem] items-center gap-1.5 sm:gap-2 rounded-full bg-brand py-1.5 pl-1.5 pr-2.5 sm:pr-4 text-xs sm:text-sm font-semibold text-brand-foreground outline-none transition-all hover:bg-brand-hover hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 data-popup-open:bg-brand-hover cursor-pointer"
                 >
                   <span
                     aria-hidden="true"
-                    className="flex size-6 sm:size-7 shrink-0 items-center justify-center rounded-full bg-white/20 text-[11px] font-bold"
+                    className="flex size-6 sm:size-7 shrink-0 items-center justify-center rounded-full bg-brand-hover text-brand-foreground text-[11px] font-bold"
                   >
                     {accountName.charAt(0).toUpperCase()}
                   </span>
@@ -91,9 +91,9 @@ export function PublicLayout() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" sideOffset={8} className="w-56 rounded-xl p-1.5">
                   <div className="px-2 pb-2 pt-1.5">
-                    <p className="truncate text-sm font-semibold text-black/80 dark:text-gray-100">{accountName}</p>
+                    <p className="truncate text-sm font-semibold text-foreground">{accountName}</p>
                     {user?.name && user.email && (
-                      <p className="truncate text-xs text-black/45 dark:text-gray-400">{user.email}</p>
+                      <p className="truncate text-xs text-muted-foreground">{user.email}</p>
                     )}
                   </div>
                   <DropdownMenuSeparator />
@@ -119,7 +119,7 @@ export function PublicLayout() {
             ) : (
               <Link
                 to="/login"
-                className="rounded-full bg-[#11130f] dark:bg-[#242424] px-3.5 py-2 sm:px-5 sm:py-2.5 text-xs sm:text-sm font-semibold text-white transition-all hover:bg-[#04714a] dark:hover:bg-[#04714a] hover:shadow-md flex items-center justify-center"
+                className="rounded-full bg-foreground px-3.5 py-2 sm:px-5 sm:py-2.5 text-xs sm:text-sm font-semibold text-background transition-all hover:bg-brand hover:text-brand-foreground hover:shadow-md flex items-center justify-center"
               >
                 {t("login")} <ArrowUpRight className="ml-1 inline" size={15} />
               </Link>
@@ -131,7 +131,7 @@ export function PublicLayout() {
               onClick={() => setMobileMenuOpen((prev) => !prev)}
               aria-label={mobileMenuOpen ? t("closeMenu") : t("openMenu")}
               aria-expanded={mobileMenuOpen}
-              className="flex size-9 items-center justify-center rounded-xl border border-black/10 dark:border-white/10 text-black/70 dark:text-gray-300 transition-colors hover:bg-black/5 dark:hover:bg-white/10 md:hidden cursor-pointer"
+              className="flex size-9 items-center justify-center rounded-xl border border-border text-fg-secondary transition-colors hover:bg-hover md:hidden cursor-pointer"
             >
               {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
             </button>
@@ -142,16 +142,15 @@ export function PublicLayout() {
         {mobileMenuOpen && (
           <nav
             aria-label="Điều hướng di động"
-            className="border-t border-black/5 dark:border-white/10 py-3 md:hidden animate-in slide-in-from-top-2 duration-200 bg-white dark:bg-[#181818]"
+            className="border-t border-border-subtle py-3 md:hidden animate-in slide-in-from-top-2 duration-200 bg-surface"
           >
             <div className="flex flex-col gap-1">
-              <div className="flex items-center justify-between px-3 py-1 mb-1 border-b border-black/5 dark:border-white/10 xs:hidden">
-                <span className="text-xs text-gray-500 font-mono uppercase">
+              <div className="flex items-center justify-between px-3 py-1 mb-1 border-b border-border-subtle sm:hidden">
+                <span className="text-xs text-muted-foreground font-mono uppercase">
                   {t("preferences")}
                 </span>
                 <div className="flex items-center gap-1">
                   <LanguageToggle />
-                  <ThemeToggle compact />
                 </div>
               </div>
               {navLinks.map((link) => {
@@ -163,8 +162,8 @@ export function PublicLayout() {
                     onClick={() => setMobileMenuOpen(false)}
                     className={`rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
                       isActive
-                        ? "bg-[#e8f7ef] dark:bg-[#04714a]/20 font-semibold text-[#04714a] dark:text-[#4ade80]"
-                        : "text-black/70 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/10 hover:text-black dark:hover:text-white"
+                        ? "bg-brand-soft font-semibold text-brand-text"
+                        : "text-fg-secondary hover:bg-hover hover:text-foreground"
                     }`}
                   >
                     {link.label}

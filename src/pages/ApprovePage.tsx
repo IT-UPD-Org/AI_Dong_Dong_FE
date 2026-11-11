@@ -36,9 +36,9 @@ const STATUS_LABEL: Record<RequestStatus, string> = {
   rejected: "Bị từ chối",
 };
 const STATUS_STYLE: Record<RequestStatus, string> = {
-  pending: "bg-amber-50 text-amber-700 border-amber-200",
-  approved: "bg-green-50 text-green-700 border-green-200",
-  rejected: "bg-red-50 text-red-700 border-red-200",
+  pending: "bg-amber-500/15 text-amber-800 dark:text-amber-300 border-amber-500/30",
+  approved: "bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border-emerald-500/30",
+  rejected: "bg-destructive/15 text-destructive border-destructive/30",
 };
 
 function errorText(err: unknown, fallback: string): string {
@@ -51,18 +51,18 @@ function formatDate(value: string | null): string {
 }
 
 const inputClass =
-  "w-full rounded-xl border border-black/15 bg-white px-4 py-3 text-sm outline-none transition-all focus:border-[#00a86b] focus:ring-2 focus:ring-[#00a86b]/30";
-const labelClass = "mb-2 block text-xs font-semibold uppercase tracking-wider text-black/70";
+  "w-full rounded-xl border border-border bg-field text-foreground placeholder:text-muted-foreground px-4 py-3 text-sm outline-none transition-all focus:border-brand-bright focus:ring-2 focus:ring-brand/20";
+const labelClass = "mb-2 block text-xs font-semibold uppercase tracking-wider text-fg-secondary";
 
 function Card({ children }: { children: React.ReactNode }) {
-  return <div className="rounded-3xl border border-black/10 bg-white p-6 shadow-sm sm:p-8">{children}</div>;
+  return <div className="rounded-3xl border border-border bg-card p-6 shadow-sm sm:p-8">{children}</div>;
 }
 
 function Notice({ tone, children }: { tone: "error" | "success" | "info"; children: React.ReactNode }) {
   const styles = {
-    error: "border-red-200 bg-red-50 text-red-700",
-    success: "border-green-200 bg-green-50 text-green-800",
-    info: "border-black/10 bg-black/[0.03] text-black/70",
+    error: "border-destructive/20 bg-destructive/10 text-destructive",
+    success: "border-emerald-500/30 bg-emerald-500/10 text-emerald-800 dark:text-emerald-300",
+    info: "border-border bg-surface text-fg-secondary",
   }[tone];
   const Icon = tone === "error" ? AlertCircle : tone === "success" ? CheckCircle2 : AlertTriangle;
   return (
@@ -86,15 +86,15 @@ function SignInPrompt() {
   const navigate = useNavigate();
   return (
     <Card>
-      <h2 className="text-xl font-bold">Đăng nhập để gửi yêu cầu</h2>
-      <p className="mt-2 text-sm text-black/60">
+      <h2 className="text-xl font-bold text-foreground">Đăng nhập để gửi yêu cầu</h2>
+      <p className="mt-2 text-sm text-fg-secondary">
         Mọi yêu cầu cần đăng nhập bằng tài khoản Microsoft của trường (@pduni.edu.vn cho sinh viên, @phuongdong.edu.vn
         cho giảng viên).
       </p>
       <button
         type="button"
         onClick={() => navigate("/login", { state: { from: "/approve" } })}
-        className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#04714a] px-5 py-3 text-sm font-semibold text-white hover:bg-[#03593a] cursor-pointer"
+        className="mt-5 inline-flex items-center gap-2 rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-brand-foreground hover:bg-brand-hover cursor-pointer"
       >
         <LogIn size={16} /> Đăng nhập bằng Microsoft
       </button>
@@ -152,11 +152,11 @@ function AccountRequestForm({ onSent }: { onSent: () => Promise<void> }) {
 
   return (
     <Card>
-      <div className="flex items-center gap-2 text-[#04714a]">
+      <div className="flex items-center gap-2 text-brand-text">
         <UserCheck size={20} />
-        <h2 className="text-xl font-bold text-[#11130f]">Yêu cầu cấp quyền truy cập</h2>
+        <h2 className="text-xl font-bold text-foreground">Yêu cầu cấp quyền truy cập</h2>
       </div>
-      <p className="mt-2 text-sm text-black/60">
+      <p className="mt-2 text-sm text-fg-secondary">
         Tài khoản của bạn chưa được kích hoạt. Gửi thông tin bên dưới, quản trị viên sẽ xem xét và kích hoạt.
       </p>
       <form onSubmit={submit} className="mt-6 grid gap-5 sm:grid-cols-2" noValidate>
@@ -170,14 +170,14 @@ function AccountRequestForm({ onSent }: { onSent: () => Promise<void> }) {
         </div>
         <div>
           <span className={labelClass}>Bạn là *</span>
-          <div className="grid grid-cols-2 gap-2 rounded-xl bg-black/5 p-1">
+          <div className="grid grid-cols-2 gap-2 rounded-xl bg-muted p-1">
             {(["student", "teacher"] as const).map((value) => (
               <button
                 key={value}
                 type="button"
                 onClick={() => setStudentStatus(value)}
                 className={`rounded-lg py-2.5 text-sm font-semibold cursor-pointer ${
-                  studentStatus === value ? "bg-white text-[#04714a] shadow-sm" : "text-black/60"
+                  studentStatus === value ? "bg-card text-brand-text shadow-sm" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {value === "student" ? "Sinh viên" : "Giảng viên"}
@@ -239,7 +239,7 @@ function SubmitButton({ sending, label }: { sending: boolean; label: string }) {
     <button
       type="submit"
       disabled={sending}
-      className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#04714a] px-5 py-3 text-sm font-semibold text-white hover:bg-[#03593a] disabled:opacity-60 cursor-pointer sm:w-auto"
+      className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-brand-foreground hover:bg-brand-hover disabled:opacity-60 cursor-pointer sm:w-auto"
     >
       {sending ? <RefreshCw size={16} className="animate-spin" /> : <Send size={16} />}
       {sending ? "Đang gửi..." : label}
@@ -251,15 +251,15 @@ function SubmitButton({ sending, label }: { sending: boolean; label: string }) {
 function PendingNotice({ request }: { request: AccountRequest | undefined }) {
   return (
     <Card>
-      <div className="flex items-center gap-2 text-amber-600">
+      <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
         <Clock size={20} />
-        <h2 className="text-xl font-bold text-[#11130f]">Yêu cầu đang chờ duyệt</h2>
+        <h2 className="text-xl font-bold text-foreground">Yêu cầu đang chờ duyệt</h2>
       </div>
-      <p className="mt-2 text-sm text-black/60">
+      <p className="mt-2 text-sm text-fg-secondary">
         Quản trị viên sẽ xem xét yêu cầu của bạn. Khi được duyệt, bạn có thể dùng UAI ngay.
       </p>
       {request && (
-        <p className="mt-4 text-xs text-black/50">Đã gửi lúc {formatDate(request.created_at)}</p>
+        <p className="mt-4 text-xs text-muted-foreground">Đã gửi lúc {formatDate(request.created_at)}</p>
       )}
     </Card>
   );
@@ -314,7 +314,7 @@ function StorageRequestPanel({ limit, used }: { limit: number; used: number }) {
 
   return (
     <div className="space-y-5">
-      <p className="text-sm text-black/60">
+      <p className="text-sm text-fg-secondary">
         Đang dùng <strong>{(used / MB).toFixed(1)} MB</strong> / {Math.round(limit / MB)} MB.
       </p>
       {sent && <Notice tone="success">Đã gửi yêu cầu. Quản trị viên sẽ xem xét sớm.</Notice>}
@@ -334,12 +334,14 @@ function StorageRequestPanel({ limit, used }: { limit: number; used: number }) {
                   key={mb}
                   type="button"
                   onClick={() => setSize(mb)}
-                  className={`rounded-xl border p-4 text-left cursor-pointer ${
-                    size === mb ? "border-[#04714a] bg-[#e8f7ef]" : "border-black/15 hover:border-[#00a86b]"
+                  className={`rounded-xl border p-4 text-left cursor-pointer transition-colors ${
+                    size === mb
+                      ? "border-brand bg-brand-soft text-brand-text"
+                      : "border-border hover:border-brand-bright text-foreground bg-card"
                   }`}
                 >
                   <span className="block text-lg font-bold">{mb} MB</span>
-                  <span className="text-xs text-black/55">
+                  <span className="text-xs text-muted-foreground">
                     {mb === 512 ? "Mở rộng tài liệu học tập" : "Nghiên cứu & đồ án tốt nghiệp"}
                   </span>
                 </button>
@@ -363,13 +365,13 @@ function StorageRequestPanel({ limit, used }: { limit: number; used: number }) {
       )}
       {requests.length > 0 && (
         <div>
-          <h3 className="mb-2 text-sm font-semibold text-black/70">Yêu cầu đã gửi</h3>
-          <ul className="divide-y divide-black/5 rounded-xl border border-black/10">
+          <h3 className="mb-2 text-sm font-semibold text-fg-secondary">Yêu cầu đã gửi</h3>
+          <ul className="divide-y divide-border rounded-xl border border-border">
             {requests.map((r) => (
               <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm">
                 <span>
-                  {r.storage_mb} MB · <span className="text-black/50">{formatDate(r.created_at)}</span>
-                  {r.admin_note && <span className="block text-xs text-black/55">Ghi chú: {r.admin_note}</span>}
+                  {r.storage_mb} MB · <span className="text-muted-foreground">{formatDate(r.created_at)}</span>
+                  {r.admin_note && <span className="block text-xs text-muted-foreground">Ghi chú: {r.admin_note}</span>}
                 </span>
                 <StatusBadge status={r.status} />
               </li>
@@ -456,7 +458,7 @@ function ActiveRequests() {
 
   return (
     <Card>
-      <div className="mb-6 grid grid-cols-2 gap-2 rounded-2xl bg-black/5 p-1.5">
+      <div className="mb-6 grid grid-cols-2 gap-2 rounded-2xl bg-muted p-1.5">
         {(
           [
             ["storage", "Tăng dung lượng lưu trữ", HardDrive],
@@ -468,7 +470,7 @@ function ActiveRequests() {
             type="button"
             onClick={() => select(key)}
             className={`flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold cursor-pointer ${
-              tab === key ? "bg-white text-[#04714a] shadow-sm" : "text-black/60"
+              tab === key ? "bg-card text-brand-text shadow-sm" : "text-muted-foreground hover:text-foreground"
             }`}
           >
             <Icon size={16} /> {label}
@@ -506,7 +508,7 @@ export function ApprovePage() {
   if (isLoading) {
     body = (
       <Card>
-        <div className="flex items-center gap-2 text-sm text-black/60">
+        <div className="flex items-center gap-2 text-sm text-fg-secondary">
           <RefreshCw size={16} className="animate-spin" /> Đang tải...
         </div>
       </Card>
@@ -516,11 +518,11 @@ export function ApprovePage() {
   } else if (user.state === "disable") {
     body = (
       <Card>
-        <div className="flex items-center gap-2 text-red-600">
+        <div className="flex items-center gap-2 text-destructive">
           <XCircle size={20} />
-          <h2 className="text-xl font-bold text-[#11130f]">Tài khoản đã bị khoá</h2>
+          <h2 className="text-xl font-bold text-foreground">Tài khoản đã bị khoá</h2>
         </div>
-        <p className="mt-2 text-sm text-black/60">Vui lòng liên hệ quản trị viên.</p>
+        <p className="mt-2 text-sm text-fg-secondary">Vui lòng liên hệ quản trị viên.</p>
       </Card>
     );
   } else if (user.state === "pending") {
@@ -537,19 +539,19 @@ export function ApprovePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fafaf9] text-[#11130f]">
-      <section className="border-b border-black/10 bg-white px-4 py-8 sm:px-6 md:px-12">
+    <div className="min-h-screen bg-surface text-foreground">
+      <section className="border-b border-border bg-card px-4 py-8 sm:px-6 md:px-12">
         <div className="mx-auto max-w-3xl">
-          <nav aria-label="Đường dẫn trang" className="flex items-center gap-2 text-xs font-medium text-black/50">
-            <Link to="/" className="hover:text-[#04714a]">Trang chủ</Link>
+          <nav aria-label="Đường dẫn trang" className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+            <Link to="/" className="hover:text-brand-text">Trang chủ</Link>
             <ChevronRight size={14} className="opacity-40" />
-            <span className="font-semibold text-[#04714a]">Cấp phép tài khoản</span>
+            <span className="font-semibold text-brand-text">Cấp phép tài khoản</span>
           </nav>
-          <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-[#00a86b]/20 bg-[#e8f7ef] px-3 py-1 text-xs font-semibold text-[#04714a]">
+          <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-brand/20 bg-brand-soft px-3 py-1 text-xs font-semibold text-brand-text">
             <ShieldCheck size={14} /> CỔNG TIẾP NHẬN YÊU CẦU UAI
           </div>
-          <h1 className="mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl">Cấp phép tài khoản UAI</h1>
-          <p className="mt-3 max-w-2xl text-sm text-black/65 sm:text-base">
+          <h1 className="mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl text-foreground">Cấp phép tài khoản UAI</h1>
+          <p className="mt-3 max-w-2xl text-sm text-fg-secondary sm:text-base">
             Yêu cầu cấp quyền truy cập, tăng dung lượng lưu trữ hoặc báo lỗi khi sử dụng UAI.
           </p>
         </div>

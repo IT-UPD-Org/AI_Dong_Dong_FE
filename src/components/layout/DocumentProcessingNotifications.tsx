@@ -44,25 +44,41 @@ export function DocumentProcessingNotifications() {
       {docs.map((doc) => (
         <div
           key={doc.document_id}
-          className="flex items-center gap-3 w-80 rounded-xl border border-black/10 bg-white p-4 shadow-lg animate-in slide-in-from-right-2 fade-in duration-300"
+          className="flex items-center gap-3 w-80 rounded-xl border border-border bg-elevated p-4 shadow-lg text-foreground animate-in slide-in-from-right-2 fade-in duration-300"
         >
           <div className="shrink-0">
-            {doc.status === "ready" && <CheckCircle2 className="text-green-500" size={20} />}
-            {doc.status === "error" && <AlertCircle className="text-red-500" size={20} />}
+            {doc.status === "ready" && (
+              <CheckCircle2 className="text-emerald-600 dark:text-emerald-400" size={20} />
+            )}
+            {doc.status === "error" && (
+              <AlertCircle className="text-red-600 dark:text-red-400" size={20} />
+            )}
             {doc.status !== "ready" && doc.status !== "error" && (
               <Loader2
-                className={`animate-spin ${doc.status === "uploading" ? "text-blue-500" : "text-amber-500"}`}
+                className={`animate-spin ${
+                  doc.status === "uploading"
+                    ? "text-blue-600 dark:text-blue-400"
+                    : "text-amber-600 dark:text-amber-400"
+                }`}
                 size={20}
               />
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="flex items-center gap-1.5 truncate text-sm font-semibold text-gray-900">
-              <FileText size={14} className="shrink-0 text-gray-500" />
+            <p className="flex items-center gap-1.5 truncate text-sm font-semibold text-foreground">
+              <FileText size={14} className="shrink-0 text-muted-foreground" />
               <span className="truncate">{doc.title}</span>
             </p>
-            <p className={`text-xs ${doc.status === "error" ? "text-red-600" : "text-gray-500"}`}>
-              {doc.status === "error" && doc.error ? doc.error : STATUS_TEXT[doc.status]}
+            <p
+              className={`text-xs ${
+                doc.status === "error"
+                  ? "text-red-600 dark:text-red-400"
+                  : "text-muted-foreground"
+              }`}
+            >
+              {doc.status === "error" && doc.error
+                ? doc.error
+                : STATUS_TEXT[doc.status]}
             </p>
           </div>
         </div>

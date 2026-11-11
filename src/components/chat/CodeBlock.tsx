@@ -53,9 +53,9 @@ export function CodeBlock({ className, children }: CodeBlockProps) {
   const isCodeElement = isValidElement(children) && children.type === "code";
 
   return (
-    <div className="group/code relative my-3 overflow-hidden rounded-xl border border-black/10 bg-[#161b18] text-zinc-100 shadow-xs">
-      <div className="flex h-8 items-center justify-between border-b border-white/10 bg-[#101412] px-3.5 text-xs text-white/60 select-none">
-        <span className="font-mono text-[11px] font-medium uppercase tracking-wider text-zinc-400">
+    <div className="group/code relative my-3 overflow-hidden rounded-xl border border-code-border bg-code text-code-foreground shadow-xs">
+      <div className="flex h-8 items-center justify-between border-b border-code-border bg-code-header px-3.5 text-xs text-code-muted select-none">
+        <span className="font-mono text-[11px] font-medium uppercase tracking-wider text-code-muted">
           {language || "code"}
         </span>
         <button
@@ -65,13 +65,13 @@ export function CodeBlock({ className, children }: CodeBlockProps) {
           title={copied ? "Đã sao chép" : "Sao chép mã"}
           className={`flex items-center gap-1.5 rounded-md px-2 py-0.8 text-[11px] font-medium transition-all cursor-pointer ${
             copied
-              ? "bg-[#04714a]/30 text-[#00a86b]"
-              : "text-zinc-300 hover:bg-white/10 hover:text-white"
+              ? "bg-brand/30 text-brand-bright"
+              : "text-code-muted hover:bg-code-hover hover:text-code-foreground"
           }`}
         >
           {copied ? (
             <>
-              <Check size={12} className="text-[#00a86b]" />
+              <Check size={12} className="text-brand-bright" />
               <span>Đã sao chép!</span>
             </>
           ) : (
@@ -83,7 +83,7 @@ export function CodeBlock({ className, children }: CodeBlockProps) {
         </button>
       </div>
 
-      <pre className="overflow-x-auto p-3.5 text-xs sm:text-[13px] font-mono leading-relaxed text-zinc-100 selection:bg-[#04714a]/40">
+      <pre className="overflow-x-auto p-3.5 text-xs sm:text-[13px] font-mono leading-relaxed text-code-foreground selection:bg-brand/40">
         {isCodeElement ? children : <code className={className}>{children}</code>}
       </pre>
     </div>

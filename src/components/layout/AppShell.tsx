@@ -267,13 +267,13 @@ export function AppShell() {
   }, [isMoreActive]);
 
   return (
-    <div className="flex h-screen w-full flex-col overflow-hidden bg-white dark:bg-[#121212] text-[#11130f] dark:text-gray-100 transition-colors md:flex-row">
-      <aside className="hidden h-full w-64 shrink-0 flex-col border-r border-black/10 dark:border-white/10 bg-white dark:bg-[#181818] p-5 md:flex transition-colors">
+    <div className="flex h-screen w-full flex-col overflow-hidden bg-background text-foreground transition-colors md:flex-row">
+      <aside className="hidden h-full w-64 shrink-0 flex-col border-r border-border bg-surface p-5 md:flex transition-colors">
         <NavLink
           to="/"
-          className="mb-6 shrink-0 text-lg font-extrabold text-[#11130f] dark:text-gray-100"
+          className="mb-6 shrink-0 text-lg font-extrabold text-foreground"
         >
-          IT UPD GenAI<span className="text-[#00a86b]">.</span>
+          IT UPD GenAI<span className="text-brand-bright">.</span>
         </NavLink>
         <button
           type="button"
@@ -281,11 +281,11 @@ export function AppShell() {
           className="
             mb-5 flex w-full shrink-0 items-center gap-2
             rounded-full
-            bg-[#11130f] dark:bg-[#242424]
+            bg-foreground
             px-3 py-2.5
-            text-left text-sm font-medium text-white
+            text-left text-sm font-medium text-background
             transition-all
-            hover:bg-[#04714a] dark:hover:bg-[#04714a]
+            hover:bg-brand hover:text-brand-foreground
             shadow-xs
             cursor-pointer
           "
@@ -301,8 +301,8 @@ export function AppShell() {
             className={({ isActive }) =>
               `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${
                 isActive
-                  ? "bg-[#e8f7ef] dark:bg-[#04714a]/25 font-semibold text-[#013422] dark:text-[#4ade80]"
-                  : "text-black/60 dark:text-gray-400 hover:bg-[#e8f7ef] dark:hover:bg-white/5 hover:text-[#04714a] dark:hover:text-[#4ade80]"
+                  ? "bg-brand-soft font-semibold text-brand-text"
+                  : "text-fg-secondary hover:bg-brand-soft hover:text-brand-text"
               }`
             }
           >
@@ -316,8 +316,8 @@ export function AppShell() {
             className={({ isActive }) =>
               `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${
                 isActive
-                  ? "bg-[#e8f7ef] dark:bg-[#04714a]/25 font-semibold text-[#013422] dark:text-[#4ade80]"
-                  : "text-black/60 dark:text-gray-400 hover:bg-[#e8f7ef] dark:hover:bg-white/5 hover:text-[#04714a] dark:hover:text-[#4ade80]"
+                  ? "bg-brand-soft font-semibold text-brand-text"
+                  : "text-fg-secondary hover:bg-brand-soft hover:text-brand-text"
               }`
             }
           >
@@ -333,8 +333,8 @@ export function AppShell() {
               aria-expanded={isMoreOpen}
               className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-sm transition-colors cursor-pointer outline-none ${
                 isMoreActive && !isMoreOpen
-                  ? "bg-[#e8f7ef] dark:bg-[#04714a]/25 font-semibold text-[#013422] dark:text-[#4ade80]"
-                  : "text-black/60 dark:text-gray-400 hover:bg-[#e8f7ef] dark:hover:bg-white/5 hover:text-[#04714a] dark:hover:text-[#4ade80]"
+                  ? "bg-brand-soft font-semibold text-brand-text"
+                  : "text-fg-secondary hover:bg-brand-soft hover:text-brand-text"
               }`}
             >
               <div className="flex items-center gap-3 min-w-0">
@@ -357,8 +357,8 @@ export function AppShell() {
                   className={({ isActive }) =>
                     `flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs transition-colors ${
                       isActive
-                        ? "bg-[#e8f7ef] dark:bg-[#04714a]/25 font-semibold text-[#013422] dark:text-[#4ade80]"
-                        : "text-black/60 dark:text-gray-400 hover:bg-[#e8f7ef] dark:hover:bg-white/5 hover:text-[#04714a] dark:hover:text-[#4ade80]"
+                        ? "bg-brand-soft font-semibold text-brand-text"
+                        : "text-fg-secondary hover:bg-brand-soft hover:text-brand-text"
                     }`
                   }
                 >
@@ -372,8 +372,8 @@ export function AppShell() {
                     className={({ isActive }) =>
                       `flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs transition-colors ${
                         isActive
-                          ? "bg-[#e8f7ef] dark:bg-[#04714a]/25 font-semibold text-[#013422] dark:text-[#4ade80]"
-                          : "text-black/60 dark:text-gray-400 hover:bg-[#e8f7ef] dark:hover:bg-white/5 hover:text-[#04714a] dark:hover:text-[#4ade80]"
+                          ? "bg-brand-soft font-semibold text-brand-text"
+                          : "text-fg-secondary hover:bg-brand-soft hover:text-brand-text"
                       }`
                     }
                   >
@@ -393,7 +393,7 @@ export function AppShell() {
               mb-2 shrink-0 px-2
               font-mono text-[9px]
               uppercase tracking-[0.18em]
-              text-black/40 dark:text-gray-500 font-semibold
+              text-muted-foreground font-semibold
             "
           >
             {t("recent")}
@@ -401,7 +401,7 @@ export function AppShell() {
 
           <div className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto [scrollbar-width:thin]">
             {recentChats.length === 0 ? (
-              <p className="px-2 py-3 text-xs text-black/40 dark:text-gray-500 italic">
+              <p className="px-2 py-3 text-xs text-muted-foreground italic">
                 {t("noRecentChats")}
               </p>
             ) : (
@@ -435,8 +435,8 @@ export function AppShell() {
                         transition-colors
                         ${
                           isCurrent
-                            ? "bg-[#e8f7ef] dark:bg-[#04714a]/25 font-semibold text-[#013422] dark:text-[#4ade80]"
-                            : "text-black/65 dark:text-gray-300 hover:bg-[#e8f7ef] dark:hover:bg-white/5 hover:text-[#04714a] dark:hover:text-[#4ade80]"
+                            ? "bg-brand-soft font-semibold text-brand-text"
+                            : "text-fg-secondary hover:bg-brand-soft hover:text-brand-text"
                         }
                       `}
                     >
@@ -449,7 +449,7 @@ export function AppShell() {
                       onClick={() =>
                         handleDeleteChat(conversation.id, displayTitle)
                       }
-                      className="absolute right-1 top-1/2 -translate-y-1/2 rounded-md p-1 text-black/40 dark:text-gray-500 opacity-0 transition-opacity hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600 dark:hover:text-red-400 focus:opacity-100 group-hover:opacity-100 cursor-pointer"
+                      className="absolute right-1 top-1/2 -translate-y-1/2 rounded-md p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-destructive/10 hover:text-destructive focus:opacity-100 group-hover:opacity-100 cursor-pointer"
                     >
                       <Trash2Icon size={13} />
                     </button>
@@ -461,15 +461,14 @@ export function AppShell() {
         </div>
 
         {/* User Card, Controls & Logout */}
-        <div className="mt-3 flex shrink-0 flex-col gap-2 border-t border-black/10 dark:border-white/10 pt-3">
+        <div className="mt-3 flex shrink-0 flex-col gap-2 border-t border-border pt-3">
           {/* Quick Language & Theme Controls */}
           <div className="flex items-center justify-between px-1 py-0.5">
-            <span className="font-mono text-[9px] uppercase tracking-wider text-black/40 dark:text-gray-500">
+            <span className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground">
               {t("preferences")}
             </span>
             <div className="flex items-center gap-1">
               <LanguageToggle />
-              <ThemeToggle compact />
             </div>
           </div>
 
@@ -477,16 +476,16 @@ export function AppShell() {
             <DropdownMenu>
               <DropdownMenuTrigger
                 aria-label={`Menu tài khoản ${user.name || user.email}`}
-                className="flex w-full items-center gap-2.5 rounded-xl bg-black/[0.02] dark:bg-white/[0.04] px-2 py-1.5 text-left outline-none transition-colors hover:bg-[#e8f7ef] dark:hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-[#04714a] data-popup-open:bg-[#e8f7ef] dark:data-popup-open:bg-white/5 cursor-pointer"
+                className="flex w-full items-center gap-2.5 rounded-xl bg-muted px-2 py-1.5 text-left outline-none transition-colors hover:bg-brand-soft focus-visible:ring-2 focus-visible:ring-ring data-popup-open:bg-brand-soft cursor-pointer"
               >
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#04714a]/10 dark:bg-[#04714a]/25 text-[#04714a] dark:text-[#4ade80] font-bold text-xs">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-soft text-brand-text font-bold text-xs">
                   {user.email.charAt(0).toUpperCase()}
                 </div>
                 <div className="flex min-w-0 flex-1 flex-col">
-                  <span className="truncate text-xs font-semibold text-black/80 dark:text-gray-200">
+                  <span className="truncate text-xs font-semibold text-foreground">
                     {user.name || user.email}
                   </span>
-                  <span className="truncate text-[10px] text-black/45 dark:text-gray-400">
+                  <span className="truncate text-[10px] text-muted-foreground">
                     {user.role === "teacher"
                       ? t("roleTeacher")
                       : user.role === "admin"
@@ -494,13 +493,13 @@ export function AppShell() {
                         : t("roleStudent")}
                   </span>
                 </div>
-                <ChevronsUpDown size={14} aria-hidden="true" className="shrink-0 text-black/35 dark:text-gray-500" />
+                <ChevronsUpDown size={14} aria-hidden="true" className="shrink-0 text-muted-foreground" />
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 side="top"
                 align="start"
                 sideOffset={8}
-                className="w-56 rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#1e1e1e] p-1.5 shadow-xl text-[#11130f] dark:text-gray-100 z-50"
+                className="w-56 rounded-xl border border-border bg-elevated p-1.5 shadow-xl text-foreground z-50"
               >
                 <DropdownMenuItem render={<NavLink to="/profile" />} className="gap-2.5 rounded-lg px-2 py-2 text-xs">
                   <UserRoundIcon size={15} />
@@ -527,33 +526,33 @@ export function AppShell() {
 
       <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
         {/* Mobile Header */}
-        <header className="flex h-14 shrink-0 items-center justify-between border-b border-black/10 dark:border-white/10 bg-white dark:bg-[#181818] px-4 md:hidden transition-colors">
+        <header className="flex h-14 shrink-0 items-center justify-between border-b border-border bg-surface px-4 transition-colors">
           <NavLink
             to="/"
-            className="text-base font-extrabold text-[#11130f] dark:text-gray-100"
+            className="text-base font-extrabold text-foreground"
           >
-            IT UPD GenAI<span className="text-[#00a86b]">.</span>
+            IT UPD GenAI<span className="text-brand-bright">.</span>
           </NavLink>
           <div className="flex items-center gap-1 sm:gap-2">
             <LanguageToggle />
-            <ThemeToggle compact />
+            <ThemeToggle />
             <button
               type="button"
               onClick={handleNewChat}
-              className="p-1.5 text-black/70 dark:text-gray-300 hover:text-black dark:hover:text-white cursor-pointer"
+              className="p-1.5 text-fg-secondary hover:text-foreground cursor-pointer"
               title={t("newChat")}
             >
               <PlusIcon size={18} />
             </button>
             <NavLink
               to="/profile"
-              className="p-1.5 text-black/70 dark:text-gray-300 hover:text-[#04714a] dark:hover:text-[#4ade80]"
+              className="p-1.5 text-fg-secondary hover:text-brand-text"
             >
               <UserRoundIcon size={18} />
             </NavLink>
             <button
               onClick={handleLogout}
-              className="p-1.5 text-red-600 dark:text-red-400 hover:text-red-700 cursor-pointer"
+              className="p-1.5 text-destructive hover:text-destructive/80 cursor-pointer"
               title={t("logout")}
             >
               <LogOutIcon size={18} />
@@ -568,11 +567,11 @@ export function AppShell() {
       </div>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="fixed bottom-0 inset-x-0 z-40 flex md:hidden border-t border-black/10 dark:border-white/10 bg-white dark:bg-[#181818] safe-area-inset-bottom transition-colors">
+      <nav className="fixed bottom-0 inset-x-0 z-40 flex md:hidden border-t border-border bg-surface safe-area-inset-bottom transition-colors">
         <button
           type="button"
           onClick={handleNewChat}
-          className="flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] text-black/55 dark:text-gray-400 hover:text-[#04714a] dark:hover:text-[#4ade80] transition-colors cursor-pointer"
+          className="flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] text-muted-foreground hover:text-brand-text transition-colors cursor-pointer"
         >
           <PlusIcon size={20} />
           <span className="leading-none">{t("newChat")}</span>
@@ -583,8 +582,8 @@ export function AppShell() {
           className={({ isActive }) =>
             `flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] transition-colors ${
               isActive
-                ? "text-[#04714a] dark:text-[#4ade80] font-semibold"
-                : "text-black/55 dark:text-gray-400 hover:text-[#04714a] dark:hover:text-[#4ade80]"
+                ? "text-brand-text font-semibold"
+                : "text-muted-foreground hover:text-brand-text"
             }`
           }
         >
@@ -597,8 +596,8 @@ export function AppShell() {
           className={({ isActive }) =>
             `flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] transition-colors ${
               isActive
-                ? "text-[#04714a] dark:text-[#4ade80] font-semibold"
-                : "text-black/55 dark:text-gray-400 hover:text-[#04714a] dark:hover:text-[#4ade80]"
+                ? "text-brand-text font-semibold"
+                : "text-muted-foreground hover:text-brand-text"
             }`
           }
         >
@@ -610,8 +609,8 @@ export function AppShell() {
           <DropdownMenuTrigger
             className={`flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] transition-colors cursor-pointer outline-none ${
               isMoreActive
-                ? "text-[#04714a] dark:text-[#4ade80] font-semibold"
-                : "text-black/55 dark:text-gray-400 hover:text-[#04714a] dark:hover:text-[#4ade80]"
+                ? "text-brand-text font-semibold"
+                : "text-muted-foreground hover:text-brand-text"
             }`}
           >
             <MoreHorizontalIcon size={20} />
@@ -621,14 +620,14 @@ export function AppShell() {
             side="top"
             align="end"
             sideOffset={8}
-            className="w-48 rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#1e1e1e] p-1.5 shadow-xl text-[#11130f] dark:text-gray-100 z-50 animate-in fade-in-0 zoom-in-95"
+            className="w-48 rounded-xl border border-border bg-elevated p-1.5 shadow-xl text-foreground z-50 animate-in fade-in-0 zoom-in-95"
           >
             <DropdownMenuItem
               render={<NavLink to="/contributors" />}
               className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors cursor-pointer ${
                 location.pathname === "/contributors"
-                  ? "bg-[#e8f7ef] dark:bg-[#04714a]/25 font-semibold text-[#013422] dark:text-[#4ade80]"
-                  : "text-black/70 dark:text-gray-300 hover:bg-[#e8f7ef] dark:hover:bg-white/10 hover:text-[#04714a] dark:hover:text-[#4ade80]"
+                  ? "bg-brand-soft font-semibold text-brand-text"
+                  : "text-fg-secondary hover:bg-brand-soft hover:text-brand-text"
               }`}
             >
               <UsersIcon size={16} />
@@ -639,8 +638,8 @@ export function AppShell() {
                 render={<NavLink to="/admin" />}
                 className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors cursor-pointer ${
                   location.pathname === "/admin"
-                    ? "bg-[#e8f7ef] dark:bg-[#04714a]/25 font-semibold text-[#013422] dark:text-[#4ade80]"
-                    : "text-black/70 dark:text-gray-300 hover:bg-[#e8f7ef] dark:hover:bg-white/10 hover:text-[#04714a] dark:hover:text-[#4ade80]"
+                    ? "bg-brand-soft font-semibold text-brand-text"
+                    : "text-fg-secondary hover:bg-brand-soft hover:text-brand-text"
                 }`}
               >
                 <ShieldCheckIcon size={16} />

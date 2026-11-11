@@ -73,52 +73,52 @@ export function FileCard({
   // Color schemes based on file category
   const colorMap = {
     pdf: {
-      badgeBg: "bg-red-50 text-red-700 border-red-200",
-      iconBg: "bg-red-500/10 text-red-600",
-      border: "hover:border-red-300",
-      icon: <FileText size={20} className="text-red-600" />,
+      badgeBg: "bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20",
+      iconBg: "bg-red-500/10 text-red-600 dark:text-red-400",
+      border: "hover:border-red-500/40",
+      icon: <FileText size={20} className="text-red-600 dark:text-red-400" />,
     },
     word: {
-      badgeBg: "bg-blue-50 text-blue-700 border-blue-200",
-      iconBg: "bg-blue-500/10 text-blue-600",
-      border: "hover:border-blue-300",
-      icon: <FileText size={20} className="text-blue-600" />,
+      badgeBg: "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20",
+      iconBg: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+      border: "hover:border-blue-500/40",
+      icon: <FileText size={20} className="text-blue-600 dark:text-blue-400" />,
     },
     excel: {
-      badgeBg: "bg-emerald-50 text-emerald-700 border-emerald-200",
-      iconBg: "bg-emerald-500/10 text-emerald-600",
-      border: "hover:border-emerald-300",
-      icon: <FileSpreadsheet size={20} className="text-emerald-600" />,
+      badgeBg: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20",
+      iconBg: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+      border: "hover:border-emerald-500/40",
+      icon: <FileSpreadsheet size={20} className="text-emerald-600 dark:text-emerald-400" />,
     },
     csv: {
-      badgeBg: "bg-teal-50 text-teal-700 border-teal-200",
-      iconBg: "bg-teal-500/10 text-teal-600",
-      border: "hover:border-teal-300",
-      icon: <FileSpreadsheet size={20} className="text-teal-600" />,
+      badgeBg: "bg-teal-500/10 text-teal-700 dark:text-teal-400 border-teal-500/20",
+      iconBg: "bg-teal-500/10 text-teal-600 dark:text-teal-400",
+      border: "hover:border-teal-500/40",
+      icon: <FileSpreadsheet size={20} className="text-teal-600 dark:text-teal-400" />,
     },
     image: {
-      badgeBg: "bg-purple-50 text-purple-700 border-purple-200",
-      iconBg: "bg-purple-500/10 text-purple-600",
-      border: "hover:border-purple-300",
-      icon: <FileGeneric size={20} className="text-purple-600" />,
+      badgeBg: "bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/20",
+      iconBg: "bg-purple-500/10 text-purple-600 dark:text-purple-400",
+      border: "hover:border-purple-500/40",
+      icon: <FileGeneric size={20} className="text-purple-600 dark:text-purple-400" />,
     },
     archive: {
-      badgeBg: "bg-amber-50 text-amber-700 border-amber-200",
-      iconBg: "bg-amber-500/10 text-amber-600",
+      badgeBg: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20",
+      iconBg: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
       border: "hover:border-amber-300",
-      icon: <FileGeneric size={20} className="text-amber-600" />,
+      icon: <FileGeneric size={20} className="text-amber-600 dark:text-amber-400" />,
     },
     code: {
-      badgeBg: "bg-slate-50 text-slate-700 border-slate-200",
-      iconBg: "bg-slate-500/10 text-slate-600",
-      border: "hover:border-slate-300",
-      icon: <FileGeneric size={20} className="text-slate-600" />,
+      badgeBg: "bg-muted text-foreground border-border",
+      iconBg: "bg-muted text-foreground",
+      border: "hover:border-border",
+      icon: <FileGeneric size={20} className="text-foreground" />,
     },
     other: {
-      badgeBg: "bg-zinc-100 text-zinc-700 border-zinc-200",
-      iconBg: "bg-zinc-500/10 text-zinc-600",
-      border: "hover:border-zinc-300",
-      icon: <FileGeneric size={20} className="text-zinc-600" />,
+      badgeBg: "bg-muted text-muted-foreground border-border",
+      iconBg: "bg-muted text-muted-foreground",
+      border: "hover:border-border",
+      icon: <FileGeneric size={20} className="text-muted-foreground" />,
     },
   };
 
@@ -128,7 +128,7 @@ export function FileCard({
   return (
     <span
       onClick={handlePreview}
-      className={`group/card relative my-2 flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-black/10 bg-white p-3 text-[#11130f] shadow-xs transition-all hover:bg-black/[0.015] hover:shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-gray-100 dark:hover:bg-white/10 ${scheme.border} ${className}`}
+      className={`group/card relative my-2 flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-border bg-card p-3 text-foreground shadow-xs transition-all hover:bg-hover hover:shadow-sm ${scheme.border} ${className}`}
     >
       <span className="flex min-w-0 flex-1 items-center gap-3">
         <span
@@ -140,14 +140,14 @@ export function FileCard({
         <span className="min-w-0 flex-1 block">
           <span className="flex items-center gap-2">
             <span
-              className="truncate text-xs sm:text-sm font-semibold text-zinc-900 group-hover/card:text-[#04714a] dark:text-zinc-100 dark:group-hover/card:text-emerald-400"
+              className="truncate text-xs sm:text-sm font-semibold text-foreground group-hover/card:text-brand-text"
               title={file.name}
             >
               {file.name}
             </span>
           </span>
 
-          <span className="mt-0.5 flex items-center gap-2 text-[11px] text-black/50 dark:text-white/50">
+          <span className="mt-0.5 flex items-center gap-2 text-[11px] text-muted-foreground">
             <span
               className={`rounded px-1.5 py-0.2 font-mono text-[10px] font-semibold uppercase tracking-wider border ${scheme.badgeBg}`}
             >
@@ -170,7 +170,7 @@ export function FileCard({
             onClick={handlePreview}
             title={isEn ? "Preview document" : "Xem ngay tài liệu"}
             aria-label={isEn ? `Preview ${file.name}` : `Xem ngay ${file.name}`}
-            className="flex items-center gap-1 rounded-lg bg-[#e8f7ef] px-2.5 py-1.5 text-xs font-semibold text-[#04714a] transition-all hover:bg-[#d0f0df] hover:text-[#035e3f] dark:bg-emerald-950/50 dark:text-emerald-400 dark:hover:bg-emerald-900/50 active:scale-95 cursor-pointer"
+            className="flex items-center gap-1 rounded-lg bg-brand-soft px-2.5 py-1.5 text-xs font-semibold text-brand-text transition-all hover:opacity-90 active:scale-95 cursor-pointer"
           >
             <Eye size={13} />
             <span className="hidden sm:inline">{isEn ? "Preview" : "Xem ngay"}</span>
@@ -183,16 +183,16 @@ export function FileCard({
           disabled={downloading}
           title={downloadSuccess ? (isEn ? "Downloaded" : "Đã tải xong") : (isEn ? "Download document" : "Tải xuống tài liệu")}
           aria-label={isEn ? `Download ${file.name}` : `Tải xuống ${file.name}`}
-          className={`flex items-center gap-1 rounded-lg border border-black/10 px-2.5 py-1.5 text-xs font-medium transition-all hover:bg-black/5 dark:border-white/15 dark:hover:bg-white/10 active:scale-95 cursor-pointer disabled:opacity-50 ${
+          className={`flex items-center gap-1 rounded-lg border border-border px-2.5 py-1.5 text-xs font-medium transition-all hover:bg-hover active:scale-95 cursor-pointer disabled:opacity-50 ${
             downloadSuccess
-              ? "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300"
-              : "text-zinc-700 dark:text-zinc-200"
+              ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+              : "text-fg-secondary"
           }`}
         >
           {downloading ? (
-            <Loader2 size={13} className="animate-spin text-zinc-500" />
+            <Loader2 size={13} className="animate-spin text-muted-foreground" />
           ) : downloadSuccess ? (
-            <Check size={13} className="text-emerald-600" />
+            <Check size={13} className="text-brand-bright" />
           ) : (
             <Download size={13} />
           )}

@@ -6,8 +6,8 @@
   /* Cover the app shell and portal-based menus/toasts. */
   z-index: 2147483647;
   overflow: hidden;
-  background: #fff;
-  color: #090b19;
+  background: var(--background);
+  color: var(--foreground);
   isolation: isolate;
   opacity: 1;
   transform: translate3d(0, 0, 0);
@@ -29,7 +29,7 @@
 .page-loader__scene {
   position: absolute;
   inset: 0;
-  background: #fff;
+  background: var(--background);
   /* Opposite transforms keep the artwork stationary while the reveal edge moves. */
   transform: translate3d(100%, 0, 0);
   will-change: transform;
@@ -132,7 +132,7 @@
   font-size: clamp(12px, 1.3vw, 22px);
   line-height: 1.4;
   letter-spacing: .035em;
-  color: #9095a2;
+  color: var(--muted-foreground);
 }
 
 .page-loader__tick {

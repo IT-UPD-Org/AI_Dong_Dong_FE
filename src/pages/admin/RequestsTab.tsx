@@ -14,9 +14,9 @@ import { ListState, Pager, usePagedList } from "./shared";
 const PAGE_SIZE = 20;
 const STATUS_LABEL: Record<RequestStatus, string> = { pending: "Chờ duyệt", approved: "Đã duyệt", rejected: "Từ chối" };
 const STATUS_STYLE: Record<RequestStatus, string> = {
-  pending: "border-amber-200 bg-amber-50 text-amber-700",
-  approved: "border-green-200 bg-green-50 text-green-700",
-  rejected: "border-red-200 bg-red-50 text-red-700",
+  pending: "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300",
+  approved: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300",
+  rejected: "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-300",
 };
 const KIND_LABEL: Record<RequestKind, string> = { account: "Cấp quyền truy cập", storage: "Tăng dung lượng" };
 
@@ -37,8 +37,8 @@ function AccountDetails({ request }: { request: AdminAccountRequest }) {
         .filter(([, value]) => value)
         .map(([label, value]) => (
           <div key={label} className="contents">
-            <dt className="text-black/45">{label}</dt>
-            <dd>{value}</dd>
+            <dt className="text-muted-foreground">{label}</dt>
+            <dd className="text-foreground">{value}</dd>
           </div>
         ))}
     </dl>
@@ -78,13 +78,13 @@ function RequestList({ kind, status }: { kind: RequestKind; status: RequestStatu
       <ListState loading={list.loading} error={list.error} empty={list.items.length === 0} emptyText="Không có yêu cầu nào.">
         <ul className="space-y-3">
           {list.items.map((request) => (
-            <li key={request.id} className="rounded-2xl border border-black/10 bg-white p-4">
+            <li key={request.id} className="rounded-2xl border border-border bg-card p-4">
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div>
-                  <p className="font-semibold">{request.user_name}</p>
-                  <p className="text-sm text-black/55">{request.user_email}</p>
+                  <p className="font-semibold text-foreground">{request.user_name}</p>
+                  <p className="text-sm text-muted-foreground">{request.user_email}</p>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-black/45">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   {new Date(request.created_at).toLocaleString("vi-VN")}
                   <span className={`rounded-full border px-2.5 py-0.5 font-semibold ${STATUS_STYLE[request.status]}`}>
                     {STATUS_LABEL[request.status]}
@@ -94,15 +94,15 @@ function RequestList({ kind, status }: { kind: RequestKind; status: RequestStatu
 
               <div className="mt-3 space-y-2">
                 {"storage_mb" in request ? (
-                  <p className="text-sm">
+                  <p className="text-sm text-foreground">
                     Xin <strong>{request.storage_mb} MB</strong>
                   </p>
                 ) : (
                   <AccountDetails request={request} />
                 )}
-                <p className="whitespace-pre-wrap rounded-xl bg-black/[0.03] p-3 text-sm text-black/75">{request.reason}</p>
+                <p className="whitespace-pre-wrap rounded-xl bg-muted p-3 text-sm text-fg-secondary">{request.reason}</p>
                 {request.admin_note && request.status !== "pending" && (
-                  <p className="text-xs text-black/55">Ghi chú: {request.admin_note}</p>
+                  <p className="text-xs text-muted-foreground">Ghi chú: {request.admin_note}</p>
                 )}
               </div>
 
@@ -113,13 +113,13 @@ function RequestList({ kind, status }: { kind: RequestKind; status: RequestStatu
                     onChange={(e) => setNotes((prev) => ({ ...prev, [request.id]: e.target.value }))}
                     placeholder="Ghi chú cho người dùng (tuỳ chọn)"
                     maxLength={1000}
-                    className="min-w-0 flex-1 rounded-lg border border-black/15 px-3 py-1.5 text-sm"
+                    className="min-w-0 flex-1 rounded-lg border border-border bg-field text-foreground placeholder:text-muted-foreground px-3 py-1.5 text-sm outline-none focus:border-brand-bright"
                   />
                   <button
                     type="button"
                     disabled={busyId === request.id}
                     onClick={() => review(request, true)}
-                    className="rounded-lg bg-[#04714a] px-3 py-1.5 text-sm font-semibold text-white hover:bg-[#03593a] disabled:opacity-50 cursor-pointer"
+                    className="rounded-lg bg-brand px-3 py-1.5 text-sm font-semibold text-brand-foreground hover:bg-brand-hover disabled:opacity-50 cursor-pointer"
                   >
                     Duyệt
                   </button>
@@ -127,7 +127,7 @@ function RequestList({ kind, status }: { kind: RequestKind; status: RequestStatu
                     type="button"
                     disabled={busyId === request.id}
                     onClick={() => review(request, false)}
-                    className="rounded-lg border border-red-200 px-3 py-1.5 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:opacity-50 cursor-pointer"
+                    className="rounded-lg border border-rose-200 dark:border-rose-800 px-3 py-1.5 text-sm font-semibold text-rose-700 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/40 disabled:opacity-50 cursor-pointer"
                   >
                     Từ chối
                   </button>
@@ -154,8 +154,10 @@ export function RequestsTab() {
             key={k}
             type="button"
             onClick={() => setKind(k)}
-            className={`rounded-full border px-3 py-1 text-sm font-medium cursor-pointer ${
-              kind === k ? "border-[#04714a] bg-[#e8f7ef] text-[#04714a]" : "border-black/15 text-black/60"
+            className={`rounded-full border px-3 py-1 text-sm font-medium cursor-pointer transition-colors ${
+              kind === k
+                ? "border-brand bg-brand-soft text-brand-text font-semibold"
+                : "border-border text-muted-foreground hover:text-foreground"
             }`}
           >
             {KIND_LABEL[k]}
@@ -164,13 +166,13 @@ export function RequestsTab() {
         <select
           value={status ?? "all"}
           onChange={(e) => setStatus(e.target.value === "all" ? null : (e.target.value as RequestStatus))}
-          className="ml-auto rounded-md border border-black/15 bg-white px-2 py-1 text-sm"
+          className="ml-auto rounded-md border border-border bg-field text-foreground px-2 py-1 text-sm outline-none focus:border-brand-bright cursor-pointer"
           aria-label="Lọc theo trạng thái"
         >
-          <option value="pending">Chờ duyệt</option>
-          <option value="approved">Đã duyệt</option>
-          <option value="rejected">Từ chối</option>
-          <option value="all">Tất cả</option>
+          <option value="pending" className="bg-field text-foreground">Chờ duyệt</option>
+          <option value="approved" className="bg-field text-foreground">Đã duyệt</option>
+          <option value="rejected" className="bg-field text-foreground">Từ chối</option>
+          <option value="all" className="bg-field text-foreground">Tất cả</option>
         </select>
       </div>
       {/* Keyed so changing the filter starts again from page 1. */}

@@ -61,7 +61,7 @@ export function ModelsTab() {
   return (
     <section>
       <div className="mb-4 flex items-center justify-between gap-4">
-        <p className="text-sm text-black/55">
+        <p className="text-sm text-muted-foreground">
           Mỗi mức độ (L1–L3) chọn ngẫu nhiên một model cùng loại để trả lời.
         </p>
         <button
@@ -76,7 +76,7 @@ export function ModelsTab() {
       </div>
 
       <ListState loading={list.loading} error={list.error} empty={list.items.length === 0} emptyText="Chưa có model.">
-        <div className="rounded-2xl border border-black/10 bg-white">
+        <div className="rounded-2xl border border-border bg-card">
           <Table>
             <TableHeader>
               <TableRow>
@@ -90,17 +90,17 @@ export function ModelsTab() {
             <TableBody>
               {list.items.map((model) => (
                 <TableRow key={model.id}>
-                  <TableCell className="font-medium">{model.model_name}</TableCell>
-                  <TableCell className="font-mono text-xs">{model.model_id}</TableCell>
-                  <TableCell>{MODEL_TYPES.find((t) => t.value === model.model_type)?.label ?? model.model_type}</TableCell>
-                  <TableCell>{providerName(model.provider_id)}</TableCell>
+                  <TableCell className="font-medium text-foreground">{model.model_name}</TableCell>
+                  <TableCell className="font-mono text-xs text-muted-foreground">{model.model_id}</TableCell>
+                  <TableCell className="text-foreground">{MODEL_TYPES.find((t) => t.value === model.model_type)?.label ?? model.model_type}</TableCell>
+                  <TableCell className="text-foreground">{providerName(model.provider_id)}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
                       <button
                         type="button"
                         title="Sửa"
                         onClick={() => setForm({ mode: "edit", model })}
-                        className="rounded-lg p-2 text-black/50 hover:bg-black/5 hover:text-black cursor-pointer"
+                        className="rounded-lg p-2 text-muted-foreground hover:bg-hover hover:text-foreground cursor-pointer"
                       >
                         <Pencil size={15} />
                       </button>
@@ -108,7 +108,7 @@ export function ModelsTab() {
                         type="button"
                         title="Xoá"
                         onClick={() => remove(model)}
-                        className="rounded-lg p-2 text-black/50 hover:bg-red-50 hover:text-red-600 cursor-pointer"
+                        className="rounded-lg p-2 text-muted-foreground hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 dark:hover:text-rose-400 cursor-pointer"
                       >
                         <Trash2 size={15} />
                       </button>
@@ -209,7 +209,7 @@ function ModelForm({
           required
           maxLength={200}
         />
-        <span className="text-xs text-black/45">Tên model gửi tới API của provider.</span>
+        <span className="text-xs text-muted-foreground">Tên model gửi tới API của provider.</span>
       </label>
 
       <label className="flex flex-col gap-1.5 text-sm">

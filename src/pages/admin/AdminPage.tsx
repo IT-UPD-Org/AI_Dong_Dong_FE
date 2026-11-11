@@ -27,10 +27,10 @@ export function AdminPage() {
 
   return (
     <main className="px-4 py-6 sm:px-6 sm:py-8">
-      <p className="font-mono text-xs uppercase tracking-[.18em] text-[#04714a]">Quản trị</p>
-      <h1 className="mt-3 mb-6 text-3xl sm:text-5xl font-bold tracking-[-.07em]">Dashboard</h1>
+      <p className="font-mono text-xs uppercase tracking-[.18em] text-brand-text">Quản trị</p>
+      <h1 className="mt-3 mb-6 text-3xl sm:text-5xl font-bold tracking-[-.07em] text-foreground">Dashboard</h1>
 
-      <div className="mb-6 flex flex-wrap gap-1 border-b border-black/10">
+      <div className="mb-6 flex flex-wrap gap-1 border-b border-border">
         {TABS.map(({ id, label, Icon }) => (
           <button
             key={id}
@@ -38,8 +38,8 @@ export function AdminPage() {
             onClick={() => setParams({ tab: id }, { replace: true })}
             className={`-mb-px flex items-center gap-2 border-b-2 px-4 py-2.5 text-sm transition-colors cursor-pointer ${
               active === id
-                ? "border-[#04714a] font-semibold text-[#013422]"
-                : "border-transparent text-black/55 hover:text-[#04714a]"
+                ? "border-brand font-semibold text-brand-text"
+                : "border-transparent text-muted-foreground hover:text-brand-text"
             }`}
           >
             <Icon size={16} />

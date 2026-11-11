@@ -41,7 +41,7 @@ const DEMO_ACCOUNTS: DemoAccount[] = [
     email: "sinhvien.demo@pduni.edu.vn",
     label: "Sinh viên Phương Đông",
     badge: "Sinh viên",
-    badgeColor: "bg-amber-100 text-amber-800 border-amber-200",
+    badgeColor: "bg-amber-500/15 text-amber-800 dark:text-amber-300 border-amber-500/30",
     description: "Học tập, hỏi đáp với AI, tra cứu tài liệu học phần",
     credits: 1000,
   },
@@ -53,7 +53,7 @@ const DEMO_ACCOUNTS: DemoAccount[] = [
     email: "giangvien.demo@phuongdong.edu.vn",
     label: "Giảng viên Phương Đông",
     badge: "Giảng viên",
-    badgeColor: "bg-emerald-100 text-emerald-800 border-emerald-200",
+    badgeColor: "bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border-emerald-500/30",
     description: "Quản lý bài giảng, tải tài liệu chuyên sâu, khai thác kho tri thức",
     credits: 2500,
   },
@@ -65,7 +65,7 @@ const DEMO_ACCOUNTS: DemoAccount[] = [
     email: "admin.demo@phuongdong.edu.vn",
     label: "Quản trị viên hệ thống",
     badge: "Quản trị viên",
-    badgeColor: "bg-purple-100 text-purple-800 border-purple-200",
+    badgeColor: "bg-purple-500/15 text-purple-800 dark:text-purple-300 border-purple-500/30",
     description: "Toàn quyền quản trị Dashboard (/admin), người dùng, tệp, models và providers",
     credits: 9999,
   },
@@ -100,34 +100,34 @@ export function TemporaryLogin({ redirectTo = "/chat", onSwitchToOfficial }: Tem
       <div className="w-full max-w-xl">
         <Link
           to="/"
-          className="mb-6 inline-flex items-center gap-2 text-sm text-black/55 transition-colors hover:text-black"
+          className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           <ArrowLeft size={16} />
           Trở về trang chủ
         </Link>
 
         {/* Header thông tin */}
-        <div className="rounded-2xl border border-amber-300 bg-amber-50/70 p-4 sm:p-5">
+        <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 sm:p-5">
           <div className="flex items-center gap-2">
-            <span className="flex size-7 items-center justify-center rounded-lg bg-amber-500/20 text-amber-900">
+            <span className="flex size-7 items-center justify-center rounded-lg bg-amber-500/20 text-amber-800 dark:text-amber-300">
               <Sparkles size={16} />
             </span>
             <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-amber-800">
+              <p className="text-xs font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300">
                 Chế độ thử nghiệm
               </p>
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#11130f]">
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
                 Đăng nhập thử nghiệm
               </h1>
             </div>
           </div>
-          <p className="mt-2 text-xs sm:text-sm text-black/65 leading-relaxed">
+          <p className="mt-2 text-xs sm:text-sm text-fg-secondary leading-relaxed">
             Chỉ sử dụng trong môi trường phát triển và demo nội bộ. Bấm vào một vai trò bên dưới để tạo phiên đăng nhập tức thì.
           </p>
         </div>
 
         {error && (
-          <div className="mt-4 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 p-3.5 text-xs font-medium text-red-700">
+          <div className="mt-4 flex items-start gap-2 rounded-xl border border-destructive/20 bg-destructive/10 p-3.5 text-xs font-medium text-destructive">
             <AlertCircle size={16} className="mt-0.5 shrink-0" />
             <span>{error}</span>
           </div>
@@ -135,7 +135,7 @@ export function TemporaryLogin({ redirectTo = "/chat", onSwitchToOfficial }: Tem
 
         {/* Danh sách các nút vai trò được hỗ trợ */}
         <div className="mt-6 space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-wider text-black/45">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Chọn vai trò đăng nhập nhanh
           </p>
 
@@ -154,15 +154,15 @@ export function TemporaryLogin({ redirectTo = "/chat", onSwitchToOfficial }: Tem
                 type="button"
                 onClick={() => handleQuickLogin(account)}
                 disabled={loadingRole !== null}
-                className="group relative flex w-full flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-black/10 bg-white p-4 sm:p-5 text-left transition-all hover:-translate-y-0.5 hover:border-[#04714a]/40 hover:bg-[#e8f7ef]/30 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
+                className="group relative flex w-full flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-border bg-card p-4 sm:p-5 text-left transition-all hover:-translate-y-0.5 hover:border-brand/40 hover:bg-hover hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
               >
                 <div className="flex items-start gap-3.5 min-w-0">
-                  <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-[#04714a]/10 text-[#04714a] transition-colors group-hover:bg-[#04714a] group-hover:text-white">
+                  <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-brand/10 text-brand-text transition-colors group-hover:bg-brand group-hover:text-brand-foreground">
                     <RoleIcon size={22} />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-bold text-sm sm:text-base text-gray-900 group-hover:text-[#04714a] transition-colors">
+                      <span className="font-bold text-sm sm:text-base text-foreground group-hover:text-brand-text transition-colors">
                         {account.label}
                       </span>
                       <span
@@ -171,17 +171,17 @@ export function TemporaryLogin({ redirectTo = "/chat", onSwitchToOfficial }: Tem
                         {account.roleCode}
                       </span>
                     </div>
-                    <p className="mt-0.5 text-xs text-black/55 truncate">
+                    <p className="mt-0.5 text-xs text-fg-secondary truncate">
                       {account.email} · {account.name}
                     </p>
-                    <p className="mt-1 text-xs text-black/45 line-clamp-2">
+                    <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
                       {account.description}
                     </p>
                   </div>
                 </div>
 
                 <div className="flex shrink-0 items-center justify-end sm:self-center">
-                  <span className="inline-flex items-center gap-1.5 rounded-xl bg-[#11130f] px-3.5 py-2 text-xs font-semibold text-white transition-colors group-hover:bg-[#04714a]">
+                  <span className="inline-flex items-center gap-1.5 rounded-xl bg-foreground px-3.5 py-2 text-xs font-semibold text-background transition-colors group-hover:bg-brand group-hover:text-brand-foreground">
                     {isLoggingIn ? (
                       <>
                         <RefreshCw size={13} className="animate-spin" />
@@ -201,16 +201,16 @@ export function TemporaryLogin({ redirectTo = "/chat", onSwitchToOfficial }: Tem
         </div>
 
         {/* Lưu ý về các vai trò mở rộng chưa có trong enum */}
-        <div className="mt-6 rounded-2xl border border-black/5 bg-[#fcfcfb] p-4 text-xs text-black/55 leading-relaxed">
-          <div className="flex items-center gap-1.5 font-semibold text-black/70 mb-1">
-            <Info size={14} className="text-[#04714a] shrink-0" />
+        <div className="mt-6 rounded-2xl border border-border bg-surface p-4 text-xs text-muted-foreground leading-relaxed">
+          <div className="flex items-center gap-1.5 font-semibold text-fg-secondary mb-1">
+            <Info size={14} className="text-brand-text shrink-0" />
             <span>Thông tin phân quyền hệ thống:</span>
           </div>
           <p>
             Hệ thống hiện tại hỗ trợ 3 vai trò chính thức trong enum dữ liệu (
-            <code className="rounded bg-black/5 px-1 py-0.5 font-mono text-[11px] text-[#04714a]">student</code>,{" "}
-            <code className="rounded bg-black/5 px-1 py-0.5 font-mono text-[11px] text-[#04714a]">teacher</code>,{" "}
-            <code className="rounded bg-black/5 px-1 py-0.5 font-mono text-[11px] text-[#04714a]">admin</code>
+            <code className="rounded bg-muted px-1 py-0.5 font-mono text-[11px] text-brand-text">student</code>,{" "}
+            <code className="rounded bg-muted px-1 py-0.5 font-mono text-[11px] text-brand-text">teacher</code>,{" "}
+            <code className="rounded bg-muted px-1 py-0.5 font-mono text-[11px] text-brand-text">admin</code>
             ). Các vai trò như Kế toán (<span className="font-mono text-[11px]">PDaccountant</span>), Lãnh đạo (<span className="font-mono text-[11px]">PDheadleader</span>) và Tài khoản công khai (<span className="font-mono text-[11px]">PDpublic</span>) sẽ được tích hợp khi Backend hoàn tất mô hình phân quyền mở rộng.
           </p>
         </div>
@@ -221,7 +221,7 @@ export function TemporaryLogin({ redirectTo = "/chat", onSwitchToOfficial }: Tem
             <button
               type="button"
               onClick={onSwitchToOfficial}
-              className="text-xs text-black/50 underline hover:text-[#04714a] cursor-pointer"
+              className="text-xs text-muted-foreground underline hover:text-brand-text cursor-pointer"
             >
               Chuyển sang giao diện đăng nhập Microsoft chính thức
             </button>

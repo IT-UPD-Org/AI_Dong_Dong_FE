@@ -49,7 +49,7 @@ export function ProvidersTab() {
   return (
     <section>
       <div className="mb-4 flex items-center justify-between gap-4">
-        <p className="text-sm text-black/55">Kết nối tới các dịch vụ AI. Mỗi model thuộc về một provider.</p>
+        <p className="text-sm text-muted-foreground">Kết nối tới các dịch vụ AI. Mỗi model thuộc về một provider.</p>
         <button
           type="button"
           className={primaryButtonClass}
@@ -61,7 +61,7 @@ export function ProvidersTab() {
       </div>
 
       <ListState loading={list.loading} error={list.error} empty={list.items.length === 0} emptyText="Chưa có provider.">
-        <div className="rounded-2xl border border-black/10 bg-white">
+        <div className="rounded-2xl border border-border bg-card">
           <Table>
             <TableHeader>
               <TableRow>
@@ -74,16 +74,16 @@ export function ProvidersTab() {
             <TableBody>
               {list.items.map((provider) => (
                 <TableRow key={provider.id}>
-                  <TableCell className="font-medium">{provider.provider_name}</TableCell>
-                  <TableCell>{typeName(provider.provider_type)}</TableCell>
-                  <TableCell className="font-mono text-xs text-black/50">{provider.id}</TableCell>
+                  <TableCell className="font-medium text-foreground">{provider.provider_name}</TableCell>
+                  <TableCell className="text-foreground">{typeName(provider.provider_type)}</TableCell>
+                  <TableCell className="font-mono text-xs text-muted-foreground">{provider.id}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
                       <button
                         type="button"
                         title="Sửa"
                         onClick={() => setForm({ mode: "edit", provider })}
-                        className="rounded-lg p-2 text-black/50 hover:bg-black/5 hover:text-black cursor-pointer"
+                        className="rounded-lg p-2 text-muted-foreground hover:bg-hover hover:text-foreground cursor-pointer"
                       >
                         <Pencil size={15} />
                       </button>
@@ -91,7 +91,7 @@ export function ProvidersTab() {
                         type="button"
                         title="Xoá"
                         onClick={() => remove(provider)}
-                        className="rounded-lg p-2 text-black/50 hover:bg-red-50 hover:text-red-600 cursor-pointer"
+                        className="rounded-lg p-2 text-muted-foreground hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 dark:hover:text-rose-400 cursor-pointer"
                       >
                         <Trash2 size={15} />
                       </button>
@@ -196,7 +196,7 @@ function ProviderForm({
             </option>
           ))}
         </select>
-        {editing && <span className="text-xs text-black/45">Không thể đổi loại sau khi tạo.</span>}
+        {editing && <span className="text-xs text-muted-foreground">Không thể đổi loại sau khi tạo.</span>}
       </label>
 
       <label className="flex flex-col gap-1.5 text-sm">
@@ -208,7 +208,7 @@ function ProviderForm({
         <label key={key} className="flex flex-col gap-1.5 text-sm">
           <span className="font-medium">
             {prop.title || key}
-            {required.has(key) && <span className="text-red-600"> *</span>}
+            {required.has(key) && <span className="text-rose-600 dark:text-rose-400"> *</span>}
           </span>
           <input
             className={`${inputClass} font-mono`}
@@ -219,7 +219,7 @@ function ProviderForm({
             required={required.has(key)}
             onChange={(e) => setConfig((prev) => ({ ...prev, [key]: e.target.value }))}
           />
-          {prop.description && <span className="text-xs text-black/45">{prop.description}</span>}
+          {prop.description && <span className="text-xs text-muted-foreground">{prop.description}</span>}
         </label>
       ))}
 

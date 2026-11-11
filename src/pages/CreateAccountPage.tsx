@@ -11,7 +11,7 @@ const ROLES: { value: AccountRole; label: string }[] = [
 ];
 
 const INPUT =
-  "w-full rounded-xl border border-black/15 bg-white pl-11 pr-4 py-3 text-sm outline-none focus:border-[#00a86b] focus:ring-1 focus:ring-[#00a86b]";
+  "w-full rounded-xl border border-border bg-field pl-11 pr-4 py-3 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-brand-bright focus:ring-1 focus:ring-brand-bright";
 
 /**
  * Create a password account while Microsoft login is off. The backend prints
@@ -95,43 +95,43 @@ export function CreateAccountPage() {
       <div className="w-full max-w-lg">
         <Link
           to="/login"
-          className="mb-6 inline-flex items-center gap-2 text-sm text-black/55 hover:text-black transition-colors"
+          className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft size={16} />
           Quay lại đăng nhập
         </Link>
 
-        <p className="text-xs uppercase tracking-[.18em] text-[#04714a]">Quản trị</p>
-        <h1 className="mt-2 text-2xl font-bold tracking-[-.06em] md:text-4xl text-[#11130f]">Tạo tài khoản.</h1>
-        <p className="mt-2 text-black/60 text-sm leading-relaxed">
+        <p className="text-xs uppercase tracking-[.18em] text-brand-text">Quản trị</p>
+        <h1 className="mt-2 text-2xl font-bold tracking-[-.06em] md:text-4xl text-foreground">Tạo tài khoản.</h1>
+        <p className="mt-2 text-muted-foreground text-sm leading-relaxed">
           Chỉ dùng khi chưa bật đăng nhập Microsoft. Mã xác nhận được in ra console của backend và hết hạn sau 1 phút.
         </p>
 
         {available === null && (
-          <div className="mt-8 flex items-center gap-2 text-sm text-black/50">
+          <div className="mt-8 flex items-center gap-2 text-sm text-muted-foreground">
             <RefreshCw className="animate-spin" size={16} /> Đang tải...
           </div>
         )}
 
         {available === false && (
-          <div className="mt-8 rounded-xl border border-black/10 bg-[#fcfcfb] p-4 text-sm text-black/60">
+          <div className="mt-8 rounded-xl border border-border bg-surface p-4 text-sm text-muted-foreground">
             Đăng nhập Microsoft đang bật, nên không thể tạo tài khoản bằng mật khẩu.
           </div>
         )}
 
         {error && (
-          <div className="mt-6 rounded-xl border border-red-200 bg-red-50 p-3 text-xs font-medium text-red-700 flex items-start gap-2">
+          <div className="mt-6 rounded-xl border border-rose-200 bg-rose-50 dark:border-rose-800 dark:bg-rose-950/40 p-3 text-xs font-medium text-rose-700 dark:text-rose-300 flex items-start gap-2">
             <AlertCircle size={16} className="shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
         )}
 
         {created && (
-          <div className="mt-6 rounded-xl border border-green-200 bg-green-50 p-3 text-xs font-medium text-green-800 flex items-start gap-2">
+          <div className="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/40 p-3 text-xs font-medium text-emerald-800 dark:text-emerald-200 flex items-start gap-2">
             <CheckCircle2 size={16} className="shrink-0 mt-0.5" />
             <span>
               Đã tạo tài khoản <strong>{created}</strong>.{" "}
-              <Link to="/login" className="underline">
+              <Link to="/login" className="underline font-semibold text-brand-text">
                 Đăng nhập
               </Link>
             </span>
@@ -140,25 +140,25 @@ export function CreateAccountPage() {
 
         {available && (
           <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-4">
-            <div className="rounded-2xl border border-black/10 bg-[#fcfcfb] p-4">
+            <div className="rounded-2xl border border-border bg-surface p-4">
               <div className="flex items-center justify-between gap-3">
-                <span className="flex items-center gap-2 text-sm font-semibold text-[#11130f]">
-                  <Terminal size={16} className="text-[#04714a]" /> Mã xác nhận
+                <span className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                  <Terminal size={16} className="text-brand-text" /> Mã xác nhận
                 </span>
                 <button
                   type="button"
                   onClick={requestKey}
                   disabled={busy || secondsLeft > 0}
-                  className="rounded-lg border border-black/15 bg-white px-3 py-1.5 text-xs font-semibold hover:border-[#04714a] disabled:opacity-50 cursor-pointer"
+                  className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground hover:border-brand-bright disabled:opacity-50 cursor-pointer"
                 >
                   {secondsLeft > 0 ? `Còn ${secondsLeft}s` : "In mã ra console"}
                 </button>
               </div>
-              <p className="mt-2 text-xs text-black/50">
-                Tìm dòng <code className="font-mono">[account-setup]</code> trong log của backend.
+              <p className="mt-2 text-xs text-muted-foreground">
+                Tìm dòng <code className="font-mono text-foreground">[account-setup]</code> trong log của backend.
               </p>
               <div className="relative mt-3">
-                <KeyRound className="absolute left-4 top-3.5 text-black/35" size={18} />
+                <KeyRound className="absolute left-4 top-3.5 text-muted-foreground" size={18} />
                 <input
                   className={`${INPUT} font-mono`}
                   type="text"
@@ -172,7 +172,7 @@ export function CreateAccountPage() {
             </div>
 
             <div className="relative">
-              <Mail className="absolute left-4 top-3.5 text-black/35" size={18} />
+              <Mail className="absolute left-4 top-3.5 text-muted-foreground" size={18} />
               <input
                 className={INPUT}
                 type="email"
@@ -184,7 +184,7 @@ export function CreateAccountPage() {
               />
             </div>
             <div className="relative">
-              <UserRound className="absolute left-4 top-3.5 text-black/35" size={18} />
+              <UserRound className="absolute left-4 top-3.5 text-muted-foreground" size={18} />
               <input
                 className={INPUT}
                 type="text"
@@ -195,7 +195,7 @@ export function CreateAccountPage() {
               />
             </div>
             <div className="relative">
-              <KeyRound className="absolute left-4 top-3.5 text-black/35" size={18} />
+              <KeyRound className="absolute left-4 top-3.5 text-muted-foreground" size={18} />
               <input
                 className={INPUT}
                 type="password"
@@ -208,12 +208,12 @@ export function CreateAccountPage() {
               />
             </div>
             <select
-              className="w-full rounded-xl border border-black/15 bg-white px-4 py-3 text-sm outline-none focus:border-[#00a86b]"
+              className="w-full rounded-xl border border-border bg-field px-4 py-3 text-sm text-foreground outline-none focus:border-brand-bright"
               value={role}
               onChange={(e) => setRole(e.target.value as AccountRole)}
             >
               {ROLES.map((r) => (
-                <option key={r.value} value={r.value}>
+                <option key={r.value} value={r.value} className="bg-field text-foreground">
                   {r.label}
                 </option>
               ))}
@@ -222,7 +222,7 @@ export function CreateAccountPage() {
             <button
               type="submit"
               disabled={busy}
-              className="flex items-center justify-center rounded-xl bg-[#11130f] px-4 py-3 font-semibold text-white transition-all hover:bg-[#04714a] disabled:opacity-50 cursor-pointer"
+              className="flex items-center justify-center rounded-xl bg-foreground px-4 py-3 font-semibold text-background transition-all hover:bg-brand hover:text-brand-foreground disabled:opacity-50 cursor-pointer"
             >
               {busy ? <RefreshCw className="animate-spin" size={16} /> : "Tạo tài khoản"}
             </button>

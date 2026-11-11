@@ -13,7 +13,7 @@ const CAPTIONS: FeatureCaption[] = [
   },
   {
     text: "Thấu hiểu ngữ cảnh linh hoạt, đóng vai trò như một trợ lý riêng 24/7.",
-    positionClassName: "top-[48%] right-0 text-right md:right-[-8%]",
+    positionClassName: "top-[48%] right-0 text-right md:right-0",
   },
   {
     text: "Giải đáp tức thì mọi thắc mắc học tập với tốc độ xử lý siêu tốc.",
@@ -24,7 +24,7 @@ const CAPTIONS: FeatureCaption[] = [
 export function ChatShowcaseSection() {
   return (
     <div>
-      <p className="mono text-center text-xs uppercase tracking-[.18em] text-[#00a86b]">
+      <p className="mono text-center text-xs uppercase tracking-[.18em] text-brand-text">
         01 — Trò Chuyện Thông Minh
       </p>
       <div className="relative mx-auto mt-10 h-135 w-full max-w-140 md:h-[760px] md:max-w-[920px]">
@@ -41,7 +41,7 @@ export function ChatShowcaseSection() {
         {CAPTIONS.map((caption) => (
           <p
             key={caption.text}
-            className={`mono absolute hidden max-w-[320px] text-xs leading-5 text-[#04714a] md:block ${caption.positionClassName}`}
+            className={`mono absolute hidden max-w-[320px] text-xs leading-5 text-brand-text md:block ${caption.positionClassName}`}
           >
             {caption.text}
           </p>
@@ -51,9 +51,9 @@ export function ChatShowcaseSection() {
         {CAPTIONS.map((caption) => (
           <li
             key={caption.text}
-            className="flex gap-2 text-sm leading-6 text-black/60"
+            className="flex gap-2 text-sm leading-6 text-fg-secondary"
           >
-            <span className="mt-2 size-1.5 shrink-0 rounded-full bg-[#00a86b]" />
+            <span className="mt-2 size-1.5 shrink-0 rounded-full bg-brand-bright" />
             {caption.text}
           </li>
         ))}

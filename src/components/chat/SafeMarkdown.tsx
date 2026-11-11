@@ -57,7 +57,7 @@ export function SafeMarkdown({ content, className, onPreviewFile }: SafeMarkdown
     a({ href, children }) {
       const safe = safeHref(href);
       if (!safe) {
-        return <span className="text-[#04714a]">{children}</span>;
+        return <span className="text-brand-text">{children}</span>;
       }
 
       const ext = getFileExtension(safe);
@@ -85,7 +85,7 @@ export function SafeMarkdown({ content, className, onPreviewFile }: SafeMarkdown
           href={safe}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-[#04714a] underline underline-offset-2 hover:text-[#035e3f] break-all"
+          className="text-brand-text underline underline-offset-2 hover:opacity-80 break-all"
         >
           {children}
         </a>
@@ -94,28 +94,28 @@ export function SafeMarkdown({ content, className, onPreviewFile }: SafeMarkdown
 
     h1({ children }) {
       return (
-        <h1 className="mb-2 mt-4 text-[1.45em] font-bold tracking-tight text-[#11130f] dark:text-gray-100 first:mt-0 leading-tight">
+        <h1 className="mb-2 mt-4 text-[1.45em] font-bold tracking-tight text-foreground first:mt-0 leading-tight">
           {children}
         </h1>
       );
     },
     h2({ children }) {
       return (
-        <h2 className="mb-1.5 mt-3.5 text-[1.28em] font-semibold tracking-tight text-[#11130f] dark:text-gray-100 first:mt-0 leading-snug">
+        <h2 className="mb-1.5 mt-3.5 text-[1.28em] font-semibold tracking-tight text-foreground first:mt-0 leading-snug">
           {children}
         </h2>
       );
     },
     h3({ children }) {
       return (
-        <h3 className="mb-1 mt-3 text-[1.12em] font-semibold text-[#11130f] dark:text-gray-100 first:mt-0 leading-snug">
+        <h3 className="mb-1 mt-3 text-[1.12em] font-semibold text-foreground first:mt-0 leading-snug">
           {children}
         </h3>
       );
     },
 
     p({ children }) {
-      return <p className="mb-[0.7em] last:mb-0 leading-[1.65] text-[#11130f] dark:text-gray-200">{children}</p>;
+      return <p className="mb-[0.7em] last:mb-0 leading-[1.65] text-foreground">{children}</p>;
     },
 
     code({ className, children, ...rest }) {
@@ -133,7 +133,7 @@ export function SafeMarkdown({ content, className, onPreviewFile }: SafeMarkdown
       return (
         <code
           {...rest}
-          className="rounded bg-black/8 dark:bg-white/10 px-1 py-0.5 font-mono text-xs text-[#11130f] dark:text-gray-200"
+          className="rounded bg-muted px-1 py-0.5 font-mono text-xs text-foreground"
         >
           {children}
         </code>
@@ -146,24 +146,24 @@ export function SafeMarkdown({ content, className, onPreviewFile }: SafeMarkdown
 
     blockquote({ children }) {
       return (
-        <blockquote className="my-2.5 border-l-3 border-[#04714a]/60 dark:border-[#4ade80]/60 pl-3.5 italic text-black/70 dark:text-gray-300 bg-black/[0.02] dark:bg-white/[0.03] py-1 rounded-r leading-[1.6]">
+        <blockquote className="my-2.5 border-l-3 border-brand-bright pl-3.5 italic text-fg-secondary bg-surface py-1 rounded-r leading-[1.6]">
           {children}
         </blockquote>
       );
     },
 
     ul({ children }) {
-      return <ul className="mb-2.5 ml-5 list-disc space-y-1 pl-0.5 leading-[1.6] text-[#11130f] dark:text-gray-200">{children}</ul>;
+      return <ul className="mb-2.5 ml-5 list-disc space-y-1 pl-0.5 leading-[1.6] text-foreground">{children}</ul>;
     },
     ol({ children }) {
-      return <ol className="mb-2.5 ml-5 list-decimal space-y-1 pl-0.5 leading-[1.6] text-[#11130f] dark:text-gray-200">{children}</ol>;
+      return <ol className="mb-2.5 ml-5 list-decimal space-y-1 pl-0.5 leading-[1.6] text-foreground">{children}</ol>;
     },
     li({ children }) {
       return <li className="leading-[1.6]">{children}</li>;
     },
 
     strong({ children }) {
-      return <strong className="font-semibold text-[#11130f] dark:text-gray-100">{children}</strong>;
+      return <strong className="font-semibold text-foreground">{children}</strong>;
     },
     em({ children }) {
       return <em className="italic">{children}</em>;
@@ -172,34 +172,34 @@ export function SafeMarkdown({ content, className, onPreviewFile }: SafeMarkdown
       return <del className="line-through opacity-60">{children}</del>;
     },
     hr() {
-      return <hr className="my-4 border-black/10 dark:border-white/10" />;
+      return <hr className="my-4 border-border" />;
     },
 
     table({ children }) {
       return (
-        <div className="my-3 overflow-x-auto rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#1e1e1e] shadow-2xs">
+        <div className="my-3 overflow-x-auto rounded-xl border border-border bg-card shadow-2xs">
           <table className="w-full border-collapse text-xs sm:text-sm">{children}</table>
         </div>
       );
     },
     thead({ children }) {
-      return <thead className="bg-black/[0.03] dark:bg-white/[0.05] border-b border-black/10 dark:border-white/10">{children}</thead>;
+      return <thead className="bg-muted border-b border-border">{children}</thead>;
     },
     tbody({ children }) {
       return <tbody>{children}</tbody>;
     },
     tr({ children }) {
-      return <tr className="border-b border-black/10 dark:border-white/10 last:border-b-0 hover:bg-black/[0.015] dark:hover:bg-white/[0.02] transition-colors">{children}</tr>;
+      return <tr className="border-b border-border last:border-b-0 hover:bg-hover transition-colors">{children}</tr>;
     },
     th({ children }) {
       return (
-        <th className="px-3.5 py-2.5 text-left font-semibold text-[#11130f] dark:text-gray-100 select-none whitespace-nowrap">
+        <th className="px-3.5 py-2.5 text-left font-semibold text-foreground select-none whitespace-nowrap">
           {children}
         </th>
       );
     },
     td({ children }) {
-      return <td className="px-3.5 py-2 text-[#11130f] dark:text-gray-200">{children}</td>;
+      return <td className="px-3.5 py-2 text-foreground">{children}</td>;
     },
   };
 

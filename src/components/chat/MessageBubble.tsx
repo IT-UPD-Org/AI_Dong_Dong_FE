@@ -88,7 +88,7 @@ export const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
       return (
         <div
           ref={ref}
-          className="ml-auto w-full max-w-[85%] sm:max-w-[78%] rounded-2xl rounded-br-sm bg-black/5 dark:bg-white/10 p-3.5 transition-colors"
+          className="ml-auto w-full max-w-[85%] sm:max-w-[78%] rounded-2xl rounded-br-sm bg-muted p-3.5 transition-colors"
         >
           <textarea
             ref={textareaRef}
@@ -98,7 +98,7 @@ export const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
               e.target.style.height = "auto";
               e.target.style.height = `${e.target.scrollHeight}px`;
             }}
-            className="w-full resize-none bg-transparent text-[14px] sm:text-[14.5px] leading-relaxed text-[#11130f] dark:text-gray-100 outline-none"
+            className="w-full resize-none bg-transparent text-[14px] sm:text-[14.5px] leading-relaxed text-foreground outline-none"
             rows={1}
           />
           <div className="mt-2.5 flex justify-end gap-2">
@@ -107,14 +107,14 @@ export const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
                 setIsEditing(false);
                 setEditContent(message.content);
               }}
-              className="rounded-lg bg-gray-200 dark:bg-white/10 px-3 py-1.5 text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-white/20 cursor-pointer"
+              className="rounded-lg bg-surface border border-border px-3 py-1.5 text-xs font-semibold text-fg-secondary hover:bg-hover hover:text-foreground cursor-pointer"
             >
               {t("cancel")}
             </button>
             <button
               onClick={handleSaveEdit}
               disabled={!editContent.trim()}
-              className="rounded-lg bg-[#04714a] px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-[#035e3f] disabled:opacity-50 cursor-pointer"
+              className="rounded-lg bg-brand px-3.5 py-1.5 text-xs font-semibold text-brand-foreground hover:bg-brand-hover disabled:opacity-50 cursor-pointer"
             >
               {t("saveAndResend")}
             </button>
@@ -130,8 +130,8 @@ export const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
           onClick={isUser ? () => setExpanded((v) => !v) : undefined}
           className={`relative transition-colors ${
             isUser
-              ? `max-w-[85%] sm:max-w-[78%] cursor-pointer select-none rounded-2xl rounded-br-sm bg-black/5 dark:bg-white/10 px-4.5 py-3.5 text-[14px] sm:text-[14.5px] leading-relaxed text-[#11130f] dark:text-gray-100`
-              : `max-w-[95%] sm:max-w-[90%] py-1 text-[14.5px] sm:text-[15px] leading-[1.65] text-[#11130f] dark:text-gray-100`
+              ? `max-w-[85%] sm:max-w-[78%] cursor-pointer select-none rounded-2xl rounded-br-sm bg-muted px-4.5 py-3.5 text-[14px] sm:text-[14.5px] leading-relaxed text-foreground`
+              : `max-w-[95%] sm:max-w-[90%] py-1 text-[14.5px] sm:text-[15px] leading-[1.65] text-foreground`
           }`}
         >
           {isUser && onEdit && !regenerateDisabled && (
@@ -140,7 +140,7 @@ export const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
                 e.stopPropagation();
                 setIsEditing(true);
               }}
-              className="absolute -left-9 top-2.5 hidden rounded-full p-1.5 text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-white/10 hover:text-gray-600 dark:hover:text-gray-300 group-hover:flex cursor-pointer"
+              className="absolute -left-9 top-2.5 hidden rounded-full p-1.5 text-muted-foreground hover:bg-hover hover:text-foreground group-hover:flex cursor-pointer"
               title={t("editMessage")}
               aria-label={t("editMessage")}
             >
@@ -188,10 +188,10 @@ export const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
               ))}
             </div>
           ) : (
-            <span className="inline-flex items-center gap-1.5 py-1 text-black/40 dark:text-white/40">
-              <span className="size-1.5 rounded-full bg-[#04714a] animate-bounce [animation-delay:-0.3s]" />
-              <span className="size-1.5 rounded-full bg-[#04714a] animate-bounce [animation-delay:-0.15s]" />
-              <span className="size-1.5 rounded-full bg-[#04714a] animate-bounce" />
+            <span className="inline-flex items-center gap-1.5 py-1 text-muted-foreground">
+              <span className="size-1.5 rounded-full bg-brand animate-bounce [animation-delay:-0.3s]" />
+              <span className="size-1.5 rounded-full bg-brand animate-bounce [animation-delay:-0.15s]" />
+              <span className="size-1.5 rounded-full bg-brand animate-bounce" />
             </span>
           )}
 
@@ -212,18 +212,18 @@ export const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
             (!message.status ||
               message.status === "completed" ||
               message.status === "error") && (
-              <div className="mt-2.5 flex items-center gap-1 text-black/40 dark:text-white/40">
+              <div className="mt-2.5 flex items-center gap-1 text-muted-foreground">
                 {fullText && (
                   <button
                     type="button"
                     title={copiedMessage ? t("copySuccess") : "Sao chép câu trả lời"}
                     aria-label="Sao chép câu trả lời"
                     onClick={handleCopyMessage}
-                    className={`rounded-md p-1.5 transition-colors hover:bg-black/5 dark:hover:bg-white/10 hover:text-black dark:hover:text-white cursor-pointer ${
-                      copiedMessage ? "bg-black/5 dark:bg-white/10 text-[#00a86b] dark:text-[#4ade80]" : ""
+                    className={`rounded-md p-1.5 transition-colors hover:bg-hover hover:text-foreground cursor-pointer ${
+                      copiedMessage ? "bg-active text-brand-text" : ""
                     }`}
                   >
-                    {copiedMessage ? <Check size={14} className="text-[#00a86b] dark:text-[#4ade80]" /> : <Copy size={14} />}
+                    {copiedMessage ? <Check size={14} className="text-brand-text" /> : <Copy size={14} />}
                   </button>
                 )}
 
@@ -233,8 +233,8 @@ export const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
                     title={t("like")}
                     aria-label={t("like")}
                     onClick={onLike}
-                    className={`rounded-md p-1.5 transition-colors hover:bg-black/5 dark:hover:bg-white/10 hover:text-black dark:hover:text-white cursor-pointer ${
-                      reaction === "like" ? "bg-black/5 dark:bg-white/10 text-[#00a86b] dark:text-[#4ade80]" : ""
+                    className={`rounded-md p-1.5 transition-colors hover:bg-hover hover:text-foreground cursor-pointer ${
+                      reaction === "like" ? "bg-active text-brand-text" : ""
                     }`}
                   >
                     <ThumbsUp size={14} />
@@ -247,8 +247,8 @@ export const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
                     title={t("dislike")}
                     aria-label={t("dislike")}
                     onClick={onDislike}
-                    className={`rounded-md p-1.5 transition-colors hover:bg-black/5 dark:hover:bg-white/10 hover:text-black dark:hover:text-white cursor-pointer ${
-                      reaction === "dislike" ? "bg-black/5 dark:bg-white/10 text-red-500" : ""
+                    className={`rounded-md p-1.5 transition-colors hover:bg-hover hover:text-foreground cursor-pointer ${
+                      reaction === "dislike" ? "bg-active text-destructive" : ""
                     }`}
                   >
                     <ThumbsDown size={14} />
@@ -262,7 +262,7 @@ export const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
                     aria-label={t("regenerate")}
                     onClick={onRegenerate}
                     disabled={regenerateDisabled}
-                    className="rounded-md p-1.5 transition-colors hover:bg-black/5 dark:hover:bg-white/10 hover:text-black dark:hover:text-white disabled:opacity-30 cursor-pointer"
+                    className="rounded-md p-1.5 transition-colors hover:bg-hover hover:text-foreground disabled:opacity-30 cursor-pointer"
                   >
                     <RotateCcw size={14} />
                   </button>
@@ -273,7 +273,7 @@ export const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
                     title={t("report")}
                     aria-label={t("report")}
                     onClick={onReport}
-                    className="rounded-md p-1.5 transition-colors hover:bg-black/5 dark:hover:bg-white/10 hover:text-black dark:hover:text-white cursor-pointer"
+                    className="rounded-md p-1.5 transition-colors hover:bg-hover hover:text-foreground cursor-pointer"
                   >
                     <Flag size={14} />
                   </button>

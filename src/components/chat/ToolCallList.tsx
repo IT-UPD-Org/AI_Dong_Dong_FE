@@ -30,9 +30,9 @@ export function ToolCallList({ toolCalls, running = false }: { toolCalls: BETool
         type="button"
         onClick={() => setOpen((value) => !value)}
         aria-expanded={open}
-        className="group inline-flex max-w-full items-center gap-1.5 rounded-lg px-1 py-0.5 text-left text-[13px] text-black/50 transition-colors hover:text-black/80 cursor-pointer"
+        className="group inline-flex max-w-full items-center gap-1.5 rounded-lg px-1 py-0.5 text-left text-[13px] text-muted-foreground transition-colors hover:text-foreground cursor-pointer"
       >
-        {running && <LoaderCircle size={13} className="shrink-0 animate-spin text-[#04714a]" aria-hidden />}
+        {running && <LoaderCircle size={13} className="shrink-0 animate-spin text-brand-text" aria-hidden />}
         <span className="truncate">
           {running ? "Đang dùng" : "Đã dùng"} {summary(toolCalls)}
         </span>
@@ -40,10 +40,10 @@ export function ToolCallList({ toolCalls, running = false }: { toolCalls: BETool
       </button>
 
       {open && (
-        <ul className="mt-1.5 overflow-hidden rounded-xl border border-black/10 bg-black/[0.02] text-[13px] text-black/65 animate-in fade-in duration-150">
+        <ul className="mt-1.5 overflow-hidden rounded-xl border border-border bg-surface text-[13px] text-fg-secondary animate-in fade-in duration-150">
           {toolCalls.map((call) => (
-            <li key={call.id} className="flex items-center gap-2 border-b border-black/5 px-3.5 py-2.5 last:border-b-0">
-              <Wrench size={13} className="shrink-0 text-black/35" aria-hidden />
+            <li key={call.id} className="flex items-center gap-2 border-b border-border-subtle px-3.5 py-2.5 last:border-b-0">
+              <Wrench size={13} className="shrink-0 text-muted-foreground" aria-hidden />
               <span className="truncate">{toolName(call)}</span>
             </li>
           ))}

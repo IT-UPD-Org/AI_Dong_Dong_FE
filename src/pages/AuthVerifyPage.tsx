@@ -42,32 +42,32 @@ export function AuthVerifyPage() {
 
   return (
     <main className="grid min-h-[calc(100vh-80px)] place-items-center px-6 py-6">
-      <div className="w-full max-w-md rounded-3xl border border-black/10 bg-white p-8 text-center shadow-sm">
+      <div className="w-full max-w-md rounded-3xl border border-border bg-card p-8 text-center shadow-sm">
         {status === "verifying" && (
           <>
-            <Loader2 className="mx-auto animate-spin text-[#04714a]" size={36} />
-            <h1 className="mt-5 text-xl font-bold text-gray-900">Đang xác thực...</h1>
-            <p className="mt-2 text-sm text-black/55">Vui lòng chờ trong giây lát.</p>
+            <Loader2 className="mx-auto animate-spin text-brand-text" size={36} />
+            <h1 className="mt-5 text-xl font-bold text-foreground">Đang xác thực...</h1>
+            <p className="mt-2 text-sm text-muted-foreground">Vui lòng chờ trong giây lát.</p>
           </>
         )}
 
         {status === "success" && (
           <>
-            <CheckCircle2 className="mx-auto text-[#04714a]" size={40} />
-            <h1 className="mt-5 text-xl font-bold text-gray-900">Đăng nhập thành công</h1>
-            <p className="mt-2 text-sm text-black/55">Đang chuyển hướng...</p>
+            <CheckCircle2 className="mx-auto text-brand-text" size={40} />
+            <h1 className="mt-5 text-xl font-bold text-foreground">Đăng nhập thành công</h1>
+            <p className="mt-2 text-sm text-muted-foreground">Đang chuyển hướng...</p>
           </>
         )}
 
         {status === "error" && (
           <>
-            <AlertCircle className="mx-auto text-red-600" size={40} />
-            <h1 className="mt-5 text-xl font-bold text-gray-900">Không thể đăng nhập</h1>
-            <p className="mt-2 text-sm text-red-700">{errorMessage}</p>
+            <AlertCircle className="mx-auto text-rose-600 dark:text-rose-400" size={40} />
+            <h1 className="mt-5 text-xl font-bold text-foreground">Không thể đăng nhập</h1>
+            <p className="mt-2 text-sm text-rose-600 dark:text-rose-400">{errorMessage}</p>
             <Link
               to="/login"
               replace
-              className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#11130f] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#04714a]"
+              className="mt-6 inline-flex items-center gap-2 rounded-xl bg-foreground px-4 py-2.5 text-sm font-semibold text-background hover:bg-brand hover:text-brand-foreground transition-colors"
             >
               Thử lại <ArrowRight size={16} />
             </Link>

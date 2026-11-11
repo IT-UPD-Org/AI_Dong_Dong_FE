@@ -17,14 +17,14 @@ export function ChatsTab() {
 
   return (
     <section>
-      <p className="mb-4 text-sm text-black/55">Cuộc trò chuyện của mọi người dùng.</p>
+      <p className="mb-4 text-sm text-muted-foreground">Cuộc trò chuyện của mọi người dùng.</p>
       <ListState
         loading={list.loading}
         error={list.error}
         empty={list.items.length === 0}
         emptyText="Chưa có cuộc trò chuyện nào."
       >
-        <div className="rounded-2xl border border-black/10 bg-white">
+        <div className="rounded-2xl border border-border bg-card">
           <Table>
             <TableHeader>
               <TableRow>
@@ -39,21 +39,21 @@ export function ChatsTab() {
             <TableBody>
               {list.items.map((chat) => (
                 <TableRow key={chat.id}>
-                  <TableCell className="max-w-80 truncate font-medium">{chat.title}</TableCell>
-                  <TableCell className="font-mono text-xs text-black/60">{chat.userId}</TableCell>
-                  <TableCell className="text-black/60">{formatSnowflakeDate(chat.id) ?? "—"}</TableCell>
-                  <TableCell>{STATUS_LABEL[chat.asyncStatus ?? "none"]}</TableCell>
+                  <TableCell className="max-w-80 truncate font-medium text-foreground">{chat.title}</TableCell>
+                  <TableCell className="font-mono text-xs text-muted-foreground">{chat.userId}</TableCell>
+                  <TableCell className="text-muted-foreground">{formatSnowflakeDate(chat.id) ?? "—"}</TableCell>
+                  <TableCell className="text-foreground">{STATUS_LABEL[chat.asyncStatus ?? "none"]}</TableCell>
                   <TableCell>
                     {chat.disabled ? (
-                      <span className="rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-semibold text-red-700">Bị khoá</span>
+                      <span className="rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-semibold text-rose-700 dark:bg-rose-950/40 dark:text-rose-300">Bị khoá</span>
                     ) : (
-                      <span className="rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-semibold text-green-700">Bình thường</span>
+                      <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">Bình thường</span>
                     )}
                   </TableCell>
                   <TableCell className="text-right">
                     <Link
                       to={`/c/${chat.id}`}
-                      className="inline-flex items-center gap-1 text-xs font-medium text-[#04714a] hover:underline"
+                      className="inline-flex items-center gap-1 text-xs font-medium text-brand-text hover:underline"
                     >
                       Xem <ArrowRight size={13} />
                     </Link>

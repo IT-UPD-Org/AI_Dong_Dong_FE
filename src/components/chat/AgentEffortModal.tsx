@@ -77,27 +77,27 @@ export function AgentEffortModal({
   const currentConfig = AGENT_LEVEL_CONFIGS[level];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay p-4 backdrop-blur-xs">
       {/* Backdrop overlay click to close */}
       <div className="absolute inset-0" onClick={onClose} />
 
       <div
         ref={modalRef}
-        className="relative z-10 w-full max-w-md rounded-2xl bg-white dark:bg-[#1e1e1e] p-5 shadow-xl border border-black/10 dark:border-white/10 transition-colors"
+        className="relative z-10 w-full max-w-md rounded-2xl bg-elevated p-5 shadow-xl border border-border transition-colors"
       >
         {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-black/10 dark:border-white/10">
+        <div className="flex items-center justify-between pb-3 border-b border-border">
           <div>
-            <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">
+            <h3 className="text-base font-semibold text-foreground">
               {t("effortTitle")}
             </h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
+            <p className="text-xs text-muted-foreground">
               {t("effortSubtitle")}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="rounded-full p-1 text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer"
+            className="rounded-full p-1 text-muted-foreground hover:bg-hover hover:text-foreground cursor-pointer"
           >
             <svg
               viewBox="0 0 24 24"
@@ -120,7 +120,7 @@ export function AgentEffortModal({
                 key={key}
                 onClick={() => onLevelChange(key)}
                 className={`cursor-pointer transition-colors ${
-                  level === key ? "text-[#04714a] dark:text-[#4ade80] font-bold" : "text-gray-400 dark:text-gray-500"
+                  level === key ? "text-brand-text font-bold" : "text-muted-foreground"
                 }`}
               >
                 {AGENT_LEVEL_CONFIGS[key].label}
@@ -130,9 +130,9 @@ export function AgentEffortModal({
 
           <div className="relative flex items-center">
             {/* Track Line */}
-            <div className="h-2 w-full rounded-full bg-gray-200 dark:bg-white/15">
+            <div className="h-2 w-full rounded-full bg-muted">
               <div
-                className="h-2 rounded-full bg-[#04714a] dark:bg-[#4ade80] transition-all duration-300"
+                className="h-2 rounded-full bg-brand transition-all duration-300"
                 style={{ width: `${(currentIndex / 2) * 100}%` }}
               />
             </div>
@@ -146,9 +146,9 @@ export function AgentEffortModal({
                   onClick={() => onLevelChange(key)}
                   className={`size-5 rounded-full border-2 transition-all cursor-pointer ${
                     index <= currentIndex
-                      ? "border-[#04714a] dark:border-[#4ade80] bg-white dark:bg-[#1e1e1e] ring-2 ring-[#04714a]/20"
-                      : "border-gray-300 dark:border-gray-600 bg-white dark:bg-[#1e1e1e]"
-                  } ${level === key ? "scale-125 bg-[#04714a] dark:bg-[#4ade80]" : ""}`}
+                      ? "border-brand bg-elevated ring-2 ring-brand/20"
+                      : "border-border bg-elevated"
+                  } ${level === key ? "scale-125 bg-brand" : ""}`}
                 />
               ))}
             </div>
@@ -156,37 +156,37 @@ export function AgentEffortModal({
         </div>
 
         {/* Dynamic Model & Usage Details */}
-        <div className="rounded-xl bg-gray-50 dark:bg-white/[0.04] p-4 border border-gray-100 dark:border-white/10 text-xs space-y-2.5">
+        <div className="rounded-xl bg-surface p-4 border border-border-subtle text-xs space-y-2.5">
           <div className="flex justify-between items-center">
-            <span className="font-semibold text-gray-700 dark:text-gray-300">Level:</span>
-            <span className="font-bold text-[#04714a] dark:text-[#4ade80]">
+            <span className="font-semibold text-fg-secondary">Level:</span>
+            <span className="font-bold text-brand-text">
               {currentConfig.label} ({currentConfig.id})
             </span>
           </div>
           <div>
-            <span className="font-semibold text-gray-700 dark:text-gray-300">
+            <span className="font-semibold text-fg-secondary">
               {language === "vi" ? "Mô tả:" : "Description:"}
             </span>
-            <p className="text-gray-500 dark:text-gray-400 mt-0.5">
+            <p className="text-muted-foreground mt-0.5">
               {language === "vi" ? currentConfig.descriptionVi : currentConfig.descriptionEn}
             </p>
           </div>
-          <div className="pt-2 border-t border-gray-200/60 dark:border-white/10 space-y-1.5">
+          <div className="pt-2 border-t border-border-subtle space-y-1.5">
             <div className="flex justify-between">
-              <span className="text-gray-500 dark:text-gray-400">{t("managerModelLabel")}</span>
-              <span className="font-medium text-gray-800 dark:text-gray-200">
+              <span className="text-muted-foreground">{t("managerModelLabel")}</span>
+              <span className="font-medium text-foreground">
                 {currentConfig.managerAgent}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-500 dark:text-gray-400">{t("subAgentsLabel")}</span>
-              <span className="font-medium text-gray-800 dark:text-gray-200">
+              <span className="text-muted-foreground">{t("subAgentsLabel")}</span>
+              <span className="font-medium text-foreground">
                 {currentConfig.subAgents}
               </span>
             </div>
             <div className="flex justify-between items-center pt-1">
-              <span className="text-gray-500 dark:text-gray-400">{t("tokenMultiplierLabel")}</span>
-              <span className="inline-flex items-center rounded-md bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300 ring-1 ring-inset ring-emerald-600/20">
+              <span className="text-muted-foreground">{t("tokenMultiplierLabel")}</span>
+              <span className="inline-flex items-center rounded-md bg-brand-soft px-2 py-0.5 text-xs font-semibold text-brand-text ring-1 ring-inset ring-brand/20">
                 {currentConfig.usageMultiplier}
               </span>
             </div>
@@ -198,7 +198,7 @@ export function AgentEffortModal({
           <button
             type="button"
             onClick={onClose}
-            className="w-full rounded-xl bg-[#04714a] py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#035a3b] transition-colors cursor-pointer"
+            className="w-full rounded-xl bg-brand py-2 text-sm font-semibold text-brand-foreground shadow-sm hover:bg-brand-hover transition-colors cursor-pointer"
           >
             {language === "vi" ? "Xác nhận" : "Confirm"}
           </button>

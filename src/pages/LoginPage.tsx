@@ -32,16 +32,16 @@ function MicrosoftLogo() {
 function LoginFormSkeleton() {
   return (
     <div className="mt-6 space-y-4 animate-pulse" role="status" aria-label="Đang tải phương thức đăng nhập">
-      <div className="h-12 w-full rounded-xl bg-black/10" />
+      <div className="h-12 w-full rounded-xl bg-muted" />
       <div className="space-y-2">
-        <div className="h-3 w-28 rounded bg-black/10" />
-        <div className="h-11 w-full rounded-xl bg-black/[0.07]" />
+        <div className="h-3 w-28 rounded bg-muted" />
+        <div className="h-11 w-full rounded-xl bg-muted/70" />
       </div>
       <div className="space-y-2">
-        <div className="h-3 w-20 rounded bg-black/10" />
-        <div className="h-11 w-full rounded-xl bg-black/[0.07]" />
+        <div className="h-3 w-20 rounded bg-muted" />
+        <div className="h-11 w-full rounded-xl bg-muted/70" />
       </div>
-      <div className="h-12 w-full rounded-xl bg-[#04714a]/20" />
+      <div className="h-12 w-full rounded-xl bg-brand/20" />
       <span className="sr-only">Đang tải phương thức đăng nhập...</span>
     </div>
   );
@@ -180,7 +180,7 @@ export function LoginPage() {
         <div className="mb-6">
           <Link
             to="/"
-            className="inline-flex items-center gap-2 text-sm text-black/55 hover:text-black transition-colors"
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft size={16} />
             Trở về trang chủ
@@ -188,13 +188,13 @@ export function LoginPage() {
         </div>
 
         {/* Header */}
-        <p className="text-xs uppercase tracking-[.18em] text-[#04714a] font-semibold">
+        <p className="text-xs uppercase tracking-[.18em] text-brand-text font-semibold">
           Tài khoản nhà trường
         </p>
-        <h1 className="mt-2 text-2xl font-bold tracking-[-.06em] sm:text-3xl md:text-4xl text-[#11130f]">
+        <h1 className="mt-2 text-2xl font-bold tracking-[-.06em] sm:text-3xl md:text-4xl text-foreground">
           Đăng nhập vào IT UPD GenAI.
         </h1>
-        <p className="mt-2 text-black/60 text-xs sm:text-sm leading-relaxed">
+        <p className="mt-2 text-muted-foreground text-xs sm:text-sm leading-relaxed">
           Sử dụng tài khoản Microsoft của trường (@pduni.edu.vn cho sinh viên,
           @phuongdong.edu.vn cho giảng viên) hoặc email và mật khẩu.
         </p>
@@ -203,9 +203,9 @@ export function LoginPage() {
         {error && (
           <div
             role="alert"
-            className="mt-6 rounded-xl border border-red-200 bg-red-50 p-3 text-xs font-medium text-red-700 flex items-start gap-2 animate-in fade-in duration-200"
+            className="mt-6 rounded-xl border border-rose-200 bg-rose-50 dark:border-rose-800 dark:bg-rose-950/40 p-3 text-xs font-medium text-rose-700 dark:text-rose-300 flex items-start gap-2 animate-in fade-in duration-200"
           >
-            <AlertCircle size={16} className="shrink-0 mt-0.5 text-red-600" />
+            <AlertCircle size={16} className="shrink-0 mt-0.5 text-rose-600 dark:text-rose-400" />
             <span>{error}</span>
           </div>
         )}
@@ -219,7 +219,7 @@ export function LoginPage() {
             type="button"
             onClick={handleMicrosoftLogin}
             disabled={isSubmitting}
-            className="mt-6 flex w-full items-center justify-center gap-3 rounded-xl bg-[#11130f] px-4 py-3 font-semibold text-white transition-all hover:bg-[#04714a] hover:shadow-md disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed text-sm sm:text-base"
+            className="mt-6 flex w-full items-center justify-center gap-3 rounded-xl bg-foreground px-4 py-3 font-semibold text-background transition-all hover:bg-brand hover:text-brand-foreground hover:shadow-md disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed text-sm sm:text-base"
           >
             {isSubmitting ? (
               <RefreshCw className="animate-spin" size={16} />
@@ -235,10 +235,10 @@ export function LoginPage() {
         {microsoftReady && showPasswordForm && (
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-black/10" />
+              <div className="w-full border-t border-border" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-[#fafaf9] px-3 text-black/45 font-medium">
+              <span className="bg-background px-3 text-muted-foreground font-medium">
                 Hoặc đăng nhập bằng email & mật khẩu
               </span>
             </div>
@@ -257,13 +257,13 @@ export function LoginPage() {
               <div>
                 <label
                   htmlFor="login-email"
-                  className="block text-xs font-semibold uppercase tracking-wider text-black/70 mb-2"
+                  className="block text-xs font-semibold uppercase tracking-wider text-fg-secondary mb-2"
                 >
                   Email tài khoản
                 </label>
                 <div className="relative">
                   <Mail
-                    className="absolute left-4 top-3.5 text-black/35 pointer-events-none"
+                    className="absolute left-4 top-3.5 text-muted-foreground pointer-events-none"
                     size={18}
                     aria-hidden="true"
                   />
@@ -279,19 +279,19 @@ export function LoginPage() {
                       if (error) setError("");
                     }}
                     disabled={isSubmitting}
-                    className="w-full rounded-xl border border-black/15 bg-white pl-11 pr-4 py-3 text-sm outline-none transition-all placeholder:text-black/35 focus:border-[#00a86b] focus:ring-1 focus:ring-[#00a86b] disabled:bg-black/5 disabled:opacity-60"
+                    className="w-full rounded-xl border border-border bg-field pl-11 pr-4 py-3 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground focus:border-brand-bright focus:ring-1 focus:ring-brand-bright disabled:bg-muted disabled:opacity-60"
                   />
                 </div>
 
                 {roleInfo && (
                   <div className="mt-2 flex justify-end animate-in fade-in duration-200">
                     {roleInfo.type === "teacher" ? (
-                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 px-2.5 py-0.5 rounded-full border border-emerald-200">
                         <Check size={13} className="stroke-[2.5]" />
                         {roleInfo.label}
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-700 bg-amber-50 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800 px-2.5 py-0.5 rounded-full border border-amber-200">
                         <CheckCircle2 size={13} />
                         {roleInfo.label}
                       </span>
@@ -304,13 +304,13 @@ export function LoginPage() {
               <div>
                 <label
                   htmlFor="login-password"
-                  className="block text-xs font-semibold uppercase tracking-wider text-black/70 mb-2"
+                  className="block text-xs font-semibold uppercase tracking-wider text-fg-secondary mb-2"
                 >
                   Mật khẩu
                 </label>
                 <div className="relative">
                   <Lock
-                    className="absolute left-4 top-3.5 text-black/35 pointer-events-none"
+                    className="absolute left-4 top-3.5 text-muted-foreground pointer-events-none"
                     size={18}
                     aria-hidden="true"
                   />
@@ -326,14 +326,14 @@ export function LoginPage() {
                       if (error) setError("");
                     }}
                     disabled={isSubmitting}
-                    className="w-full rounded-xl border border-black/15 bg-white pl-11 pr-11 py-3 text-sm outline-none transition-all placeholder:text-black/35 focus:border-[#00a86b] focus:ring-1 focus:ring-[#00a86b] disabled:bg-black/5 disabled:opacity-60"
+                    className="w-full rounded-xl border border-border bg-field pl-11 pr-11 py-3 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground focus:border-brand-bright focus:ring-1 focus:ring-brand-bright disabled:bg-muted disabled:opacity-60"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword((prev) => !prev)}
                     tabIndex={-1}
                     aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
-                    className="absolute right-3.5 top-3 text-black/40 hover:text-black/70 transition-colors p-0.5 cursor-pointer"
+                    className="absolute right-3.5 top-3 text-muted-foreground hover:text-foreground transition-colors p-0.5 cursor-pointer"
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
@@ -344,7 +344,7 @@ export function LoginPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-[#04714a] px-4 py-3 font-semibold text-white transition-all hover:bg-[#03593a] disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed shadow-sm text-sm sm:text-base"
+                className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 py-3 font-semibold text-brand-foreground transition-all hover:bg-brand-hover disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed shadow-sm text-sm sm:text-base"
               >
                 {isSubmitting ? (
                   <>
@@ -359,19 +359,19 @@ export function LoginPage() {
           </form>
         ) : methodsLoading ? null : (
           /* Khi backend tắt password và chỉ cho phép Microsoft */
-          <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 text-xs text-emerald-900 leading-relaxed">
+          <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50/60 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200 p-4 text-xs text-emerald-900 leading-relaxed">
             <p className="font-semibold mb-1">Phương thức xác thực Microsoft SSO</p>
             Hệ thống hiện đang áp dụng phương thức đăng nhập Microsoft SSO cho toàn bộ cán bộ, giảng viên và sinh viên. Vui lòng bấm vào nút “Đăng nhập bằng Microsoft” ở trên.
           </div>
         )}
 
         {/* Links below form */}
-        <div className="mt-6 flex flex-col gap-2.5 text-xs text-black/60 sm:flex-row sm:items-center sm:justify-between border-t border-black/10 pt-4">
+        <div className="mt-6 flex flex-col gap-2.5 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between border-t border-border pt-4">
           <span>
             Chưa có tài khoản?{" "}
             <Link
               to="/approve"
-              className="font-semibold text-[#04714a] hover:underline"
+              className="font-semibold text-brand-text hover:underline"
             >
               Cấp phép tài khoản
             </Link>

@@ -5,6 +5,8 @@ import { BrowserRouter } from "react-router-dom";
 import { Toaster } from "sonner";
 import App from "./App";
 import { Analytics } from "./lib/analytics";
+// Resolve the font package's assets through Vite, not Tailwind's CSS import inlining.
+import "@fontsource-variable/geist";
 import "./index.css";
 
 Sentry.init({

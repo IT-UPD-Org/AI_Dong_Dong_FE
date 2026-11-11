@@ -6,13 +6,49 @@ body:has(.project-team) {
 }
 
 .project-team {
-  --team-ink: #17221b;
-  --team-green: #04714a;
-  --team-muted: #657169;
-  --team-line: #dfe7e1;
+  --team-ink: var(--foreground);
+  --team-green: var(--brand-text);
+  --team-muted: var(--muted-foreground);
+  --team-line: var(--border);
+  --team-bg: var(--background);
+  --team-portrait-bg: #e7eeeb;
+  --team-portrait-fg: #4e6959;
+  --team-portrait-frontend: #e2ece5;
+  --team-portrait-even: #e4ebe6;
+  --team-tag-bg: rgba(255, 255, 255, 0.88);
+  --team-tag-fg: var(--foreground);
+  --team-club-photo: #e6eee8;
+  --team-club-color: #476453;
+  --team-club-mark: #d4e2d8;
+  --team-skeleton-portrait: #f3f6f4;
+  --team-skeleton-line: #eef2ef;
+  --team-footer-bg: #11130f;
+  --team-footer-fg: #c0c9c0;
+  --team-footer-brand: #e9f0ea;
+  --team-footer-hover: var(--brand-bright);
   color: var(--team-ink);
-  background: #fff;
+  background: var(--team-bg);
   font-family: "Be Vietnam Pro", sans-serif;
+}
+
+:is(.dark, .dark *) .project-team,
+.dark.project-team,
+:root.dark .project-team {
+  --team-portrait-bg: #1c241f;
+  --team-portrait-fg: #8ca393;
+  --team-portrait-frontend: #1f2a23;
+  --team-portrait-even: #1e2721;
+  --team-tag-bg: rgba(36, 36, 36, 0.88);
+  --team-tag-fg: var(--foreground);
+  --team-club-photo: #18221b;
+  --team-club-color: #8ca393;
+  --team-club-mark: #223328;
+  --team-skeleton-portrait: #1a1a1a;
+  --team-skeleton-line: #292929;
+  --team-footer-bg: var(--surface);
+  --team-footer-fg: var(--muted-foreground);
+  --team-footer-brand: var(--foreground);
+  --team-footer-hover: var(--brand-bright);
 }
 
 .project-team__main {
@@ -138,17 +174,17 @@ body:has(.project-team) {
   position: relative;
   display: grid;
   place-items: center;
-  background: #e7eeeb;
-  color: #4e6959;
+  background: var(--team-portrait-bg);
+  color: var(--team-portrait-fg);
   overflow: hidden;
 }
 
 .project-team__member--frontend .project-team__portrait,
 .project-team__member--database .project-team__portrait {
-  background: #e2ece5;
+  background: var(--team-portrait-frontend);
 }
 .project-team__member:nth-child(even) .project-team__portrait {
-  background: #e4ebe6;
+  background: var(--team-portrait-even);
 }
 
 .project-team__portrait img,
@@ -176,7 +212,8 @@ body:has(.project-team) {
   position: absolute;
   left: 16px;
   padding: 2px 6px;
-  background: #ffffffdd;
+  background: var(--team-tag-bg);
+  color: var(--team-tag-fg);
   font-size: 11px;
   line-height: 1.7;
 }
@@ -218,8 +255,8 @@ body:has(.project-team) {
   position: relative;
   display: grid;
   place-items: center;
-  background: #e6eee8;
-  color: #476453;
+  background: var(--team-club-photo);
+  color: var(--team-club-color);
   overflow: hidden;
 }
 
@@ -231,7 +268,7 @@ body:has(.project-team) {
   line-height: 1;
   font-weight: 600;
   letter-spacing: -0.075em;
-  color: #d4e2d8;
+  color: var(--team-club-mark);
 }
 
 .project-team__club-photo .project-team__placeholder {
@@ -300,7 +337,7 @@ body:has(.project-team) {
 
 /* Ô skeleton trống */
 .project-team__member.project-team__skeleton .project-team__portrait {
-  background: #f3f6f4;
+  background: var(--team-skeleton-portrait);
   border: 1px dashed var(--team-line);
 }
 
@@ -308,7 +345,7 @@ body:has(.project-team) {
   display: block;
   height: 10px;
   border-radius: 999px;
-  background: #eef2ef;
+  background: var(--team-skeleton-line);
 }
 
 .project-team__skeleton-line--title {
@@ -331,12 +368,12 @@ body:has(.project-team) {
   justify-content: space-between;
   gap: 30px;
   padding: 32px max(6%, calc((100% - 1070px) / 2));
-  background: #11130f;
-  color: #c0c9c0;
+  background: var(--team-footer-bg);
+  color: var(--team-footer-fg);
 }
 
 .project-team__brand {
-  color: #e9f0ea;
+  color: var(--team-footer-brand);
   font-size: 17px;
   line-height: 1.5;
   font-weight: 500;
@@ -362,7 +399,7 @@ body:has(.project-team) {
   line-height: 1.8;
 }
 .project-team__footer a:hover {
-  color: #6be3ae;
+  color: var(--team-footer-hover);
 }
 
 @media (max-width: 1023px) {

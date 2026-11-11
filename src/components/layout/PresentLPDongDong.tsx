@@ -39,12 +39,12 @@ export function PresentLPDongDong() {
           md:translate-x-0 md:-translate-y-1/2
 
           rounded-2xl
-          border border-[#00a86b]/30
-          bg-white/95
+          border border-brand/30
+          bg-elevated/95
           px-5 py-4
           text-sm
           leading-6
-          text-[#11130f]
+          text-foreground
           shadow-[0_15px_50px_rgba(0,168,107,0.18)]
           backdrop-blur-md
 
@@ -59,7 +59,7 @@ export function PresentLPDongDong() {
           }
         `}
       >
-        <p className="font-medium text-black/75">{message}</p>
+        <p className="font-medium text-foreground">{message}</p>
 
         <span
           className="
@@ -71,8 +71,8 @@ export function PresentLPDongDong() {
             rotate-45
             border-b
             border-r
-            border-[#00a86b]/30
-            bg-white/95
+            border-brand/30
+            bg-elevated/95
             md:left-[-7px]
             md:top-1/2
             md:bottom-auto
@@ -106,7 +106,7 @@ export function PresentLPDongDong() {
             h-48
             w-48
             rounded-full
-            bg-[#00a86b]/10
+            bg-brand-bright/10
             blur-3xl
             transition-all
             duration-700
@@ -144,7 +144,7 @@ export function PresentLPDongDong() {
           text-[9px]
           uppercase
           tracking-[0.18em]
-          text-black/40
+          text-muted-foreground
           transition-opacity
           duration-300
           ${isHovered ? "opacity-0" : "opacity-100"}

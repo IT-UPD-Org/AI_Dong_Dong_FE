@@ -65,25 +65,25 @@ export function IssueImagePicker({ file, onChange }: IssueImagePickerProps) {
         className="hidden"
       />
 
-      <div className="h-[108px] overflow-hidden rounded-xl border border-dashed border-black/15 bg-white">
+      <div className="h-[108px] overflow-hidden rounded-xl border border-dashed border-border bg-field">
         {file && previewUrl ? (
           <div className="flex h-full items-center gap-3 p-2.5">
             <img
               src={previewUrl}
               alt="Ảnh lỗi đã chọn"
-              className="size-[72px] shrink-0 rounded-lg border border-black/5 object-cover"
+              className="size-[72px] shrink-0 rounded-lg border border-border-subtle object-cover"
             />
             <div className="min-w-0 flex-1">
-              <p className="truncate text-xs font-medium text-[#172b21]">
+              <p className="truncate text-xs font-medium text-foreground">
                 {file.name}
               </p>
-              <p className="mt-1 text-[10px] text-black/40">
+              <p className="mt-1 text-[10px] text-muted-foreground">
                 {formatFileSize(file.size)}
               </p>
               <button
                 type="button"
                 onClick={openImagePicker}
-                className="mt-2 inline-flex text-[11px] font-medium text-[#04714a] hover:underline"
+                className="mt-2 inline-flex text-[11px] font-medium text-brand-text hover:underline"
               >
                 Chọn ảnh khác
               </button>
@@ -92,7 +92,7 @@ export function IssueImagePicker({ file, onChange }: IssueImagePickerProps) {
               type="button"
               onClick={removeImage}
               aria-label="Xóa ảnh lỗi đã chọn"
-              className="flex size-8 shrink-0 items-center justify-center rounded-full text-black/35 transition-colors hover:bg-red-50 hover:text-red-500"
+              className="flex size-8 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
             >
               <X size={15} />
             </button>
@@ -101,7 +101,7 @@ export function IssueImagePicker({ file, onChange }: IssueImagePickerProps) {
           <button
             type="button"
             onClick={openImagePicker}
-            className="flex h-full w-full flex-col items-center justify-center gap-2 px-4 text-xs font-medium text-black/45 transition-colors hover:bg-[#f2f8f5] hover:text-[#04714a]"
+            className="flex h-full w-full flex-col items-center justify-center gap-2 px-4 text-xs font-medium text-muted-foreground transition-colors hover:bg-brand-soft hover:text-brand-text"
           >
             <ImagePlus size={18} />
             Đính kèm ảnh lỗi
@@ -111,11 +111,11 @@ export function IssueImagePicker({ file, onChange }: IssueImagePickerProps) {
 
       <div className="mt-1.5 min-h-4 text-[10px]">
         {error ? (
-          <p role="alert" className="text-red-500">
+          <p role="alert" className="text-destructive">
             {error}
           </p>
         ) : (
-          <p className="text-black/35">PNG, JPG hoặc WebP · Tối đa 5 MB</p>
+          <p className="text-muted-foreground">PNG, JPG hoặc WebP · Tối đa 5 MB</p>
         )}
       </div>
     </div>
