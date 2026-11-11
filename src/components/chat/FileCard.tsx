@@ -16,6 +16,7 @@ import {
   downloadFileWithAuth,
 } from "../../lib/filePreviewUtils";
 import { toast } from "sonner";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 interface FileCardProps {
   file: PreviewFile;
@@ -32,6 +33,8 @@ export function FileCard({
   compact = false,
   className = "",
 }: FileCardProps) {
+  const { lang } = useLanguage();
+  const isEn = lang === "en";
   const [downloading, setDownloading] = useState(false);
   const [downloadSuccess, setDownloadSuccess] = useState(false);
 
@@ -52,9 +55,9 @@ export function FileCard({
       await downloadFileWithAuth(file.url, file.name);
       setDownloadSuccess(true);
       setTimeout(() => setDownloadSuccess(false), 2000);
-      toast.success(`Đã bắt đầu tải xuống ${file.name}`);
+      toast.success(isEn ? `Started downloading ${file.name}` : `Đã bắt đầu tải xuống ${file.name}`);
     } catch (err) {
-      toast.error(`Không thể tải xuống: ${(err as Error).message}`);
+      toast.error(isEn ? `Failed to download: ${(err as Error).message}` : `Không thể tải xuống: ${(err as Error).message}`);
     } finally {
       setDownloading(false);
     }
@@ -125,7 +128,7 @@ export function FileCard({
   return (
     <span
       onClick={handlePreview}
-      className={`group/card relative my-2 flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-black/10 bg-white p-3 text-[#11130f] shadow-xs transition-all hover:bg-black/[0.015] hover:shadow-sm ${scheme.border} ${className}`}
+      className={`group/card relative my-2 flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-black/10 bg-white p-3 text-[#11130f] shadow-xs transition-all hover:bg-black/[0.015] hover:shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-gray-100 dark:hover:bg-white/10 ${scheme.border} ${className}`}
     >
       <span className="flex min-w-0 flex-1 items-center gap-3">
         <span
@@ -137,14 +140,14 @@ export function FileCard({
         <span className="min-w-0 flex-1 block">
           <span className="flex items-center gap-2">
             <span
-              className="truncate text-xs sm:text-sm font-semibold text-zinc-900 group-hover/card:text-[#04714a]"
+              className="truncate text-xs sm:text-sm font-semibold text-zinc-900 group-hover/card:text-[#04714a] dark:text-zinc-100 dark:group-hover/card:text-emerald-400"
               title={file.name}
             >
               {file.name}
             </span>
           </span>
 
-          <span className="mt-0.5 flex items-center gap-2 text-[11px] text-black/50">
+          <span className="mt-0.5 flex items-center gap-2 text-[11px] text-black/50 dark:text-white/50">
             <span
               className={`rounded px-1.5 py-0.2 font-mono text-[10px] font-semibold uppercase tracking-wider border ${scheme.badgeBg}`}
             >
@@ -165,12 +168,12 @@ export function FileCard({
           <button
             type="button"
             onClick={handlePreview}
-            title="Xem ngay tài liệu"
-            aria-label={`Xem ngay ${file.name}`}
-            className="flex items-center gap-1 rounded-lg bg-[#e8f7ef] px-2.5 py-1.5 text-xs font-semibold text-[#04714a] transition-all hover:bg-[#d0f0df] hover:text-[#035e3f] active:scale-95 cursor-pointer"
+            title={isEn ? "Preview document" : "Xem ngay tài liệu"}
+            aria-label={isEn ? `Preview ${file.name}` : `Xem ngay ${file.name}`}
+            className="flex items-center gap-1 rounded-lg bg-[#e8f7ef] px-2.5 py-1.5 text-xs font-semibold text-[#04714a] transition-all hover:bg-[#d0f0df] hover:text-[#035e3f] dark:bg-emerald-950/50 dark:text-emerald-400 dark:hover:bg-emerald-900/50 active:scale-95 cursor-pointer"
           >
             <Eye size={13} />
-            <span className="hidden sm:inline">Xem ngay</span>
+            <span className="hidden sm:inline">{isEn ? "Preview" : "Xem ngay"}</span>
           </button>
         )}
 
@@ -178,10 +181,12 @@ export function FileCard({
           type="button"
           onClick={handleDownload}
           disabled={downloading}
-          title={downloadSuccess ? "Đã tải xong" : "Tải xuống tài liệu"}
-          aria-label={`Tải xuống ${file.name}`}
-          className={`flex items-center gap-1 rounded-lg border border-black/10 px-2.5 py-1.5 text-xs font-medium transition-all hover:bg-black/5 active:scale-95 cursor-pointer disabled:opacity-50 ${
-            downloadSuccess ? "border-emerald-300 bg-emerald-50 text-emerald-700" : "text-zinc-700"
+          title={downloadSuccess ? (isEn ? "Downloaded" : "Đã tải xong") : (isEn ? "Download document" : "Tải xuống tài liệu")}
+          aria-label={isEn ? `Download ${file.name}` : `Tải xuống ${file.name}`}
+          className={`flex items-center gap-1 rounded-lg border border-black/10 px-2.5 py-1.5 text-xs font-medium transition-all hover:bg-black/5 dark:border-white/15 dark:hover:bg-white/10 active:scale-95 cursor-pointer disabled:opacity-50 ${
+            downloadSuccess
+              ? "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300"
+              : "text-zinc-700 dark:text-zinc-200"
           }`}
         >
           {downloading ? (
@@ -192,7 +197,11 @@ export function FileCard({
             <Download size={13} />
           )}
           <span className="hidden sm:inline">
-            {downloading ? "Đang tải..." : downloadSuccess ? "Đã tải" : "Tải xuống"}
+            {downloading
+              ? isEn ? "Downloading..." : "Đang tải..."
+              : downloadSuccess
+              ? isEn ? "Done" : "Đã tải"
+              : isEn ? "Download" : "Tải xuống"}
           </span>
         </button>
       </span>

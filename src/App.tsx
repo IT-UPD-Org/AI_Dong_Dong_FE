@@ -1,6 +1,8 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { ThemeProvider } from './components/theme/ThemeProvider';
+import { LanguageProvider } from './contexts/LanguageContext';
 import AppRouter from './router/AppRouter';
 import { PageLoader } from './components/layout/PageLoader';
 
@@ -49,8 +51,12 @@ export default function App() {
   }
 
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <ThemeProvider>
+      <LanguageProvider>
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
+      </LanguageProvider>
+    </ThemeProvider>
   );
 }

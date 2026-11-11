@@ -9,6 +9,7 @@ import { DocumentUploadPopup } from "./DocumentUploadPopup";
 import { applyDocumentUpdate, documentApi } from "../../api/document.api";
 import type { Document } from "../../api/types";
 import { useVoiceInput } from "../../hooks/useVoiceInput";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 interface ModifiedPromptInputProps {
   value: string;
@@ -229,6 +230,9 @@ export function ModifiedPromptInput({
     d.filename.toLowerCase().includes(mentionQuery.toLowerCase()),
   );
 
+  const { t } = useLanguage();
+  const effectivePlaceholder = placeholder || t("inputPlaceholder");
+
   return (
     <div className="relative">
       {/* Upload Popup */}
@@ -241,18 +245,18 @@ export function ModifiedPromptInput({
 
       {/* Mention Dropdown */}
       {showMentions && mentionFilteredDocs.length > 0 && (
-        <div className="absolute bottom-full left-4 mb-2 max-h-60 w-80 max-w-[calc(100%_-_2rem)] overflow-y-auto rounded-xl border border-black/10 bg-white p-2 shadow-lg z-50 animate-in fade-in slide-in-from-bottom-2 duration-150">
-          <p className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">
-            Gợi ý tài liệu
+        <div className="absolute bottom-full left-4 mb-2 max-h-60 w-80 max-w-[calc(100%_-_2rem)] overflow-y-auto rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#1f2227] p-2 shadow-lg z-50 animate-in fade-in slide-in-from-bottom-2 duration-150">
+          <p className="px-2 py-1 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
+            {t("suggestDocs")}
           </p>
           {mentionFilteredDocs.map((doc) => (
             <button
               key={doc.document_id}
               type="button"
-              className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm hover:bg-gray-100 transition-colors cursor-pointer"
+              className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-white/10 text-gray-800 dark:text-gray-200 transition-colors cursor-pointer"
               onClick={() => insertMention(doc)}
             >
-              <Paperclip size={14} className="text-gray-400 shrink-0" />
+              <Paperclip size={14} className="text-gray-400 dark:text-gray-500 shrink-0" />
               <span className="truncate flex-1">{doc.filename}</span>
             </button>
           ))}
@@ -265,32 +269,32 @@ export function ModifiedPromptInput({
       >
         <div className="mx-auto flex w-full max-w-4xl flex-col px-3 sm:px-4">
           {(uploading || processing) && (
-            <p role="status" className="pb-1 text-center text-xs text-black/50">
-              Đang xử lý tài liệu, vui lòng đợi trước khi gửi.
+            <p role="status" className="pb-1 text-center text-xs text-black/50 dark:text-white/50">
+              {t("processingDocs")}
             </p>
           )}
           {documentFailed && (
-            <p role="alert" className="pb-1 text-center text-xs text-red-600">
-              Tài liệu xử lý không thành công. Hãy xóa tài liệu lỗi và thử tải lại.
+            <p role="alert" className="pb-1 text-center text-xs text-red-600 dark:text-red-400">
+              {t("docFailed")}
             </p>
           )}
           {voiceError && (
-            <p role="alert" className="pb-1 text-center text-xs text-red-600">
+            <p role="alert" className="pb-1 text-center text-xs text-red-600 dark:text-red-400">
               {voiceError}
             </p>
           )}
 
           {/* Ô nhập chính — Glassmorphism với bo góc lớn, shadow nhẹ và viền mảnh */}
-          <div className="flex flex-col rounded-[24px] sm:rounded-[26px] border border-black/[0.12] bg-white/75 backdrop-blur-xl p-1.5 shadow-[0_4px_20px_rgba(0,0,0,0.06)] transition-all focus-within:border-[#04714a]/45 focus-within:bg-white/90 focus-within:shadow-[0_6px_24px_rgba(0,168,107,0.12)]">
+          <div className="flex flex-col rounded-[24px] sm:rounded-[26px] border border-black/[0.12] dark:border-white/15 bg-white/80 dark:bg-[#1a1d21]/80 backdrop-blur-xl p-1.5 shadow-[0_4px_20px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.35)] transition-all focus-within:border-[#04714a]/45 focus-within:bg-white/95 dark:focus-within:bg-[#202328]/95 focus-within:shadow-[0_6px_24px_rgba(0,168,107,0.12)]">
             {/* Danh sách file đính kèm hiển thị gọn gàng bên trong card */}
             {attachedDocs.length > 0 && (
               <div className="flex flex-wrap gap-1.5 px-2 pt-1 pb-1.5">
                 {attachedDocs.map((doc) => (
                   <div
                     key={doc.document_id}
-                    className="flex items-center gap-1.5 rounded-lg border border-[#04714a]/20 bg-[#e8f7ef]/80 px-2.5 py-1 text-xs text-[#013422] shadow-2xs backdrop-blur-xs"
+                    className="flex items-center gap-1.5 rounded-lg border border-[#04714a]/20 dark:border-emerald-500/30 bg-[#e8f7ef]/80 dark:bg-emerald-950/60 px-2.5 py-1 text-xs text-[#013422] dark:text-emerald-200 shadow-2xs backdrop-blur-xs"
                   >
-                    <FileText size={13} className="text-[#04714a] shrink-0" />
+                    <FileText size={13} className="text-[#04714a] dark:text-emerald-400 shrink-0" />
                     <span className="max-w-[180px] truncate font-medium text-[11px]">
                       {doc.filename}
                     </span>
@@ -307,8 +311,8 @@ export function ModifiedPromptInput({
                           );
                         }
                       }}
-                      className="ml-0.5 rounded-full p-0.5 text-black/40 hover:bg-black/10 hover:text-black transition-colors cursor-pointer"
-                      title="Xóa tài liệu đính kèm"
+                      className="ml-0.5 rounded-full p-0.5 text-black/40 dark:text-white/50 hover:bg-black/10 dark:hover:bg-white/10 hover:text-black dark:hover:text-white transition-colors cursor-pointer"
+                      title={t("removeAttachment")}
                     >
                       <X size={12} />
                     </button>
@@ -323,8 +327,8 @@ export function ModifiedPromptInput({
                 type="button"
                 onClick={() => setIsUploadOpen(!isUploadOpen)}
                 disabled={loading || uploading}
-                className="flex size-9 shrink-0 items-center justify-center rounded-full text-black/55 hover:bg-black/5 hover:text-black/85 transition-colors cursor-pointer focus:outline-none disabled:opacity-40"
-                title="Tải lên tài liệu"
+                className="flex size-9 shrink-0 items-center justify-center rounded-full text-black/55 dark:text-white/60 hover:bg-black/5 dark:hover:bg-white/10 hover:text-black/85 dark:hover:text-white transition-colors cursor-pointer focus:outline-none disabled:opacity-40"
+                title={t("uploadDoc")}
               >
                 <PlusIcon />
               </button>
@@ -333,8 +337,8 @@ export function ModifiedPromptInput({
               <button
                 type="button"
                 onClick={() => setIsModalOpen(true)}
-                title={`Cấu hình Effort (${currentConfig.label})`}
-                className="flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-black/[0.04] px-3 text-xs font-semibold text-[#04714a] transition-colors hover:bg-black/[0.08] cursor-pointer focus:outline-none"
+                title={`${t("configEffort")} (${currentConfig.label})`}
+                className="flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-black/[0.04] dark:bg-white/[0.08] px-3 text-xs font-semibold text-[#04714a] dark:text-[#4ade80] transition-colors hover:bg-black/[0.08] dark:hover:bg-white/[0.12] cursor-pointer focus:outline-none"
               >
                 <SlidersIcon />
                 <span>{currentConfig.label}</span>
@@ -343,10 +347,10 @@ export function ModifiedPromptInput({
               {/* Input Textarea tự động mở rộng theo nội dung */}
               <textarea
                 ref={textareaRef}
-                aria-label="Nội dung câu hỏi"
+                aria-label={t("inputPlaceholder")}
                 rows={1}
                 value={value}
-                placeholder={placeholder}
+                placeholder={effectivePlaceholder}
                 onChange={(e) => handleTextChange(e.target.value)}
                 onKeyDown={handleKeyDown}
                 onPaste={(event) => {
@@ -358,7 +362,7 @@ export function ModifiedPromptInput({
                 }}
                 disabled={loading}
                 style={{ outline: "none", boxShadow: "none" }}
-                className="max-h-[140px] min-w-0 flex-1 resize-none bg-transparent py-2 text-sm text-[#11130f] border-0 outline-none ring-0 focus:border-0 focus:outline-none focus:ring-0 focus:shadow-none focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-black/40 px-2"
+                className="max-h-[140px] min-w-0 flex-1 resize-none bg-transparent py-2 text-sm text-[#11130f] dark:text-gray-100 border-0 outline-none ring-0 focus:border-0 focus:outline-none focus:ring-0 focus:shadow-none focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-black/40 dark:placeholder:text-white/40 px-2"
               />
 
               {/* Nút Giọng nói */}
@@ -369,14 +373,14 @@ export function ModifiedPromptInput({
                 title={
                   supported
                     ? listening
-                      ? "Dừng ghi âm"
-                      : "Nói để nhập"
-                    : "Trình duyệt không hỗ trợ giọng nói"
+                      ? t("voiceStop")
+                      : t("voiceInput")
+                    : t("voiceUnsupported")
                 }
                 className={`flex size-9 shrink-0 items-center justify-center rounded-full transition-colors disabled:opacity-30 cursor-pointer focus:outline-none ${
                   listening
                     ? "bg-red-500 text-white animate-pulse"
-                    : "text-black/45 hover:bg-black/5 hover:text-black/75"
+                    : "text-black/45 dark:text-white/60 hover:bg-black/5 dark:hover:bg-white/10 hover:text-black/75 dark:hover:text-white"
                 }`}
               >
                 <MicIcon />
@@ -386,7 +390,7 @@ export function ModifiedPromptInput({
               <button
                 type="submit"
                 disabled={submitDisabled}
-                title="Gửi"
+                title={t("send")}
                 className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#04714a] text-white transition-all shadow-xs disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#035e3f] cursor-pointer focus:outline-none"
               >
                 <SendIcon />
@@ -394,8 +398,8 @@ export function ModifiedPromptInput({
             </div>
           </div>
 
-          <p className="mt-1.5 text-center text-[11px] text-black/35 select-none tracking-tight">
-            IT UPD GenAI có thể đưa ra câu trả lời chưa chính xác. Hãy kiểm tra lại thông tin quan trọng.
+          <p className="mt-1.5 text-center text-[11px] text-black/35 dark:text-white/40 select-none tracking-tight">
+            {t("disclaimer")}
           </p>
         </div>
       </form>

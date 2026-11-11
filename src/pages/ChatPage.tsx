@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useState, useRef, Fragment } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { Loader2 } from "lucide-react";
+import { Loader2, Sparkles } from "lucide-react";
 import {
   streamChatMessage,
   getConversationState,
@@ -21,29 +21,35 @@ import { buildApiUrl } from "../api/client";
 import { documentApi } from "../api/document.api";
 import { chatApi } from "../api/chat.api";
 import type { ChatMessage, ChatStreamChunk, Document } from "../api/types";
+import { useLanguage } from "../contexts/LanguageContext";
 
 type Reaction = "like" | "dislike";
 
 function EmptyStatePrompt() {
+  const { t } = useLanguage();
   const [shown, setShown] = useState(false);
   useEffect(() => {
     const frame = requestAnimationFrame(() => setShown(true));
     return () => cancelAnimationFrame(frame);
   }, []);
   return (
-    <div className="flex justify-center px-2 pb-3">
+    <div className="flex justify-center px-2 pb-2">
       <div
-        className={`rounded-full border border-black/10 bg-white px-5 py-2.5 text-sm font-medium text-[#11130f] shadow-sm transition-all duration-500 ease-out ${
-          shown ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0"
+        className={`rounded-full border border-black/10 dark:border-white/10 bg-white/90 dark:bg-[#1f2227]/90 px-4 py-1.5 text-xs sm:text-sm font-semibold text-[#11130f] dark:text-gray-100 shadow-sm backdrop-blur-md transition-all duration-500 ease-out ${
+          shown ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"
         }`}
       >
-        Hãy hỏi bất cứ điều gì
+        <span className="flex items-center gap-2">
+          <span className="size-2 rounded-full bg-[#04714a] animate-pulse" />
+          {t("askAnythingTitle")}
+        </span>
       </div>
     </div>
   );
 }
 
 export function ChatPage() {
+  const { t } = useLanguage();
   const { id: routeId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -218,7 +224,7 @@ export function ChatPage() {
           if (asyncStatus !== "none") void followRunningReply();
         })
         .catch(() => {
-          if (!cancelled) setError("Không thể tải cuộc trò chuyện. Vui lòng thử lại.");
+          if (!cancelled) setError(t("loadError"));
         })
         .finally(() => {
           if (!cancelled) setLoading(false);
@@ -307,8 +313,22 @@ export function ChatPage() {
           if (chunk.conversationId && !conversationIdRef.current) {
             conversationIdRef.current = chunk.conversationId;
             pendingCreatedIdRef.current = chunk.conversationId;
+            const promptText = payload.message;
+            if (promptText) {
+              const snippet = promptText.trim().replace(/\s+/g, " ").slice(0, 50);
+              try {
+                localStorage.setItem(`chat_first_prompt_${chunk.conversationId}`, snippet);
+                chatApi.patchTitle(chunk.conversationId, snippet).catch(() => {});
+              } catch {
+                // ignore
+              }
+            }
             navigate(`/c/${chunk.conversationId}`, { replace: true, state: location.state });
-            window.dispatchEvent(new CustomEvent("chats:updated"));
+            window.dispatchEvent(
+              new CustomEvent("chats:updated", {
+                detail: { conversationId: chunk.conversationId, prompt: payload.message },
+              }),
+            );
           }
 
           setMsgs((prev) =>
@@ -348,7 +368,11 @@ export function ChatPage() {
                 : msg,
             ),
           );
-          window.dispatchEvent(new CustomEvent("chats:updated"));
+          window.dispatchEvent(
+            new CustomEvent("chats:updated", {
+              detail: { conversationId: conversationIdRef.current, prompt: payload.message },
+            }),
+          );
         },
         undefined,
         controller.signal,
@@ -558,14 +582,14 @@ export function ChatPage() {
   }
 
   return (
-    <div className="relative flex h-full min-w-0 flex-row overflow-hidden">
+    <div className="relative flex h-full min-w-0 flex-row overflow-hidden bg-white dark:bg-[#111215] text-[#11130f] dark:text-gray-100 transition-colors">
       {/* Chat Column */}
       <div
         className={`relative flex h-full min-w-0 flex-col overflow-hidden transition-all duration-200 ${
           previewFile
             ? isPreviewExpanded
-              ? "hidden md:flex md:w-[35%] lg:w-[35%] shrink-0 border-r border-black/10"
-              : "hidden md:flex md:w-[58%] lg:w-[60%] shrink-0 border-r border-black/10"
+              ? "hidden md:flex md:w-[35%] lg:w-[35%] shrink-0 border-r border-black/10 dark:border-white/10"
+              : "hidden md:flex md:w-[58%] lg:w-[60%] shrink-0 border-r border-black/10 dark:border-white/10"
             : "w-full"
         }`}
       >
@@ -582,6 +606,21 @@ export function ChatPage() {
               }`}
             >
               <div className="flex flex-col gap-5">
+                {/* Hero Greeting when conversation is empty */}
+                {isEmpty && !loading && (
+                  <div className="flex min-h-[42vh] flex-col items-center justify-center px-4 py-8 text-center select-none animate-in fade-in duration-500">
+                    <div className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-[#04714a]/10 dark:bg-[#04714a]/20 text-[#04714a] dark:text-[#4ade80] shadow-xs">
+                      <Sparkles size={28} />
+                    </div>
+                    <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#11130f] dark:text-gray-100">
+                      {t("askAnythingTitle")}
+                    </h2>
+                    <p className="mt-2 text-xs sm:text-sm text-black/55 dark:text-gray-400 max-w-md leading-relaxed">
+                      {t("askAnythingSubtitle")}
+                    </p>
+                  </div>
+                )}
+
                 {groupMessages(msgs).map((item) => {
                   const { message } = item;
                   // Regenerating a reply replaces all of it, from its first message.
@@ -657,40 +696,35 @@ export function ChatPage() {
           )}
         </div>
 
-        {loading && msgs.length === 0 && conversationId ? (
+        {loading && msgs.length === 0 && conversationId && (
           <div className="flex justify-center py-12">
-            <div className="flex items-center gap-2 rounded-full border border-black/10 bg-white/80 px-4 py-2 text-xs font-medium text-black/60 shadow-xs backdrop-blur-xs">
-              <Loader2 className="size-3.5 animate-spin text-[#04714a]" />
-              <span>Đang tải cuộc trò chuyện...</span>
+            <div className="flex items-center gap-2 rounded-full border border-black/10 dark:border-white/10 bg-white/80 dark:bg-[#1a1d21]/80 px-4 py-2 text-xs font-medium text-black/60 dark:text-gray-300 shadow-xs backdrop-blur-xs">
+              <Loader2 className="size-3.5 animate-spin text-[#04714a] dark:text-[#4ade80]" />
+              <span>{t("loadingConversation")}</span>
             </div>
           </div>
-        ) : (
-          isEmpty && <EmptyStatePrompt />
         )}
 
         {/* Fixed Glassmorphism Chat Input — always anchored to bottom */}
         <div
-          className="absolute bottom-0 inset-x-0 z-20 pointer-events-none pb-2 sm:pb-3 md:pb-4 pt-10"
-          style={{
-            background: "linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.35) 40%, rgba(255,255,255,0.7) 100%)",
-          }}
+          className="absolute bottom-0 inset-x-0 z-20 pointer-events-none pb-2 sm:pb-3 md:pb-4 pt-10 bg-gradient-to-t from-white via-white/85 to-transparent dark:from-[#111215] dark:via-[#111215]/85 dark:to-transparent"
         >
           {/* Status banners above the input */}
           {error && (
-            <p role="alert" className="pointer-events-auto px-4 pb-2 text-sm text-red-600 text-center font-medium">
+            <p role="alert" className="pointer-events-auto px-4 pb-2 text-sm text-red-600 dark:text-red-400 text-center font-medium">
               {error}
             </p>
           )}
 
           {runningElsewhere && (
-            <div className="pointer-events-auto mx-auto mb-2 flex w-full max-w-4xl items-center justify-between gap-3 rounded-2xl border border-black/10 bg-white/85 px-4 py-2 text-sm shadow-sm backdrop-blur-md">
-              <span className="text-black/70">Một câu trả lời khác đang chạy. Tin nhắn của bạn chưa được gửi.</span>
+            <div className="pointer-events-auto mx-auto mb-2 flex w-full max-w-4xl items-center justify-between gap-3 rounded-2xl border border-black/10 dark:border-white/10 bg-white/85 dark:bg-[#1a1d21]/90 px-4 py-2 text-sm shadow-sm backdrop-blur-md">
+              <span className="text-black/70 dark:text-gray-300">{t("replyRunningElsewhere")}</span>
               <button
                 type="button"
                 onClick={followRunningReply}
-                className="rounded-full border border-black/15 bg-white px-3 py-1 font-medium text-[#04714a] hover:bg-[#e8f7ef] cursor-pointer"
+                className="rounded-full border border-black/15 dark:border-white/15 bg-white dark:bg-[#202328] px-3 py-1 font-medium text-[#04714a] dark:text-[#4ade80] hover:bg-[#e8f7ef] dark:hover:bg-[#04714a]/20 cursor-pointer"
               >
-                Theo dõi câu trả lời
+                {t("followReply")}
               </button>
             </div>
           )}
@@ -700,11 +734,18 @@ export function ChatPage() {
               <button
                 type="button"
                 onClick={stopReply}
-                className="flex items-center gap-1.5 rounded-full border border-black/15 bg-white/90 px-3.5 py-1.5 text-xs font-semibold text-black/70 shadow-sm backdrop-blur-md hover:bg-white cursor-pointer"
+                className="flex items-center gap-1.5 rounded-full border border-black/15 dark:border-white/15 bg-white/90 dark:bg-[#202328]/90 px-3.5 py-1.5 text-xs font-semibold text-black/70 dark:text-gray-200 shadow-sm backdrop-blur-md hover:bg-white dark:hover:bg-[#252930] cursor-pointer"
               >
                 <span className="size-2 rounded-xs bg-current" aria-hidden />
-                Dừng trả lời
+                {t("stopReply")}
               </button>
+            </div>
+          )}
+
+          {/* Yêu cầu 1: Đưa phần "Hãy hỏi bất cứ điều gì" lên TRÊN input prompt, sau khi chat câu đầu tiên thì biến mất */}
+          {isEmpty && !loading && (
+            <div className="pointer-events-auto">
+              <EmptyStatePrompt />
             </div>
           )}
 
@@ -730,7 +771,7 @@ export function ChatPage() {
       {/* File Preview Workspace Column */}
       {previewFile && (
         <div
-          className={`fixed inset-0 z-50 bg-white md:static md:z-auto md:flex md:h-full md:min-w-0 transition-all duration-200 ${
+          className={`fixed inset-0 z-50 bg-white dark:bg-[#16181b] md:static md:z-auto md:flex md:h-full md:min-w-0 transition-all duration-200 ${
             isPreviewExpanded ? "md:w-[65%] lg:w-[65%]" : "md:flex-1"
           }`}
         >

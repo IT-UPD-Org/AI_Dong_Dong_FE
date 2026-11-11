@@ -4,13 +4,22 @@ import { FileText, UploadCloud, Trash2, File, FileSpreadsheet, FileIcon as FileP
 import { toast } from 'sonner';
 import { applyDocumentUpdate, documentApi } from '../api/document.api';
 import type { Document, DocumentStatus, StorageUsage } from '../api/types';
+import { useLanguage } from '../contexts/LanguageContext';
 
-const STATUS_LABELS: Record<DocumentStatus, string> = {
+const STATUS_LABELS_VI: Record<DocumentStatus, string> = {
   uploading: 'Đang tải lên',
   converting: 'Đang chuyển đổi...',
   processing: 'Đang lập chỉ mục...',
   ready: 'Sẵn sàng',
   error: 'Lỗi',
+};
+
+const STATUS_LABELS_EN: Record<DocumentStatus, string> = {
+  uploading: 'Uploading',
+  converting: 'Converting...',
+  processing: 'Indexing...',
+  ready: 'Ready',
+  error: 'Error',
 };
 
 function formatBytes(bytes: number, decimals = 1) {
@@ -38,6 +47,10 @@ function getFileIcon(filename: string, fileType: Document['file_type']) {
 }
 
 export function DocumentsPage() {
+  const { lang } = useLanguage();
+  const isEn = lang === "en";
+  const statusLabels = isEn ? STATUS_LABELS_EN : STATUS_LABELS_VI;
+
   const { confirm, dialog: confirmDialog } = useConfirm();
   const [docs, setDocs] = useState<Document[]>([]);
   const [storage, setStorage] = useState<StorageUsage | null>(null);
@@ -118,18 +131,23 @@ export function DocumentsPage() {
   const strokeDashoffset = circumference - (percentUsed / 100) * circumference;
 
   return (
-    <main className="px-4 py-6 sm:px-6 sm:py-8">
-      <p className="font-mono text-xs uppercase tracking-[.18em] text-[#04714a]">Kho tài liệu</p>
-      <h1 className="mt-3 text-3xl sm:text-5xl font-bold tracking-[-.07em]">Documents</h1>
+    <main className="px-4 py-6 sm:px-6 sm:py-8 text-zinc-900 dark:text-gray-100">
+      <p className="font-mono text-xs uppercase tracking-[.18em] text-[#04714a] dark:text-emerald-400">
+        {isEn ? "Document Repository" : "Kho tài liệu"}
+      </p>
+      <h1 className="mt-3 text-3xl sm:text-5xl font-bold tracking-[-.07em] text-gray-900 dark:text-white">
+        {isEn ? "Documents" : "Tài liệu"}
+      </h1>
 
       {storage && (
-        <div className="mt-10 flex flex-col md:flex-row items-center gap-6 rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
+        <div className="mt-10 flex flex-col md:flex-row items-center gap-6 rounded-3xl border border-black/10 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-[#1a1d21]">
           <div className="relative h-24 w-24 shrink-0">
             <svg className="h-full w-full -rotate-90 transform" viewBox="0 0 100 100">
               <circle
                 cx="50" cy="50" r={radius}
                 fill="transparent"
                 stroke="#e5e7eb"
+                className="dark:stroke-white/10"
                 strokeWidth="12"
               />
               <circle
@@ -139,26 +157,28 @@ export function DocumentsPage() {
                 strokeWidth="12"
                 strokeDasharray={circumference}
                 strokeDashoffset={strokeDashoffset}
-                className="transition-all duration-500 ease-in-out"
+                className="transition-all duration-500 ease-in-out dark:stroke-emerald-500"
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-sm font-bold text-gray-800">{percentUsed}%</span>
+              <span className="text-sm font-bold text-gray-800 dark:text-white">{percentUsed}%</span>
             </div>
           </div>
           
-          <div className="flex-1 text-sm text-gray-700">
-            <p className="font-semibold text-lg text-gray-900 mb-1">Dung lượng lưu trữ</p>
+          <div className="flex-1 text-sm text-gray-700 dark:text-gray-300">
+            <p className="font-semibold text-lg text-gray-900 dark:text-white mb-1">
+              {isEn ? "Storage Capacity" : "Dung lượng lưu trữ"}
+            </p>
             <div className="flex justify-between max-w-sm mb-1">
-              <span>Đã dùng:</span>
-              <span className="font-medium text-gray-900">{formatBytes(storage.used_bytes)}</span>
+              <span>{isEn ? "Used:" : "Đã dùng:"}</span>
+              <span className="font-medium text-gray-900 dark:text-white">{formatBytes(storage.used_bytes)}</span>
             </div>
             <div className="flex justify-between max-w-sm mb-1">
-              <span>Còn lại:</span>
-              <span className="font-medium text-[#04714a]">{formatBytes(storage.free_bytes)}</span>
+              <span>{isEn ? "Free:" : "Còn lại:"}</span>
+              <span className="font-medium text-[#04714a] dark:text-emerald-400">{formatBytes(storage.free_bytes)}</span>
             </div>
-            <div className="flex justify-between max-w-sm text-gray-500 border-t mt-1 pt-1">
-              <span>Tổng:</span>
+            <div className="flex justify-between max-w-sm text-gray-500 dark:text-gray-400 border-t border-black/10 dark:border-white/10 mt-1 pt-1">
+              <span>{isEn ? "Total:" : "Tổng:"}</span>
               <span>{formatBytes(storage.total_bytes)}</span>
             </div>
           </div>
@@ -166,14 +186,20 @@ export function DocumentsPage() {
       )}
 
       <div 
-        className="mt-6 cursor-pointer rounded-3xl border border-dashed border-black/20 bg-white p-10 text-center transition-colors hover:border-[#04714a] hover:bg-[#04714a]/5"
+        className="mt-6 cursor-pointer rounded-3xl border border-dashed border-black/20 bg-white p-10 text-center transition-colors hover:border-[#04714a] hover:bg-[#04714a]/5 dark:border-white/15 dark:bg-[#1a1d21]/60 dark:hover:border-emerald-500 dark:hover:bg-emerald-500/5"
         onClick={() => fileInputRef.current?.click()}
       >
-        <UploadCloud className="mx-auto text-[#00a86b]" size={30} />
-        <h2 className="mt-4 font-semibold text-gray-900">Tải tài liệu lên</h2>
-        <p className="mt-2 text-sm text-black/50">PDF, DOCX, XLSX, PPTX, Markdown và hình ảnh · Hỗ trợ MarkItDown</p>
-        <button className="mt-6 rounded-xl bg-[#11130f] px-5 py-3 text-sm font-semibold text-white hover:bg-[#04714a] transition-colors">
-          Chọn file
+        <UploadCloud className="mx-auto text-[#00a86b] dark:text-emerald-400" size={30} />
+        <h2 className="mt-4 font-semibold text-gray-900 dark:text-white">
+          {isEn ? "Upload documents" : "Tải tài liệu lên"}
+        </h2>
+        <p className="mt-2 text-sm text-black/50 dark:text-gray-400">
+          {isEn
+            ? "PDF, DOCX, XLSX, PPTX, Markdown and images · Powered by MarkItDown"
+            : "PDF, DOCX, XLSX, PPTX, Markdown và hình ảnh · Hỗ trợ MarkItDown"}
+        </p>
+        <button className="mt-6 rounded-xl bg-[#11130f] px-5 py-3 text-sm font-semibold text-white hover:bg-[#04714a] dark:bg-white/10 dark:hover:bg-emerald-600 transition-colors cursor-pointer">
+          {isEn ? "Select files" : "Chọn file"}
         </button>
         <input 
           type="file" 
@@ -186,16 +212,16 @@ export function DocumentsPage() {
       </div>
 
       <div className="mt-8 flex flex-col gap-2">
-        {loading && <p className="text-sm text-gray-500 text-center py-4">Đang tải tài liệu...</p>}
+        {loading && <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">{isEn ? "Loading documents..." : "Đang tải tài liệu..."}</p>}
         {!loading && loadError && (
-          <p className="text-sm text-red-600 text-center py-4">Không thể tải tài liệu: {loadError}</p>
+          <p className="text-sm text-red-600 dark:text-red-400 text-center py-4">{isEn ? `Cannot load documents: ${loadError}` : `Không thể tải tài liệu: ${loadError}`}</p>
         )}
         {!loading && !loadError && docs.length === 0 && (
-          <p className="text-sm text-gray-500 text-center py-4">Chưa có tài liệu nào.</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">{isEn ? "No documents yet." : "Chưa có tài liệu nào."}</p>
         )}
         {docs.map(d => (
-          <div key={d.document_id} className="flex items-center gap-4 rounded-2xl border border-black/10 bg-white p-4 shadow-sm">
-            <div className="shrink-0 p-2 bg-gray-50 rounded-lg">
+          <div key={d.document_id} className="flex items-center gap-4 rounded-2xl border border-black/10 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#1a1d21]">
+            <div className="shrink-0 p-2 bg-gray-50 dark:bg-white/5 rounded-lg">
               {getFileIcon(d.filename, d.file_type)}
             </div>
             <div className="min-w-0 flex-1">
@@ -204,35 +230,35 @@ export function DocumentsPage() {
                   href={d.file_url}
                   target="_blank"
                   rel="noreferrer"
-                  className="block truncate text-sm font-semibold text-gray-900 hover:text-[#04714a] hover:underline"
+                  className="block truncate text-sm font-semibold text-gray-900 hover:text-[#04714a] dark:text-white dark:hover:text-emerald-400 hover:underline"
                 >
                   {d.title}
                 </a>
               ) : (
-                <p className="truncate text-sm font-semibold text-gray-900">{d.title}</p>
+                <p className="truncate text-sm font-semibold text-gray-900 dark:text-white">{d.title}</p>
               )}
-              <p className="mt-1 flex items-center gap-2 text-xs text-black/45">
+              <p className="mt-1 flex items-center gap-2 text-xs text-black/45 dark:text-gray-400">
                 <span className="truncate">{d.filename}</span>
                 <span>·</span>
-                <span>{d.file_type === 'image' ? 'Hình ảnh' : 'Tài liệu'}</span>
+                <span>{d.file_type === 'image' ? (isEn ? 'Image' : 'Hình ảnh') : (isEn ? 'Document' : 'Tài liệu')}</span>
                 <span>·</span>
                 <span>{formatBytes(d.size_bytes)}</span>
               </p>
-              {d.error && <p className="mt-1 text-xs text-red-600">{d.error}</p>}
+              {d.error && <p className="mt-1 text-xs text-red-600 dark:text-red-400">{d.error}</p>}
             </div>
             <div className="flex items-center gap-3 shrink-0">
               <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${
-                d.status === 'ready' ? 'bg-green-100 text-green-700' :
-                d.status === 'error' ? 'bg-red-100 text-red-700' :
-                'bg-amber-100 text-amber-700'
+                d.status === 'ready' ? 'bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-300' :
+                d.status === 'error' ? 'bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300' :
+                'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300'
               }`}>
-                {STATUS_LABELS[d.status]}
+                {statusLabels[d.status]}
               </span>
               <button
                 onClick={() => handleDelete(d)}
                 disabled={d.status !== 'ready' && d.status !== 'error'}
-                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-30 disabled:pointer-events-none"
-                title="Xóa tài liệu"
+                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 dark:hover:text-red-400 rounded-lg transition-colors disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+                title={isEn ? "Delete document" : "Xóa tài liệu"}
               >
                 <Trash2 size={16} />
               </button>
