@@ -1,4 +1,10 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
 
 export type Language = "vi" | "en";
 
@@ -16,6 +22,7 @@ const translations: Record<Language, Translations> = {
     navDocuments: "Tài liệu",
     navContributors: "Người đóng góp",
     navAdmin: "Quản trị",
+    navCareerUniverse: "Cây Nghề Nghiệp",
     navMore: "Thêm...",
     newChat: "Cuộc trò chuyện mới",
     recent: "Gần đây",
@@ -29,7 +36,8 @@ const translations: Record<Language, Translations> = {
     roleTeacher: "Giảng viên",
     roleAdmin: "Quản trị viên",
     deleteChatTitle: "Xoá cuộc trò chuyện",
-    deleteChatConfirm: "Bạn có chắc chắn muốn xoá cuộc trò chuyện này không? Hành động này không thể hoàn tác.",
+    deleteChatConfirm:
+      "Bạn có chắc chắn muốn xoá cuộc trò chuyện này không? Hành động này không thể hoàn tác.",
     delete: "Xoá",
     cancel: "Hủy",
     save: "Lưu",
@@ -37,11 +45,13 @@ const translations: Record<Language, Translations> = {
 
     // Chat Page & Empty state
     askAnythingTitle: "Hãy hỏi bất cứ điều gì",
-    askAnythingSubtitle: "Khám phá tri thức, giải đáp câu hỏi và hỗ trợ học tập thông minh cùng IT UPD GenAI.",
+    askAnythingSubtitle:
+      "Khám phá tri thức, giải đáp câu hỏi và hỗ trợ học tập thông minh cùng IT UPD GenAI.",
     inputPlaceholder: "Hãy hỏi bất cứ điều gì...",
     loadingConversation: "Đang tải cuộc trò chuyện...",
     loadError: "Không thể tải cuộc trò chuyện. Vui lòng thử lại.",
-    replyRunningElsewhere: "Một câu trả lời khác đang chạy. Tin nhắn của bạn chưa được gửi.",
+    replyRunningElsewhere:
+      "Một câu trả lời khác đang chạy. Tin nhắn của bạn chưa được gửi.",
     followReply: "Theo dõi câu trả lời",
     stopReply: "Dừng trả lời",
     copySuccess: "Đã sao chép vào bộ nhớ tạm",
@@ -51,12 +61,14 @@ const translations: Record<Language, Translations> = {
     uploadDoc: "Tải lên tài liệu",
     suggestDocs: "Gợi ý tài liệu",
     processingDocs: "Đang xử lý tài liệu, vui lòng đợi trước khi gửi.",
-    docFailed: "Tài liệu xử lý không thành công. Hãy xóa tài liệu lỗi và thử tải lại.",
+    docFailed:
+      "Tài liệu xử lý không thành công. Hãy xóa tài liệu lỗi và thử tải lại.",
     voiceInput: "Nói để nhập",
     voiceStop: "Dừng ghi âm",
     voiceUnsupported: "Trình duyệt không hỗ trợ giọng nói",
     send: "Gửi",
-    disclaimer: "IT UPD GenAI có thể đưa ra câu trả lời chưa chính xác. Hãy kiểm tra lại thông tin quan trọng.",
+    disclaimer:
+      "IT UPD GenAI có thể đưa ra câu trả lời chưa chính xác. Hãy kiểm tra lại thông tin quan trọng.",
     attachedDoc: "Tài liệu đính kèm",
     sourceDoc: "Tài liệu nguồn",
     removeAttachment: "Xóa tài liệu đính kèm",
@@ -64,7 +76,8 @@ const translations: Record<Language, Translations> = {
     like: "Hài lòng",
     dislike: "Chưa hài lòng",
     report: "Báo cáo vấn đề",
-    hiddenViolationNotice: "Câu trả lời này đã bị ẩn vì vi phạm quy định sử dụng.",
+    hiddenViolationNotice:
+      "Câu trả lời này đã bị ẩn vì vi phạm quy định sử dụng.",
 
     // Effort Modal
     effortTitle: "Cấu hình Agent Effort",
@@ -112,6 +125,7 @@ const translations: Record<Language, Translations> = {
     navDocuments: "Documents",
     navContributors: "Contributors",
     navAdmin: "Admin",
+    navCareerUniverse: "Career Tree",
     navMore: "More...",
     newChat: "New Chat",
     recent: "Recent",
@@ -125,7 +139,8 @@ const translations: Record<Language, Translations> = {
     roleTeacher: "Lecturer",
     roleAdmin: "Administrator",
     deleteChatTitle: "Delete Chat",
-    deleteChatConfirm: "Are you sure you want to delete this conversation? This action cannot be undone.",
+    deleteChatConfirm:
+      "Are you sure you want to delete this conversation? This action cannot be undone.",
     delete: "Delete",
     cancel: "Cancel",
     save: "Save",
@@ -133,11 +148,13 @@ const translations: Record<Language, Translations> = {
 
     // Chat Page & Empty state
     askAnythingTitle: "Ask anything",
-    askAnythingSubtitle: "Explore knowledge, get answers, and receive smart academic guidance with IT UPD GenAI.",
+    askAnythingSubtitle:
+      "Explore knowledge, get answers, and receive smart academic guidance with IT UPD GenAI.",
     inputPlaceholder: "Ask anything...",
     loadingConversation: "Loading conversation...",
     loadError: "Failed to load conversation. Please try again.",
-    replyRunningElsewhere: "Another reply is in progress. Your message has not been sent.",
+    replyRunningElsewhere:
+      "Another reply is in progress. Your message has not been sent.",
     followReply: "Follow reply",
     stopReply: "Stop generating",
     copySuccess: "Copied to clipboard",
@@ -152,7 +169,8 @@ const translations: Record<Language, Translations> = {
     voiceStop: "Stop recording",
     voiceUnsupported: "Browser does not support voice input",
     send: "Send",
-    disclaimer: "IT UPD GenAI may provide inaccurate responses. Always verify important details.",
+    disclaimer:
+      "IT UPD GenAI may provide inaccurate responses. Always verify important details.",
     attachedDoc: "Attached document",
     sourceDoc: "Source document",
     removeAttachment: "Remove attached file",
@@ -209,7 +227,9 @@ interface LanguageContextType {
   t: (key: string, fallback?: string) => string;
 }
 
-const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
+const LanguageContext = createContext<LanguageContextType | undefined>(
+  undefined,
+);
 
 const LANGUAGE_STORAGE_KEY = "app_language";
 
@@ -248,7 +268,9 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <LanguageContext.Provider value={{ language, lang: language, setLanguage, toggleLanguage, t }}>
+    <LanguageContext.Provider
+      value={{ language, lang: language, setLanguage, toggleLanguage, t }}
+    >
       {children}
     </LanguageContext.Provider>
   );
@@ -259,7 +281,8 @@ const defaultLanguageContext: LanguageContextType = {
   lang: "vi",
   setLanguage: () => {},
   toggleLanguage: () => {},
-  t: (key: string, fallback?: string) => translations.vi[key] ?? fallback ?? key,
+  t: (key: string, fallback?: string) =>
+    translations.vi[key] ?? fallback ?? key,
 };
 
 export function useLanguage() {

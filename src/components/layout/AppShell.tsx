@@ -84,6 +84,16 @@ const ShieldCheckIcon = ({ size, ...props }: IconProps) => (
   </BaseIcon>
 );
 
+const OrbitIcon = ({ size, ...props }: IconProps) => (
+  <BaseIcon size={size} {...props}>
+    <circle cx="12" cy="12" r="3" />
+    <circle cx="19" cy="5" r="2" />
+    <circle cx="5" cy="19" r="2" />
+    <path d="M10.4 21.9a10 10 0 0 0 9.94-8.4" />
+    <path d="M13.6 2.1a10 10 0 0 0-9.94 8.4" />
+  </BaseIcon>
+);
+
 const Trash2Icon = ({ size, ...props }: IconProps) => (
   <BaseIcon size={size} {...props}>
     <path d="M3 6h18" />
@@ -249,13 +259,13 @@ export function AppShell() {
     });
 
   const location = useLocation();
-  const isMoreActive = ["/contributors", "/admin"].some(
+  const isMoreActive = ["/contributors", "/admin", "/chat/career-universe"].some(
     (path) => location.pathname === path || location.pathname.startsWith(`${path}/`),
   );
 
   // Phần A (Thêm...): drop và push down (đẩy Phần B - Gần đây lùi xuống)
   const [isMoreOpen, setIsMoreOpen] = useState(() =>
-    ["/contributors", "/admin"].some(
+    ["/contributors", "/admin", "/chat/career-universe"].some(
       (path) => location.pathname === path || location.pathname.startsWith(`${path}/`),
     ),
   );
@@ -352,6 +362,21 @@ export function AppShell() {
             {/* Khi mở ra: Phần A nằm trong flow DOM sẽ tự động đẩy Phần B (Gần đây) lùi xuống */}
             {isMoreOpen && (
               <div className="mt-1 flex flex-col gap-1 pl-4 animate-in slide-in-from-top-1 duration-150">
+                <NavLink
+                  to="/chat/career-universe"
+                  className={({ isActive }) =>
+                    `flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs transition-colors ${
+                      isActive
+                        ? "bg-brand-soft font-semibold text-brand-text"
+                        : "text-fg-secondary hover:bg-brand-soft hover:text-brand-text"
+                    }`
+                  }
+                  title="Khám phá tiềm năng nghề nghiệp của bạn"
+                >
+                  <OrbitIcon size={15} />
+                  <span>{t("navCareerUniverse")}</span>
+                </NavLink>
+
                 <NavLink
                   to="/contributors"
                   className={({ isActive }) =>
@@ -462,16 +487,6 @@ export function AppShell() {
 
         {/* User Card, Controls & Logout */}
         <div className="mt-3 flex shrink-0 flex-col gap-2 border-t border-border pt-3">
-          {/* Quick Language & Theme Controls */}
-          <div className="flex items-center justify-between px-1 py-0.5">
-            <span className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground">
-              {t("preferences")}
-            </span>
-            <div className="flex items-center gap-1">
-              <LanguageToggle />
-            </div>
-          </div>
-
           {user && (
             <DropdownMenu>
               <DropdownMenuTrigger
@@ -521,45 +536,37 @@ export function AppShell() {
               </DropdownMenuContent>
             </DropdownMenu>
           )}
+
+          {/* Quick controls row: Language, Theme, Profile, Logout */}
+          <div className="flex items-center justify-between px-1 pt-0.5">
+            <div className="flex items-center gap-1">
+              <LanguageToggle />
+              <ThemeToggle />
+            </div>
+            <div className="flex items-center gap-1">
+              <NavLink
+                to="/profile"
+                className="flex size-9 items-center justify-center rounded-lg text-fg-secondary transition-colors hover:bg-hover hover:text-foreground"
+                title={t("profile")}
+                aria-label={t("profile")}
+              >
+                <UserRoundIcon size={16} />
+              </NavLink>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="flex size-9 items-center justify-center rounded-lg text-fg-secondary transition-colors hover:bg-destructive/10 hover:text-destructive cursor-pointer"
+                title={t("logout")}
+                aria-label={t("logout")}
+              >
+                <LogOutIcon size={16} />
+              </button>
+            </div>
+          </div>
         </div>
       </aside>
 
       <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
-        {/* Mobile Header */}
-        <header className="flex h-14 shrink-0 items-center justify-between border-b border-border bg-surface px-4 transition-colors">
-          <NavLink
-            to="/"
-            className="text-base font-extrabold text-foreground"
-          >
-            IT UPD GenAI<span className="text-brand-bright">.</span>
-          </NavLink>
-          <div className="flex items-center gap-1 sm:gap-2">
-            <LanguageToggle />
-            <ThemeToggle />
-            <button
-              type="button"
-              onClick={handleNewChat}
-              className="p-1.5 text-fg-secondary hover:text-foreground cursor-pointer"
-              title={t("newChat")}
-            >
-              <PlusIcon size={18} />
-            </button>
-            <NavLink
-              to="/profile"
-              className="p-1.5 text-fg-secondary hover:text-brand-text"
-            >
-              <UserRoundIcon size={18} />
-            </NavLink>
-            <button
-              onClick={handleLogout}
-              className="p-1.5 text-destructive hover:text-destructive/80 cursor-pointer"
-              title={t("logout")}
-            >
-              <LogOutIcon size={18} />
-            </button>
-          </div>
-        </header>
-
         {/* Main content — pb-16 on mobile to clear the bottom nav */}
         <main className="flex-1 min-h-0 overflow-y-auto pb-16 md:pb-0">
           <Outlet />
@@ -623,6 +630,17 @@ export function AppShell() {
             className="w-48 rounded-xl border border-border bg-elevated p-1.5 shadow-xl text-foreground z-50 animate-in fade-in-0 zoom-in-95"
           >
             <DropdownMenuItem
+              render={<NavLink to="/chat/career-universe" />}
+              className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors cursor-pointer ${
+                location.pathname === "/chat/career-universe"
+                  ? "bg-brand-soft font-semibold text-brand-text"
+                  : "text-fg-secondary hover:bg-brand-soft hover:text-brand-text"
+              }`}
+            >
+              <OrbitIcon size={16} />
+              <span>{t("navCareerUniverse")}</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem
               render={<NavLink to="/contributors" />}
               className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors cursor-pointer ${
                 location.pathname === "/contributors"
@@ -646,6 +664,34 @@ export function AppShell() {
                 <span>{t("navAdmin")}</span>
               </DropdownMenuItem>
             )}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              render={<NavLink to="/profile" />}
+              className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium text-fg-secondary hover:bg-brand-soft hover:text-brand-text transition-colors cursor-pointer"
+            >
+              <UserRoundIcon size={16} />
+              <span>{t("profile")}</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              render={<NavLink to="/settings" />}
+              className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium text-fg-secondary hover:bg-brand-soft hover:text-brand-text transition-colors cursor-pointer"
+            >
+              <SettingsIcon size={16} />
+              <span>{t("settings")}</span>
+            </DropdownMenuItem>
+            <div className="flex items-center justify-between px-2 py-1">
+              <LanguageToggle />
+              <ThemeToggle />
+            </div>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              variant="destructive"
+              onClick={handleLogout}
+              className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors cursor-pointer"
+            >
+              <LogOutIcon size={16} />
+              <span>{t("logout")}</span>
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </nav>
