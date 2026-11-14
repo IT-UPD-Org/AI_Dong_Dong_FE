@@ -22,6 +22,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { CareerEdge, CareerNode, SelectedCareerState } from "../../types/careerUniverse";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 interface RadialCanvasProps {
   nodes: CareerNode[];
@@ -53,6 +54,10 @@ export function RadialCanvas({
   isSkeleton = false,
 }: RadialCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const { language } = useLanguage();
+  const getNodeName = (node: CareerNode): string =>
+    language === "vi" && node.vietnameseName ? node.vietnameseName : node.name;
 
   const [camera, setCamera] = useState<Camera>({ x: 0, y: 0, scale: 0.9 });
   const cameraRef = useRef<Camera>(camera);
@@ -477,11 +482,11 @@ export function RadialCanvas({
                           <GraduationCap className="size-5" />
                         </div>
                         <span className="text-[11px] font-extrabold text-foreground leading-tight px-1">
-                          Bachelor of IT
+                          {getNodeName(node)}
                         </span>
                         <div className="mt-1 flex items-center gap-1">
                           <span className="font-mono text-[10px] font-semibold text-brand-text bg-brand-soft px-1.5 py-0.5 rounded-full">
-                            6/52 • 11.5%
+                            {Math.round((node.academicFitScore ?? 0) * 52 / 100)}/52 • {(node.academicFitScore ?? 0).toFixed(1)}%
                           </span>
                         </div>
                       </div>
@@ -523,7 +528,7 @@ export function RadialCanvas({
                               : "text-[11px] text-foreground font-extrabold"
                           }`}
                         >
-                          {node.name}
+                          {getNodeName(node)}
                         </span>
                         {!isSkeleton && node.feasibilityScore !== null && (
                           <span className="mt-1 font-mono text-[9px] font-semibold text-brand-text bg-brand-soft px-1.5 py-0.5 rounded-full">
@@ -553,7 +558,7 @@ export function RadialCanvas({
                       <div className="flex h-full w-full flex-col justify-center px-3 py-1.5 select-none text-left">
                         <div className="flex items-center justify-between gap-1">
                           <span className="text-[11px] font-bold text-foreground truncate">
-                            {node.name}
+                            {getNodeName(node)}
                           </span>
                           {node.feasibilityScore !== null && (
                             <span className="font-mono text-[9px] font-semibold text-brand-text bg-brand-soft px-1.5 py-0.2 rounded-full shrink-0">
@@ -589,7 +594,7 @@ export function RadialCanvas({
                       <div className="flex h-full w-full flex-col justify-center px-2.5 py-1 select-none text-left">
                         <div className="flex items-center justify-between gap-1">
                           <span className="text-[10px] font-bold text-foreground truncate">
-                            {node.name}
+                            {getNodeName(node)}
                           </span>
                           {node.feasibilityScore !== null && (
                             <span className="font-mono text-[8px] font-semibold text-brand-text bg-brand-soft px-1 py-0.2 rounded shrink-0">

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { RadialCanvas } from "../components/career/RadialCanvas";
 import { CareerRightPanel } from "../components/career/CareerRightPanel";
 import { NodeDetailModal } from "../components/career/NodeDetailModal";
@@ -9,6 +9,7 @@ import {
 import {
   buildActiveDomainGraph,
   buildSkeletonGraph,
+  StudentAcademicRecord,
 } from "../services/careerScoring.service";
 import { CAREER_UNIVERSE_CATALOG } from "../data/careerUniverseData";
 
@@ -32,16 +33,30 @@ export function CareerUniversePage() {
   const [modalNode, setModalNode] = useState<CareerNode | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Student academic record (loaded from localStorage, set by Excel parser)
+  const [studentRecord, setStudentRecord] = useState<StudentAcademicRecord | undefined>(undefined);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('career_student_record');
+      if (stored) {
+        setStudentRecord(JSON.parse(stored) as StudentAcademicRecord);
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
   // Determine if we are in skeleton state (when NO domain is selected)
   const isSkeleton = !selectedState.domainId;
 
   // Build Graph Nodes & Edges dynamically
   const { nodes, edges } = useMemo(() => {
     if (isSkeleton) {
-      return buildSkeletonGraph();
+      return buildSkeletonGraph(studentRecord);
     }
-    return buildActiveDomainGraph(selectedState);
-  }, [isSkeleton, selectedState]);
+    return buildActiveDomainGraph(selectedState, studentRecord);
+  }, [isSkeleton, selectedState, studentRecord]);
 
   // Handler: Select Faculty
   const handleSelectFaculty = useCallback((facultyId: string) => {
@@ -166,6 +181,7 @@ export function CareerUniversePage() {
         onSelectDomain={handleSelectDomain}
         onSelectOccupation={handleSelectOccupation}
         onSelectSpecialization={handleSelectSpecialization}
+        onUpdateStudentRecord={setStudentRecord}
       />
 
       {/* 3. Node Information Modal (Opens only after centering) */}

@@ -1,4 +1,5 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import * as XLSX from "xlsx";
 import { useNavigate } from "react-router-dom";
 import {
   UploadCloud,
@@ -13,6 +14,7 @@ import {
   Loader2,
   CheckCircle2,
   RefreshCw,
+  FolderOpen,
 } from "lucide-react";
 import {
   CAREER_UNIVERSE_CATALOG,
@@ -20,8 +22,11 @@ import {
   FACULTIES_DATA,
 } from "../../data/careerUniverseData";
 import { SelectedCareerState } from "../../types/careerUniverse";
+import { StudentAcademicRecord } from "../../services/careerScoring.service";
 import { documentApi, STORAGE_QUOTA_BYTES } from "../../api/document.api";
+import type { Document } from "../../api/types";
 import { CareerCustomSelect } from "./CareerCustomSelect";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 interface CareerRightPanelProps {
   isOpen: boolean;
@@ -32,6 +37,7 @@ interface CareerRightPanelProps {
   onSelectSpecialization: (specializationId: string | null) => void;
   onSelectFaculty?: (facultyId: string) => void;
   onSelectMajor?: (majorId: string) => void;
+  onUpdateStudentRecord?: (record: StudentAcademicRecord) => void;
 }
 
 const SUPPORTED_EXTENSIONS = ["pdf", "docx", "xlsx", "xls", "jpg", "jpeg", "png"];
@@ -63,9 +69,11 @@ export function CareerRightPanel({
   onSelectSpecialization,
   onSelectFaculty,
   onSelectMajor,
+  onUpdateStudentRecord,
 }: CareerRightPanelProps) {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { language } = useLanguage();
 
   // Faculty & Major state (Default: cns-tt, cntt)
   const [localFacultyId, setLocalFacultyId] = useState("cns-tt");
@@ -97,8 +105,12 @@ export function CareerRightPanel({
     onSelectMajor?.(newMajorId);
   };
 
-  // File Upload States
+  // File Upload & Existing Document States
+  const [fileTab, setFileTab] = useState<"upload" | "existing">("upload");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedExistingDoc, setSelectedExistingDoc] = useState<Document | null>(null);
+  const [existingDocs, setExistingDocs] = useState<Document[]>([]);
+  const [isLoadingDocs, setIsLoadingDocs] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<string>("");
@@ -107,23 +119,154 @@ export function CareerRightPanel({
   // Drag-and-drop state
   const [isDraggingOver, setIsDraggingOver] = useState(false);
 
+  // Load existing documents when switching to the 'existing' tab
+  useEffect(() => {
+    if (fileTab === "existing") {
+      setIsLoadingDocs(true);
+      documentApi
+        .listDocuments(1, 100)
+        .then((docs) => {
+          setExistingDocs(docs);
+        })
+        .catch(() => {
+          setExistingDocs([]);
+        })
+        .finally(() => {
+          setIsLoadingDocs(false);
+        });
+    }
+  }, [fileTab]);
+
+  const extractCourseCodesFromArrayBuffer = (buffer: ArrayBuffer): string[] => {
+    try {
+      const workbook = XLSX.read(buffer, { type: "array" });
+      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+      const json = XLSX.utils.sheet_to_json<string[]>(firstSheet, { header: 1 }) as string[][];
+      const codes = new Set<string>();
+      for (const row of json) {
+        for (const cell of row) {
+          if (cell !== null && cell !== undefined) {
+            const text = String(cell);
+            const matches = text.match(/\bIT\d{3}\b/gi);
+            if (matches) {
+              matches.forEach((m) => codes.add(m.toUpperCase()));
+            }
+          }
+        }
+      }
+      return Array.from(codes);
+    } catch {
+      return [];
+    }
+  };
+
+  const parseExcelCourseCodes = async (file: File): Promise<string[]> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const data = e.target?.result as ArrayBuffer;
+        if (data) {
+          resolve(extractCourseCodesFromArrayBuffer(data));
+        } else {
+          resolve([]);
+        }
+      };
+      reader.onerror = () => resolve([]);
+      reader.readAsArrayBuffer(file);
+    });
+  };
+
   const validateAndSetFile = (file: File) => {
     setFileError(null);
     const ext = file.name.split(".").pop()?.toLowerCase() || "";
     if (!SUPPORTED_EXTENSIONS.includes(ext)) {
       setFileError(
-        `Định dạng file .${ext} không được hỗ trợ. Vui lòng chọn PDF, DOCX, XLSX, XLS, JPG hoặc PNG.`
+        language === "vi"
+          ? `Định dạng file .${ext} không được hỗ trợ. Vui lòng chọn PDF, DOCX, XLSX, XLS, JPG hoặc PNG.`
+          : `File format .${ext} is not supported. Please select PDF, DOCX, XLSX, XLS, JPG, or PNG.`
       );
       return;
     }
 
     if (file.size > MAX_FILE_SIZE) {
-      setFileError("Kích thước file vượt quá giới hạn 236 MB.");
+      setFileError(
+        language === "vi"
+          ? "Kích thước file vượt quá giới hạn 236 MB."
+          : "File size exceeds the 236 MB limit."
+      );
       return;
     }
 
     setSelectedFile(file);
+    setSelectedExistingDoc(null);
     setUploadedDocId(null);
+
+    // If Excel, immediately parse and update career tree scores
+    if (ext === "xlsx" || ext === "xls") {
+      parseExcelCourseCodes(file).then((codes) => {
+        if (codes.length > 0) {
+          const record: StudentAcademicRecord = {
+            totalCompletedCourses: codes.length,
+            completedCourseCodes: codes,
+            gpa: null,
+            transcriptUploadedAt: new Date().toISOString(),
+          };
+          try {
+            localStorage.setItem("career_student_record", JSON.stringify(record));
+          } catch {
+            // ignore
+          }
+          onUpdateStudentRecord?.(record);
+        }
+      });
+    }
+  };
+
+  const handleSelectExistingDoc = async (doc: Document) => {
+    setSelectedExistingDoc(doc);
+    setSelectedFile(null);
+    setUploadedDocId(doc.document_id);
+    setFileError(null);
+
+    const ext = doc.filename.split(".").pop()?.toLowerCase();
+    if ((ext === "xlsx" || ext === "xls") && doc.file_url) {
+      try {
+        const res = await fetch(doc.file_url);
+        const buf = await res.arrayBuffer();
+        const codes = extractCourseCodesFromArrayBuffer(buf);
+        if (codes.length > 0) {
+          const record: StudentAcademicRecord = {
+            totalCompletedCourses: codes.length,
+            completedCourseCodes: codes,
+            gpa: null,
+            transcriptUploadedAt: new Date().toISOString(),
+          };
+          try {
+            localStorage.setItem("career_student_record", JSON.stringify(record));
+          } catch {
+            // ignore
+          }
+          onUpdateStudentRecord?.(record);
+        }
+      } catch {
+        // ignore fetch error
+      }
+    }
+  };
+
+  const handleRemoveExistingDoc = () => {
+    setSelectedExistingDoc(null);
+    setUploadedDocId(null);
+    try {
+      localStorage.removeItem("career_student_record");
+    } catch {
+      // ignore
+    }
+    onUpdateStudentRecord?.({
+      totalCompletedCourses: 0,
+      completedCourseCodes: [],
+      gpa: 0,
+    });
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -157,47 +300,98 @@ export function CareerRightPanel({
     setUploadedDocId(null);
     setIsUploading(false);
     setUploadProgress("");
+    try {
+      localStorage.removeItem("career_student_record");
+    } catch {
+      // ignore
+    }
+    onUpdateStudentRecord?.({
+      totalCompletedCourses: 0,
+      completedCourseCodes: [],
+      gpa: 0,
+    });
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   };
 
   const handleAnalyzeTranscript = async () => {
-    if (!selectedFile) return;
+    if (!selectedFile && !selectedExistingDoc) return;
 
     try {
-      setIsUploading(true);
       setFileError(null);
-      setUploadProgress("Đang tải lên bảng điểm...");
+      setIsUploading(true);
 
-      // 1. Upload file via the real backend documentApi
-      const uploadedDoc = await documentApi.uploadDocument(
-        selectedFile,
-        `Bảng điểm - ${selectedFile.name}`
+      let docId = uploadedDocId;
+
+      if (selectedFile) {
+        // Parse Excel if needed before uploading
+        const ext = selectedFile.name.split(".").pop()?.toLowerCase();
+        if (ext === "xlsx" || ext === "xls") {
+          setUploadProgress(
+            language === "vi" ? "Đang đọc bảng điểm Excel..." : "Reading Excel transcript..."
+          );
+          const parsedCourseCodes = await parseExcelCourseCodes(selectedFile);
+          if (parsedCourseCodes.length > 0) {
+            const record: StudentAcademicRecord = {
+              totalCompletedCourses: parsedCourseCodes.length,
+              completedCourseCodes: parsedCourseCodes,
+              gpa: null,
+              transcriptUploadedAt: new Date().toISOString(),
+            };
+            try {
+              localStorage.setItem("career_student_record", JSON.stringify(record));
+            } catch {
+              // ignore
+            }
+            onUpdateStudentRecord?.(record);
+          }
+        }
+
+        setUploadProgress(
+          language === "vi" ? "Đang tải lên bảng điểm..." : "Uploading transcript..."
+        );
+        const uploadedDoc = await documentApi.uploadDocument(
+          selectedFile,
+          `Bảng điểm - ${selectedFile.name}`
+        );
+        docId = uploadedDoc.document_id;
+        setUploadedDocId(uploadedDoc.document_id);
+      } else if (selectedExistingDoc) {
+        docId = selectedExistingDoc.document_id;
+      }
+
+      setUploadProgress(
+        language === "vi" ? "Chuyển tiếp đến Đông Đông AI..." : "Forwarding to Dong Dong AI..."
       );
-      setUploadedDocId(uploadedDoc.document_id);
 
-      setUploadProgress("Chuyển tiếp đến Đông Đông AI...");
+      const activeFileName = selectedFile?.name || selectedExistingDoc?.filename || "bảng điểm";
+      const facultyName = currentFaculty.name;
+      const majorName = currentMajor.name;
+      const analysisPrompt =
+        language === "vi"
+          ? `Vui lòng phân tích bảng điểm này (${activeFileName}) của sinh viên ${facultyName} - Ngành ${majorName}, xác định các môn học tôi đã hoàn thành, tính toán tiến độ học tập và đánh giá độ phù hợp với các định hướng nghề nghiệp CNTT.`
+          : `Please analyze this transcript (${activeFileName}) for a student of ${facultyName} - Major ${majorName}, determine completed courses, calculate academic progress, and evaluate fit with IT career paths.`;
 
-      // 2. Submit to existing Đông Đông AI chat conversation
-      const analysisPrompt = `Vui lòng phân tích bảng điểm này của sinh viên ${currentFaculty.name} - Ngành ${currentMajor.name}, xác định các môn học tôi đã hoàn thành, tính toán tiến độ học tập và đánh giá độ phù hợp với các định hướng nghề nghiệp CNTT.`;
-
-      // 3. Navigate into Chat with attachment and prompt
       navigate("/chat", {
         state: {
           initialPrompt: analysisPrompt,
-          initialAttachmentIds: [uploadedDoc.document_id],
+          initialAttachmentIds: docId ? [docId] : [],
           newChatKey: crypto.randomUUID(),
         },
       });
     } catch (err: any) {
       setFileError(
-        err?.message || "Không thể tải lên bảng điểm để phân tích. Vui lòng thử lại."
+        err?.message ||
+          (language === "vi"
+            ? "Không thể tải lên bảng điểm để phân tích. Vui lòng thử lại."
+            : "Failed to upload transcript for analysis. Please try again.")
       );
     } finally {
       setIsUploading(false);
     }
   };
+
 
   // Find currently active domain and occupation objects
   const activeDomain = CAREER_UNIVERSE_CATALOG.find(
@@ -295,7 +489,16 @@ export function CareerRightPanel({
               </div>
             ) : (
               /* State 2: File Uploaded Card */
-              <div className="rounded-xl border border-border bg-surface p-3 space-y-3">
+              <div
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                className={`rounded-xl border bg-surface p-3 space-y-3 transition-colors ${
+                  isDraggingOver
+                    ? "border-brand bg-brand-soft/50 ring-2 ring-brand/30"
+                    : "border-border"
+                }`}
+              >
                 <div className="flex items-start gap-2.5">
                   <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-background border border-border">
                     {getFileIcon(selectedFile.name)}
@@ -314,6 +517,15 @@ export function CareerRightPanel({
                         </span>
                       )}
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isUploading}
+                      className="flex items-center gap-1 text-[10px] text-brand-text hover:underline cursor-pointer disabled:opacity-50 mt-0.5"
+                    >
+                      <RefreshCw className="size-2.5" />
+                      <span>Chọn file khác</span>
+                    </button>
                   </div>
                 </div>
 
@@ -444,7 +656,7 @@ export function CareerRightPanel({
               onChange={(domainId) => onSelectDomain(domainId)}
               options={CAREER_UNIVERSE_CATALOG.map((domain) => ({
                 value: domain.id,
-                label: domain.name,
+                label: language === "vi" ? domain.vietnameseName : domain.name,
               }))}
             />
             <p className="text-[10px] text-muted-foreground">
@@ -472,7 +684,7 @@ export function CareerRightPanel({
               onChange={(occId) => onSelectOccupation(occId || null)}
               options={(activeDomain?.occupations || []).map((occ) => ({
                 value: occ.id,
-                label: occ.name,
+                label: language === "vi" ? occ.vietnameseName : occ.name,
               }))}
             />
           </div>
@@ -497,7 +709,7 @@ export function CareerRightPanel({
               onChange={(specId) => onSelectSpecialization(specId || null)}
               options={(activeOccupation?.specializations || []).map((spec) => ({
                 value: spec.id,
-                label: spec.name,
+                label: language === "vi" ? spec.vietnameseName : spec.name,
               }))}
             />
           </div>
@@ -517,24 +729,29 @@ export function CareerRightPanel({
               <div className="flex items-center gap-1.5 text-fg-secondary pl-3">
                 <span className="size-1.5 rounded-full bg-brand-bright" />
                 <span className="font-semibold text-brand-text truncate">
-                  {activeDomain.name}
+                  {language === "vi" ? activeDomain.vietnameseName : activeDomain.name}
                 </span>
               </div>
               {activeOccupation && (
                 <div className="flex items-center gap-1.5 text-fg-secondary pl-6">
                   <span className="size-1.5 rounded-full bg-brand-bright" />
-                  <span className="truncate">{activeOccupation.name}</span>
+                  <span className="truncate">
+                    {language === "vi" ? activeOccupation.vietnameseName : activeOccupation.name}
+                  </span>
                 </div>
               )}
               {selectedState.specializationId && (
                 <div className="flex items-center gap-1.5 text-fg-secondary pl-9">
                   <span className="size-1.5 rounded-full bg-brand-bright" />
                   <span className="truncate">
-                    {
-                      activeOccupation?.specializations.find(
+                    {(() => {
+                      const sp = activeOccupation?.specializations.find(
                         (s) => s.id === selectedState.specializationId
-                      )?.name
-                    }
+                      );
+                      return language === "vi" && sp?.vietnameseName
+                        ? sp.vietnameseName
+                        : sp?.name;
+                    })()}
                   </span>
                 </div>
               )}

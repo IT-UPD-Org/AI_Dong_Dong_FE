@@ -20,6 +20,7 @@ export interface CareerNode {
   id: string;
   name: string;
   englishName?: string;
+  vietnameseName?: string;
   code?: string;
   type: NodeType;
   layer: 1 | 2 | 3 | 4;

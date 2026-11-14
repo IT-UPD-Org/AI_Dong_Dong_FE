@@ -193,7 +193,7 @@ describe("Career Universe Page & UI Interaction", () => {
 
     // After selection, the occupation dropdown becomes enabled and options are loaded
     await waitFor(() => {
-      const occMatches = screen.getAllByText("Backend Developer");
+      const occMatches = screen.getAllByText(/Backend Developer|Lập trình viên Backend/);
       expect(occMatches.length).toBeGreaterThanOrEqual(1);
     });
   });

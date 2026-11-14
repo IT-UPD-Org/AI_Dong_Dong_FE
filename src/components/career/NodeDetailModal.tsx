@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { CareerNode } from "../../types/careerUniverse";
 import { BACHELOR_STATS } from "../../data/careerUniverseData";
+import { useLanguage } from "../../contexts/LanguageContext";
 import {
   Dialog,
   DialogContent,
@@ -30,6 +31,7 @@ interface NodeDetailModalProps {
 }
 
 export function NodeDetailModal({ node, isOpen, onClose }: NodeDetailModalProps) {
+  const { language } = useLanguage();
   if (!node) return null;
 
   const isBachelor = node.type === "bachelor";
@@ -37,14 +39,16 @@ export function NodeDetailModal({ node, isOpen, onClose }: NodeDetailModalProps)
   const isOccupation = node.type === "occupation";
   const isSpecialization = node.type === "specialization";
 
+  const nodeTitle = language === "vi" && node.vietnameseName ? node.vietnameseName : node.name;
+
   const layerLabel =
     node.layer === 1
-      ? "Layer 1 • Academic Foundation"
+      ? language === "vi" ? "Layer 1 • Cơ sở Học thuật" : "Layer 1 • Academic Foundation"
       : node.layer === 2
-      ? "Layer 2 • Career Domain"
+      ? language === "vi" ? "Layer 2 • Nhóm Nghề nghiệp" : "Layer 2 • Career Domain"
       : node.layer === 3
-      ? "Layer 3 • Specific Occupation"
-      : "Layer 4 • In-Depth Specialization";
+      ? language === "vi" ? "Layer 3 • Nghề nghiệp Cụ thể" : "Layer 3 • Specific Occupation"
+      : language === "vi" ? "Layer 4 • Chuyên môn Sâu" : "Layer 4 • In-Depth Specialization";
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -75,7 +79,7 @@ export function NodeDetailModal({ node, isOpen, onClose }: NodeDetailModalProps)
                 )}
               </div>
               <h2 className="text-lg font-extrabold text-foreground mt-0.5">
-                {node.name}
+                {nodeTitle}
               </h2>
             </div>
           </div>
@@ -91,54 +95,85 @@ export function NodeDetailModal({ node, isOpen, onClose }: NodeDetailModalProps)
                   <Trophy className="size-4 text-brand-bright" />
                   Tiến Độ Đào Tạo Chương Trình Cử Nhân
                 </h3>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                  <div className="rounded-lg bg-surface p-2.5 text-center border border-border">
-                    <span className="text-[10px] text-muted-foreground block">Tổng số môn</span>
-                    <span className="text-base font-extrabold text-foreground">{BACHELOR_STATS.totalCourses}</span>
-                  </div>
-                  <div className="rounded-lg bg-brand-soft/40 p-2.5 text-center border border-brand/20">
-                    <span className="text-[10px] text-brand-text block">Đã tích lũy</span>
-                    <span className="text-base font-extrabold text-brand-text">{BACHELOR_STATS.completedCourses}</span>
-                  </div>
-                  <div className="rounded-lg bg-surface p-2.5 text-center border border-border">
-                    <span className="text-[10px] text-muted-foreground block">Còn lại</span>
-                    <span className="text-base font-extrabold text-foreground">{BACHELOR_STATS.remainingCourses}</span>
-                  </div>
-                  <div className="rounded-lg bg-surface p-2.5 text-center border border-border">
-                    <span className="text-[10px] text-muted-foreground block">GPA ước tính</span>
-                    <span className="text-base font-extrabold text-foreground">{BACHELOR_STATS.gpa} / 4.0</span>
-                  </div>
-                </div>
+                {(() => {
+                  const completed = Math.round(((node.academicFitScore ?? 0) * 52) / 100);
+                  const remaining = Math.max(0, 52 - completed);
+                  const progressPct = (node.academicFitScore ?? 0).toFixed(1);
+                  return (
+                    <>
+                      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                        <div className="rounded-lg bg-surface p-2.5 text-center border border-border">
+                          <span className="text-[10px] text-muted-foreground block">Tổng số môn</span>
+                          <span className="text-base font-extrabold text-foreground">52</span>
+                        </div>
+                        <div className="rounded-lg bg-brand-soft/40 p-2.5 text-center border border-brand/20">
+                          <span className="text-[10px] text-brand-text block">Đã tích lũy</span>
+                          <span className="text-base font-extrabold text-brand-text">{completed}</span>
+                        </div>
+                        <div className="rounded-lg bg-surface p-2.5 text-center border border-border">
+                          <span className="text-[10px] text-muted-foreground block">Còn lại</span>
+                          <span className="text-base font-extrabold text-foreground">{remaining}</span>
+                        </div>
+                        <div className="rounded-lg bg-surface p-2.5 text-center border border-border">
+                          <span className="text-[10px] text-muted-foreground block">GPA ước tính</span>
+                          <span className="text-base font-extrabold text-foreground">{completed > 0 ? "3.25" : "—"} / 4.0</span>
+                        </div>
+                      </div>
 
-                {/* Progress Bar */}
-                <div className="space-y-1.5 pt-1">
-                  <div className="flex justify-between text-[11px] font-semibold">
-                    <span className="text-muted-foreground">Tiến độ khung chương trình</span>
-                    <span className="text-brand-text font-mono font-bold">{BACHELOR_STATS.progressPercent}%</span>
-                  </div>
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-                    <div
-                      className="h-full bg-brand rounded-full transition-all duration-700"
-                      style={{ width: `${BACHELOR_STATS.progressPercent}%` }}
-                    />
-                  </div>
-                </div>
+                      {/* Progress Bar */}
+                      <div className="space-y-1.5 pt-1">
+                        <div className="flex justify-between text-[11px] font-semibold">
+                          <span className="text-muted-foreground">Tiến độ khung chương trình</span>
+                          <span className="text-brand-text font-mono font-bold">{progressPct}%</span>
+                        </div>
+                        <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                          <div
+                            className="h-full bg-brand rounded-full transition-all duration-700"
+                            style={{ width: `${progressPct}%` }}
+                          />
+                        </div>
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
 
               {/* Completed Courses List */}
               <div className="space-y-2">
                 <span className="font-bold text-foreground block">Các môn cơ sở đã hoàn thành:</span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {BACHELOR_STATS.completedList.map((course) => (
-                    <div
-                      key={course}
-                      className="flex items-center gap-2 rounded-lg border border-border bg-background p-2 text-[11px]"
-                    >
-                      <CheckCircle2 className="size-3.5 text-brand-bright shrink-0" />
-                      <span className="truncate">{course}</span>
+                {(() => {
+                  let storedCodes: string[] = [];
+                  try {
+                    const stored = localStorage.getItem("career_student_record");
+                    if (stored) {
+                      storedCodes = JSON.parse(stored).completedCourseCodes || [];
+                    }
+                  } catch {
+                    // ignore
+                  }
+
+                  if (storedCodes.length === 0) {
+                    return (
+                      <p className="text-[11px] text-muted-foreground italic rounded-lg border border-border/60 bg-background/50 p-3">
+                        Chưa có môn học nào được ghi nhận. Hãy tải lên bảng điểm Excel để đối chiếu tiến độ học tập.
+                      </p>
+                    );
+                  }
+
+                  return (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {storedCodes.map((code) => (
+                        <div
+                          key={code}
+                          className="flex items-center gap-2 rounded-lg border border-border bg-background p-2 text-[11px]"
+                        >
+                          <CheckCircle2 className="size-3.5 text-brand-bright shrink-0" />
+                          <span className="font-mono font-semibold">{code}</span>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  );
+                })()}
               </div>
             </div>
           )}

@@ -15,15 +15,15 @@ export interface StudentAcademicRecord {
   studentId?: string;
   totalCompletedCourses: number;
   completedCourseCodes: string[];
-  gpa?: number;
+  gpa?: number | null;
   transcriptUploadedAt?: string;
 }
 
-// Local mock/fallback state based on Bachelor stats
+// Local fallback state (0 completed until transcript is uploaded)
 const DEFAULT_STUDENT_RECORD: StudentAcademicRecord = {
-  totalCompletedCourses: BACHELOR_STATS.completedCourses,
-  completedCourseCodes: ["IT101", "IT102", "IT201", "IT202", "IT203", "IT204"],
-  gpa: BACHELOR_STATS.gpa ?? 3.25,
+  totalCompletedCourses: 0,
+  completedCourseCodes: [],
+  gpa: 0,
 };
 
 /**
@@ -42,7 +42,7 @@ export function calculateAcademicFit(
   for (const c of relevantCourses) {
     const weight = c.relevanceWeight ?? 1.0;
     totalWeight += weight;
-    const isDone = completedCodes.includes(c.code) || Boolean(c.completed);
+    const isDone = completedCodes.includes(c.code);
     if (isDone) {
       achievedWeight += weight;
     }
@@ -58,23 +58,31 @@ export function calculateAcademicFit(
  * Shown when NO Career Domain is selected.
  * Displays a large central Bachelor node surrounded by the 9 domains as subtle placeholder nodes.
  */
-export function buildSkeletonGraph(): { nodes: CareerNode[]; edges: CareerEdge[] } {
+export function buildSkeletonGraph(
+  studentRecord: StudentAcademicRecord = DEFAULT_STUDENT_RECORD
+): { nodes: CareerNode[]; edges: CareerEdge[] } {
   const nodes: CareerNode[] = [];
   const edges: CareerEdge[] = [];
+
+  const bachelorProgress =
+    Math.round(
+      (studentRecord.totalCompletedCourses / BACHELOR_STATS.totalCourses) * 1000
+    ) / 10;
 
   // Central Bachelor Node at (0, 0)
   nodes.push({
     id: "bachelor-root",
     name: "Bachelor of IT",
     englishName: "Bachelor of Information Technology",
+    vietnameseName: "Cử nhân CNTT",
     code: "BIT",
     type: "bachelor",
     layer: 1,
     x: 0,
     y: 0,
-    description: "Nền tảng học thuật chuẩn 52 môn học ngành Công nghệ Thông tin - Trường Đại học Phương Đông.",
+    description: `Nền tảng học thuật chuẩn 52 môn học ngành Công nghệ Thông tin - Trường Đại học Phương Đông. Đã hoàn thành ${studentRecord.totalCompletedCourses} / 52 môn.`,
     feasibilityScore: null,
-    academicFitScore: BACHELOR_STATS.progressPercent,
+    academicFitScore: bachelorProgress,
     skills: {
       core: ["Khoa học Máy tính Cơ sở", "Toán học & Giải thuật", "Lập trình Căn bản", "Hệ thống Máy tính"],
       supporting: ["Tiếng Anh Chuyên ngành", "Kỹ năng Làm việc Nhóm", "Đạo đức Nghề nghiệp"],
@@ -95,6 +103,7 @@ export function buildSkeletonGraph(): { nodes: CareerNode[]; edges: CareerEdge[]
       id: domain.id,
       name: domain.name,
       englishName: domain.name,
+      vietnameseName: domain.vietnameseName,
       type: "domain",
       layer: 2,
       domainId: domain.id,
@@ -146,6 +155,7 @@ export function buildActiveDomainGraph(
     id: "bachelor-root",
     name: "Bachelor of IT",
     englishName: "Bachelor of Information Technology",
+    vietnameseName: "Cử nhân CNTT",
     code: "BIT",
     type: "bachelor",
     layer: 1,
@@ -175,6 +185,7 @@ export function buildActiveDomainGraph(
     id: domain.id,
     name: domain.name,
     englishName: domain.name,
+    vietnameseName: domain.vietnameseName,
     type: "domain",
     layer: 2,
     domainId: domain.id,
@@ -238,6 +249,7 @@ export function buildActiveDomainGraph(
       id: occ.id,
       name: occ.name,
       englishName: occ.name,
+      vietnameseName: occ.vietnameseName,
       type: "occupation",
       layer: 3,
       domainId: domain.id,
@@ -289,6 +301,7 @@ export function buildActiveDomainGraph(
         id: spec.id,
         name: spec.name,
         englishName: spec.name,
+        vietnameseName: spec.vietnameseName,
         type: "specialization",
         layer: 4,
         domainId: domain.id,
