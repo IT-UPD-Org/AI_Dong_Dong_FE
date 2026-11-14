@@ -73,4 +73,6 @@ export interface SelectedCareerState {
   domainId: string | null;
   occupationId: string | null;
   specializationId: string | null;
+  facultyId?: string | null;
+  majorId?: string | null;
 }

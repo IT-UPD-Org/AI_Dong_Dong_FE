@@ -55,12 +55,16 @@ export function RadialCanvas({
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [camera, setCamera] = useState<Camera>({ x: 0, y: 0, scale: 0.9 });
+  const cameraRef = useRef<Camera>(camera);
+  cameraRef.current = camera;
+
   const isDraggingRef = useRef(false);
   const dragStartRef = useRef({ x: 0, y: 0 });
   const cameraStartRef = useRef({ x: 0, y: 0 });
   const hasMovedRef = useRef(false);
   const isAnimatingRef = useRef(false);
   const animFrameIdRef = useRef<number | null>(null);
+  const prevSelectedNodeIdRef = useRef<string | null>(null);
 
   // Initialize camera centered in container
   useEffect(() => {
@@ -87,8 +91,9 @@ export function RadialCanvas({
   const animateCameraToNode = useCallback(
     (targetNode: CareerNode, onComplete?: () => void) => {
       if (!containerRef.current) return;
-      if (isAnimatingRef.current && animFrameIdRef.current) {
+      if (animFrameIdRef.current) {
         cancelAnimationFrame(animFrameIdRef.current);
+        animFrameIdRef.current = null;
       }
 
       isAnimatingRef.current = true;
@@ -103,9 +108,9 @@ export function RadialCanvas({
       const targetX = clientWidth / 2 - targetNode.x * targetScale;
       const targetY = clientHeight / 2 - targetNode.y * targetScale;
 
-      const startX = camera.x;
-      const startY = camera.y;
-      const startScale = camera.scale;
+      const startX = cameraRef.current.x;
+      const startY = cameraRef.current.y;
+      const startScale = cameraRef.current.scale;
 
       const startTime = performance.now();
       const duration = 520; // 520ms transition
@@ -132,12 +137,21 @@ export function RadialCanvas({
 
       animFrameIdRef.current = requestAnimationFrame(step);
     },
-    [camera]
+    []
   );
 
-  // Trigger camera focus when selected node changes programmatically from outside (e.g. dropdowns)
+  // Trigger camera focus ONLY when selected node ID changes from outside
   useEffect(() => {
-    if (!selectedNodeId || isAnimatingRef.current) return;
+    if (!selectedNodeId) {
+      prevSelectedNodeIdRef.current = null;
+      return;
+    }
+    // Only animate if selectedNodeId has changed to a NEW value
+    if (prevSelectedNodeIdRef.current === selectedNodeId) {
+      return;
+    }
+    prevSelectedNodeIdRef.current = selectedNodeId;
+
     const node = nodes.find((n) => n.id === selectedNodeId);
     if (node) {
       animateCameraToNode(node);
@@ -161,10 +175,15 @@ export function RadialCanvas({
   // Pan / Drag handlers
   const handlePointerDown = (e: React.PointerEvent) => {
     if (e.button !== 0) return; // only left click
+    if (animFrameIdRef.current) {
+      cancelAnimationFrame(animFrameIdRef.current);
+      animFrameIdRef.current = null;
+      isAnimatingRef.current = false;
+    }
     isDraggingRef.current = true;
     hasMovedRef.current = false;
     dragStartRef.current = { x: e.clientX, y: e.clientY };
-    cameraStartRef.current = { x: camera.x, y: camera.y };
+    cameraStartRef.current = { x: cameraRef.current.x, y: cameraRef.current.y };
     if (containerRef.current) {
       containerRef.current.style.cursor = "grabbing";
     }
@@ -197,16 +216,24 @@ export function RadialCanvas({
   const handleWheel = (e: React.WheelEvent) => {
     e.preventDefault();
     if (!containerRef.current) return;
+    if (animFrameIdRef.current) {
+      cancelAnimationFrame(animFrameIdRef.current);
+      animFrameIdRef.current = null;
+      isAnimatingRef.current = false;
+    }
 
     const rect = containerRef.current.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
 
     const zoomFactor = e.deltaY < 0 ? 1.12 : 0.89;
-    const newScale = Math.max(0.3, Math.min(2.5, camera.scale * zoomFactor));
+    const currentScale = cameraRef.current.scale;
+    const currentX = cameraRef.current.x;
+    const currentY = cameraRef.current.y;
+    const newScale = Math.max(0.3, Math.min(2.5, currentScale * zoomFactor));
 
-    const newX = mouseX - (mouseX - camera.x) * (newScale / camera.scale);
-    const newY = mouseY - (mouseY - camera.y) * (newScale / camera.scale);
+    const newX = mouseX - (mouseX - currentX) * (newScale / currentScale);
+    const newY = mouseY - (mouseY - currentY) * (newScale / currentScale);
 
     setCamera({ x: newX, y: newY, scale: newScale });
   };

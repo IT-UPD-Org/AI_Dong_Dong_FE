@@ -166,6 +166,17 @@ describe("Career Universe Page & UI Interaction", () => {
 
     // Career Domain selector
     expect(screen.getByText("Career Domain")).toBeInTheDocument();
+
+    // Faculty (Khoa) and Major (Ngành) selectors
+    const facultySelect = screen.getByLabelText("Khoa") as HTMLSelectElement;
+    expect(facultySelect).toBeInTheDocument();
+    expect(facultySelect).toBeRequired();
+    expect(facultySelect.value).toBe("cns-tt");
+
+    const majorSelect = screen.getByLabelText("Ngành") as HTMLSelectElement;
+    expect(majorSelect).toBeInTheDocument();
+    expect(majorSelect).toBeRequired();
+    expect(majorSelect.value).toBe("cntt");
   });
 
   it("updates graph and selectors when a Career Domain is selected", async () => {
@@ -177,8 +188,7 @@ describe("Career Universe Page & UI Interaction", () => {
       </MemoryRouter>
     );
 
-    const comboboxes = screen.getAllByRole("combobox");
-    const domainSelect = comboboxes[0];
+    const domainSelect = screen.getByLabelText("Career Domain");
     fireEvent.change(domainSelect, { target: { value: "domain-se" } });
 
     // After selection, the occupation dropdown becomes enabled and options are loaded
@@ -186,6 +196,28 @@ describe("Career Universe Page & UI Interaction", () => {
       const occMatches = screen.getAllByText("Backend Developer");
       expect(occMatches.length).toBeGreaterThanOrEqual(1);
     });
+  });
+
+  it("locks all faculties and majors except Khoa Công nghệ số – Truyền thông and Ngành Công nghệ thông tin", () => {
+    render(
+      <MemoryRouter initialEntries={["/chat/career-universe"]}>
+        <Routes>
+          <Route path="/chat/career-universe" element={<CareerUniversePage />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    const facultySelect = screen.getByLabelText("Khoa") as HTMLSelectElement;
+    const facultyOptions = Array.from(facultySelect.options);
+    const enabledFaculties = facultyOptions.filter((opt) => !opt.disabled);
+    expect(enabledFaculties).toHaveLength(1);
+    expect(enabledFaculties[0].value).toBe("cns-tt");
+
+    const majorSelect = screen.getByLabelText("Ngành") as HTMLSelectElement;
+    const majorOptions = Array.from(majorSelect.options);
+    const enabledMajors = majorOptions.filter((opt) => !opt.disabled);
+    expect(enabledMajors).toHaveLength(1);
+    expect(enabledMajors[0].value).toBe("cntt");
   });
 
   it("shows Career Tree in the AppShell expanded subnav (navMore: 'Thêm...')", async () => {

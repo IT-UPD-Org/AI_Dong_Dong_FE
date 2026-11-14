@@ -17,9 +17,11 @@ import {
 import {
   CAREER_UNIVERSE_CATALOG,
   INITIAL_DOMAINS,
+  FACULTIES_DATA,
 } from "../../data/careerUniverseData";
 import { SelectedCareerState } from "../../types/careerUniverse";
 import { documentApi, STORAGE_QUOTA_BYTES } from "../../api/document.api";
+import { CareerCustomSelect } from "./CareerCustomSelect";
 
 interface CareerRightPanelProps {
   isOpen: boolean;
@@ -28,6 +30,8 @@ interface CareerRightPanelProps {
   onSelectDomain: (domainId: string) => void;
   onSelectOccupation: (occupationId: string | null) => void;
   onSelectSpecialization: (specializationId: string | null) => void;
+  onSelectFaculty?: (facultyId: string) => void;
+  onSelectMajor?: (majorId: string) => void;
 }
 
 const SUPPORTED_EXTENSIONS = ["pdf", "docx", "xlsx", "xls", "jpg", "jpeg", "png"];
@@ -57,9 +61,41 @@ export function CareerRightPanel({
   onSelectDomain,
   onSelectOccupation,
   onSelectSpecialization,
+  onSelectFaculty,
+  onSelectMajor,
 }: CareerRightPanelProps) {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Faculty & Major state (Default: cns-tt, cntt)
+  const [localFacultyId, setLocalFacultyId] = useState("cns-tt");
+  const [localMajorId, setLocalMajorId] = useState("cntt");
+  const currentFacultyId = selectedState.facultyId ?? localFacultyId;
+  const currentMajorId = selectedState.majorId ?? localMajorId;
+
+  const currentFaculty =
+    FACULTIES_DATA.find((f) => f.id === currentFacultyId) || FACULTIES_DATA[0];
+  const currentMajors = currentFaculty?.majors || [];
+  const currentMajor =
+    currentMajors.find((m) => m.id === currentMajorId) || currentMajors[0];
+
+  const handleFacultyChange = (newFacultyId: string) => {
+    setLocalFacultyId(newFacultyId);
+    onSelectFaculty?.(newFacultyId);
+
+    const faculty = FACULTIES_DATA.find((f) => f.id === newFacultyId);
+    const availableMajor =
+      faculty?.majors.find((m) => m.isAvailable) || faculty?.majors[0];
+    if (availableMajor) {
+      setLocalMajorId(availableMajor.id);
+      onSelectMajor?.(availableMajor.id);
+    }
+  };
+
+  const handleMajorChange = (newMajorId: string) => {
+    setLocalMajorId(newMajorId);
+    onSelectMajor?.(newMajorId);
+  };
 
   // File Upload States
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -144,8 +180,7 @@ export function CareerRightPanel({
       setUploadProgress("Chuyển tiếp đến Đông Đông AI...");
 
       // 2. Submit to existing Đông Đông AI chat conversation
-      const analysisPrompt =
-        "Vui lòng phân tích bảng điểm này, xác định các môn học tôi đã hoàn thành, tính toán tiến độ học tập và đánh giá độ phù hợp với các định hướng nghề nghiệp CNTT.";
+      const analysisPrompt = `Vui lòng phân tích bảng điểm này của sinh viên ${currentFaculty.name} - Ngành ${currentMajor.name}, xác định các môn học tôi đã hoàn thành, tính toán tiến độ học tập và đánh giá độ phù hợp với các định hướng nghề nghiệp CNTT.`;
 
       // 3. Navigate into Chat with attachment and prompt
       navigate("/chat", {
@@ -330,11 +365,69 @@ export function CareerRightPanel({
           <div className="h-px bg-border" />
 
           {/* ======================================================== */}
+          {/* SECTION: KHOA (FACULTY) SELECTOR (REQUIRED)              */}
+          {/* ======================================================== */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label htmlFor="faculty-select" className="text-xs font-bold text-foreground">
+                Khoa <span className="text-destructive">*</span>
+              </label>
+              <span className="text-[10px] font-semibold text-brand-text bg-brand-soft px-1.5 py-0.2 rounded">
+                Bắt buộc
+              </span>
+            </div>
+
+            <CareerCustomSelect
+              id="faculty-select"
+              label="Khoa"
+              required
+              value={currentFacultyId}
+              placeholder="Chọn Khoa đào tạo..."
+              onChange={handleFacultyChange}
+              options={FACULTIES_DATA.map((faculty) => ({
+                value: faculty.id,
+                label: faculty.name,
+                disabled: !faculty.isAvailable,
+              }))}
+            />
+          </div>
+
+          {/* ======================================================== */}
+          {/* SECTION: NGÀNH (MAJOR) SELECTOR (REQUIRED)               */}
+          {/* ======================================================== */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label htmlFor="major-select" className="text-xs font-bold text-foreground">
+                Ngành <span className="text-destructive">*</span>
+              </label>
+              <span className="text-[10px] font-semibold text-brand-text bg-brand-soft px-1.5 py-0.2 rounded">
+                Bắt buộc
+              </span>
+            </div>
+
+            <CareerCustomSelect
+              id="major-select"
+              label="Ngành"
+              required
+              value={currentMajorId}
+              placeholder="Chọn Ngành đào tạo..."
+              onChange={handleMajorChange}
+              options={currentMajors.map((major) => ({
+                value: major.id,
+                label: major.name,
+                disabled: !major.isAvailable,
+              }))}
+            />
+          </div>
+
+          <div className="h-px bg-border" />
+
+          {/* ======================================================== */}
           {/* SECTION B: CAREER DOMAIN SELECTOR (MANDATORY!)           */}
           {/* ======================================================== */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-foreground">
+              <label htmlFor="domain-select" className="text-xs font-bold text-foreground">
                 Career Domain <span className="text-destructive">*</span>
               </label>
               <span className="text-[10px] font-semibold text-brand-text bg-brand-soft px-1.5 py-0.2 rounded">
@@ -342,25 +435,18 @@ export function CareerRightPanel({
               </span>
             </div>
 
-            <select
+            <CareerCustomSelect
+              id="domain-select"
+              label="Career Domain"
+              required
               value={selectedState.domainId || ""}
-              onChange={(e) => {
-                const domainId = e.target.value;
-                if (domainId) {
-                  onSelectDomain(domainId);
-                }
-              }}
-              className="w-full rounded-xl border border-input bg-field px-3 py-2 text-xs font-medium text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 cursor-pointer"
-            >
-              <option value="" disabled>
-                Chọn nhóm nghề nghiệp chính
-              </option>
-              {CAREER_UNIVERSE_CATALOG.map((domain) => (
-                <option key={domain.id} value={domain.id}>
-                  {domain.name}
-                </option>
-              ))}
-            </select>
+              placeholder="Chọn nhóm nghề nghiệp chính"
+              onChange={(domainId) => onSelectDomain(domainId)}
+              options={CAREER_UNIVERSE_CATALOG.map((domain) => ({
+                value: domain.id,
+                label: domain.name,
+              }))}
+            />
             <p className="text-[10px] text-muted-foreground">
               Chọn nhóm để mở rộng mạng lưới nghề nghiệp radial.
             </p>
@@ -371,28 +457,24 @@ export function CareerRightPanel({
           {/* ======================================================== */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-foreground">
+              <label htmlFor="occupation-select" className="text-xs font-bold text-foreground">
                 Occupation
               </label>
               <span className="text-[10px] text-muted-foreground">Layer 3</span>
             </div>
 
-            <select
-              value={selectedState.occupationId || ""}
+            <CareerCustomSelect
+              id="occupation-select"
+              label="Occupation"
               disabled={!selectedState.domainId}
-              onChange={(e) => {
-                const occId = e.target.value || null;
-                onSelectOccupation(occId);
-              }}
-              className="w-full rounded-xl border border-input bg-field px-3 py-2 text-xs font-medium text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
-            >
-              <option value="">Chọn nghề nghiệp cụ thể</option>
-              {activeDomain?.occupations.map((occ) => (
-                <option key={occ.id} value={occ.id}>
-                  {occ.name}
-                </option>
-              ))}
-            </select>
+              value={selectedState.occupationId || ""}
+              placeholder="Chọn nghề nghiệp cụ thể"
+              onChange={(occId) => onSelectOccupation(occId || null)}
+              options={(activeDomain?.occupations || []).map((occ) => ({
+                value: occ.id,
+                label: occ.name,
+              }))}
+            />
           </div>
 
           {/* ======================================================== */}
@@ -400,28 +482,24 @@ export function CareerRightPanel({
           {/* ======================================================== */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-foreground">
+              <label htmlFor="specialization-select" className="text-xs font-bold text-foreground">
                 Specialization
               </label>
               <span className="text-[10px] text-muted-foreground">Layer 4</span>
             </div>
 
-            <select
-              value={selectedState.specializationId || ""}
+            <CareerCustomSelect
+              id="specialization-select"
+              label="Specialization"
               disabled={!selectedState.occupationId}
-              onChange={(e) => {
-                const specId = e.target.value || null;
-                onSelectSpecialization(specId);
-              }}
-              className="w-full rounded-xl border border-input bg-field px-3 py-2 text-xs font-medium text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
-            >
-              <option value="">Chọn chuyên môn sâu</option>
-              {activeOccupation?.specializations.map((spec) => (
-                <option key={spec.id} value={spec.id}>
-                  {spec.name}
-                </option>
-              ))}
-            </select>
+              value={selectedState.specializationId || ""}
+              placeholder="Chọn chuyên môn sâu"
+              onChange={(specId) => onSelectSpecialization(specId || null)}
+              options={(activeOccupation?.specializations || []).map((spec) => ({
+                value: spec.id,
+                label: spec.name,
+              }))}
+            />
           </div>
 
           {/* Selection Status Summary */}
@@ -433,17 +511,23 @@ export function CareerRightPanel({
               <div className="flex items-center gap-1.5 text-fg-secondary">
                 <span className="size-1.5 rounded-full bg-brand-bright" />
                 <span className="font-semibold text-brand-text truncate">
+                  {currentFaculty.name} &gt; {currentMajor.name}
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5 text-fg-secondary pl-3">
+                <span className="size-1.5 rounded-full bg-brand-bright" />
+                <span className="font-semibold text-brand-text truncate">
                   {activeDomain.name}
                 </span>
               </div>
               {activeOccupation && (
-                <div className="flex items-center gap-1.5 text-fg-secondary pl-3">
+                <div className="flex items-center gap-1.5 text-fg-secondary pl-6">
                   <span className="size-1.5 rounded-full bg-brand-bright" />
                   <span className="truncate">{activeOccupation.name}</span>
                 </div>
               )}
               {selectedState.specializationId && (
-                <div className="flex items-center gap-1.5 text-fg-secondary pl-6">
+                <div className="flex items-center gap-1.5 text-fg-secondary pl-9">
                   <span className="size-1.5 rounded-full bg-brand-bright" />
                   <span className="truncate">
                     {

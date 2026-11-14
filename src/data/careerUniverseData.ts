@@ -819,3 +819,108 @@ export const CAREER_UNIVERSE_CATALOG: DomainRawDefinition[] = [
     ],
   },
 ];
+
+export interface MajorInfo {
+  id: string;
+  name: string;
+  isAvailable?: boolean;
+}
+
+export interface FacultyInfo {
+  id: string;
+  name: string;
+  domainGroups: string;
+  isAvailable?: boolean;
+  majors: MajorInfo[];
+}
+
+export const FACULTIES_DATA: FacultyInfo[] = [
+  {
+    id: "cns-tt",
+    name: "Khoa Công nghệ số – Truyền thông",
+    domainGroups: "CNTT, AI, truyền thông, thương mại điện tử, kinh doanh số",
+    isAvailable: true,
+    majors: [
+      { id: "cntt", name: "Công nghệ thông tin", isAvailable: true },
+      { id: "ttdpt", name: "Truyền thông đa phương tiện", isAvailable: false },
+      { id: "mkt-so", name: "Marketing số", isAvailable: false },
+      { id: "qhcc", name: "Quan hệ công chúng", isAvailable: false },
+      { id: "cntt-nhat", name: "Công nghệ thông tin tăng cường tiếng Nhật", isAvailable: false },
+      { id: "ai", name: "Trí tuệ nhân tạo", isAvailable: false },
+      { id: "logistics", name: "Logistics và Quản lý chuỗi cung ứng", isAvailable: false },
+      { id: "tmdt", name: "Thương mại điện tử", isAvailable: false },
+      { id: "kds", name: "Kinh doanh số", isAvailable: false },
+    ],
+  },
+  {
+    id: "cn-kt",
+    name: "Khoa Công nghệ – Kĩ thuật",
+    domainGroups: "Điện – điện tử, cơ điện tử, ô tô",
+    isAvailable: false,
+    majors: [
+      { id: "cnkt-ddt", name: "Công nghệ kỹ thuật Điện – Điện tử", isAvailable: false },
+      { id: "htd", name: "Hệ thống điện", isAvailable: false },
+      { id: "tdh", name: "Tự động hóa", isAvailable: false },
+      { id: "cnkt-cdt", name: "Công nghệ kỹ thuật Cơ điện tử", isAvailable: false },
+      { id: "cnkt-oto", name: "Công nghệ kỹ thuật ô tô", isAvailable: false },
+    ],
+  },
+  {
+    id: "kt-ct",
+    name: "Khoa Kiến trúc – Công trình",
+    domainGroups: "Kiến trúc, xây dựng, kinh tế xây dựng",
+    isAvailable: false,
+    majors: [
+      { id: "kt", name: "Kiến trúc", isAvailable: false },
+      { id: "kt-ct-major", name: "Kiến trúc công trình", isAvailable: false },
+      { id: "kt-nt", name: "Kiến trúc nội thất", isAvailable: false },
+      { id: "kt-pd", name: "Kiến trúc Phương Đông", isAvailable: false },
+      { id: "kt-xd", name: "Kinh tế xây dựng", isAvailable: false },
+      { id: "kt-qlxd", name: "Kinh tế và Quản lý xây dựng", isAvailable: false },
+      { id: "qldaxd", name: "Quản lý dự án xây dựng", isAvailable: false },
+      { id: "ktxd", name: "Kỹ thuật xây dựng", isAvailable: false },
+      { id: "qlpt-dt-bds", name: "Quản lý phát triển đô thị và bất động sản", isAvailable: false },
+    ],
+  },
+  {
+    id: "kt-qtkd",
+    name: "Khoa Kinh tế – Quản trị kinh doanh",
+    domainGroups: "Kinh doanh, tài chính, kế toán, quản trị, du lịch",
+    isAvailable: false,
+    majors: [
+      { id: "ketoan", name: "Kế toán", isAvailable: false },
+      { id: "qtkd", name: "Quản trị kinh doanh", isAvailable: false },
+      { id: "tcnh", name: "Tài chính – Ngân hàng", isAvailable: false },
+      { id: "qtvp", name: "Quản trị văn phòng", isAvailable: false },
+      { id: "kdtm", name: "Kinh doanh thương mại", isAvailable: false },
+      { id: "qtnl", name: "Quản trị nhân lực", isAvailable: false },
+      { id: "qtks", name: "Quản trị khách sạn", isAvailable: false },
+      { id: "qtdldlh", name: "Quản trị dịch vụ du lịch và lữ hành", isAvailable: false },
+      { id: "hddl", name: "Hướng dẫn du lịch", isAvailable: false },
+    ],
+  },
+  {
+    id: "nn",
+    name: "Khoa Ngoại ngữ",
+    domainGroups: "Anh, Trung, Nhật, văn học, giáo dục",
+    isAvailable: false,
+    majors: [
+      { id: "nntq", name: "Ngôn ngữ Trung Quốc", isAvailable: false },
+      { id: "nntq-db", name: "Chương trình Ngôn ngữ Trung Quốc đặc biệt", isAvailable: false },
+      { id: "nna", name: "Ngôn ngữ Anh", isAvailable: false },
+      { id: "nnn", name: "Ngôn ngữ Nhật", isAvailable: false },
+      { id: "vanhoc", name: "Văn học", isAvailable: false },
+      { id: "tv-vhvn", name: "Tiếng Việt và Văn hóa Việt Nam", isAvailable: false },
+      { id: "cngd", name: "Công nghệ giáo dục", isAvailable: false },
+    ],
+  },
+  {
+    id: "nn-vh-hq",
+    name: "Khoa Ngôn ngữ và Văn hóa Hàn Quốc",
+    domainGroups: "Ngôn ngữ Hàn Quốc",
+    isAvailable: false,
+    majors: [
+      { id: "nnhq", name: "Ngôn ngữ Hàn Quốc", isAvailable: false },
+    ],
+  },
+];

@@ -18,6 +18,8 @@ export function CareerUniversePage() {
 
   // Selected Career Hierarchy State
   const [selectedState, setSelectedState] = useState<SelectedCareerState>({
+    facultyId: "cns-tt",
+    majorId: "cntt",
     domainId: null,
     occupationId: null,
     specializationId: null,
@@ -41,13 +43,30 @@ export function CareerUniversePage() {
     return buildActiveDomainGraph(selectedState);
   }, [isSkeleton, selectedState]);
 
+  // Handler: Select Faculty
+  const handleSelectFaculty = useCallback((facultyId: string) => {
+    setSelectedState((prev) => ({
+      ...prev,
+      facultyId,
+    }));
+  }, []);
+
+  // Handler: Select Major
+  const handleSelectMajor = useCallback((majorId: string) => {
+    setSelectedState((prev) => ({
+      ...prev,
+      majorId,
+    }));
+  }, []);
+
   // Handler: Select Domain (Mandatory selection)
   const handleSelectDomain = useCallback((domainId: string) => {
-    setSelectedState({
+    setSelectedState((prev) => ({
+      ...prev,
       domainId,
       occupationId: null,
       specializationId: null,
-    });
+    }));
     setSelectedNodeId(domainId);
   }, []);
 
@@ -142,6 +161,8 @@ export function CareerUniversePage() {
         isOpen={isRightPanelOpen}
         onToggleOpen={() => setIsRightPanelOpen((prev) => !prev)}
         selectedState={selectedState}
+        onSelectFaculty={handleSelectFaculty}
+        onSelectMajor={handleSelectMajor}
         onSelectDomain={handleSelectDomain}
         onSelectOccupation={handleSelectOccupation}
         onSelectSpecialization={handleSelectSpecialization}

@@ -22,7 +22,7 @@ const translations: Record<Language, Translations> = {
     navDocuments: "Tài liệu",
     navContributors: "Người đóng góp",
     navAdmin: "Quản trị",
-    navCareerUniverse: "Cây Nghề Nghiệp",
+    navCareerUniverse: "Cây Nghề Nghiệp - Career Tree",
     navMore: "Thêm...",
     newChat: "Cuộc trò chuyện mới",
     recent: "Gần đây",
