@@ -15,6 +15,18 @@ import { ContributorsPage } from "../pages/ContributorsPage";
 import { ProfilePage } from "../pages/ProfilePage";
 import { SettingsPage } from "../pages/SettingsPage";
 import { InfoPage } from "../pages/InfoPage";
+import { MapPage } from "../pages/MapPage";
+import { useAuth } from "../contexts/AuthContext";
+
+function MapShellSwitch() {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated ? <AppShell /> : <PublicLayout />;
+}
+
+function MapRoutePage() {
+  const { isAuthenticated } = useAuth();
+  return <MapPage embedded={isAuthenticated} />;
+}
 
 export function AppRouter() {
   return (
@@ -62,6 +74,11 @@ export function AppRouter() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
         </Route>
+      </Route>
+
+      {/* BẢN ĐỒ CAMPUS: mở được cả khi chưa đăng nhập và khi đã vào AppShell */}
+      <Route element={<MapShellSwitch />}>
+        <Route path="/map" element={<MapRoutePage />} />
       </Route>
 
       {/* PROTECTED ROUTES: CHỈ TRUY CẬP ĐƯỢC SAU KHI ĐƯỢC CẤP QUYỀN (PERMISSION) */}

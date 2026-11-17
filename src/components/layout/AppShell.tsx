@@ -1,5 +1,5 @@
 import { useEffect, useState, type SVGProps } from "react";
-import { NavLink, Outlet, useNavigate, useSearchParams } from "react-router-dom";
+import { NavLink, Outlet, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 import { useAuth } from "../../contexts/AuthContext";
 import { chatApi } from "../../api/chat.api";
@@ -95,8 +95,16 @@ const LogOutIcon = ({ size, ...props }: IconProps) => (
   </BaseIcon>
 );
 
+const MapPinIcon = ({ size, ...props }: IconProps) => (
+  <BaseIcon size={size} {...props}>
+    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+    <circle cx="12" cy="10" r="3" />
+  </BaseIcon>
+);
+
 const links = [
   ["/chat", "Trò chuyện", MessageCircleIcon],
+  ["/map", "Bản đồ trường", MapPinIcon],
   ["/history", "Lịch sử", HistoryIcon],
   ["/knowledge", "Kho tri thức", BookOpenIcon],
   ["/documents", "Tài liệu", FileTextIcon],
@@ -105,6 +113,8 @@ const links = [
 
 export function AppShell() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const isMapRoute = location.pathname === "/map";
   const [searchParams] = useSearchParams();
   const currentChatId = searchParams.get("id");
   const { user, logout } = useAuth();
@@ -275,7 +285,11 @@ export function AppShell() {
       </aside>
 
       <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto relative">
-        <div className="mx-auto flex h-full w-full max-w-6xl flex-col px-5 py-6 md:px-10">
+        <div
+          className={`mx-auto flex h-full w-full flex-col ${
+            isMapRoute ? "px-3 py-3 md:px-4 md:py-4" : "max-w-6xl px-5 py-6 md:px-10"
+          }`}
+        >
           <div className="mb-6 flex shrink-0 items-center justify-between md:hidden">
             <NavLink to="/" className="font-extrabold">
               IT UPD GenAI<span className="text-[#00a86b]">.</span>

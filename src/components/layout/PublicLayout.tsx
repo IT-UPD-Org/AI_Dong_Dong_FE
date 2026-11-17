@@ -29,6 +29,14 @@ export function PublicLayout() {
             Trang chủ
           </Link>
           <Link
+            to="/map"
+            className={`transition-colors hover:text-[#04714a] ${
+              location.pathname === "/map" ? "font-semibold text-[#04714a]" : ""
+            }`}
+          >
+            Bản đồ trường
+          </Link>
+          <Link
             to="/donate"
             className={`transition-colors hover:text-[#04714a] ${
               location.pathname === "/donate" ? "font-semibold text-[#04714a]" : ""
