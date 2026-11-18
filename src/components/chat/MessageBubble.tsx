@@ -1,7 +1,7 @@
 // src\components\chat\MessageBubble.tsx
 import { forwardRef, useState, useEffect, useRef } from "react";
 import { RotateCcw, ThumbsDown, ThumbsUp, Edit2, Copy, Check, Flag } from "lucide-react";
-import type { ChatMessage } from "../../api/types";
+import type { ChatMessage, WayfindingCandidate } from "../../api/types";
 import { SafeMarkdown } from "./SafeMarkdown";
 import { FileCard } from "./FileCard";
 import { PreviewFile } from "../../lib/filePreviewUtils";
@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import type { ReplyStep } from "../../lib/groupMessages";
 import { replyText } from "../../lib/groupMessages";
 import { ToolCallList } from "./ToolCallList";
+import { WayfindingStepsCard } from "./WayfindingStepsCard";
 import { useLanguage } from "../../contexts/LanguageContext";
 
 interface MessageBubbleProps {
@@ -26,6 +27,7 @@ interface MessageBubbleProps {
   attachedFiles?: PreviewFile[];
   /** For an assistant reply: its steps (text, then the tools that step called), in order. */
   steps?: ReplyStep[];
+  onSelectWayfindingCandidate?: (candidate: WayfindingCandidate) => void;
 }
 
 export const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
@@ -42,6 +44,7 @@ export const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
       onPreviewFile,
       attachedFiles = [],
       steps,
+      onSelectWayfindingCandidate,
     },
     ref,
   ) {
@@ -186,6 +189,12 @@ export const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
                   <ToolCallList toolCalls={step.toolCalls} running={isRunning && i === replySteps.length - 1} />
                 </div>
               ))}
+              {message.wayfinding && (
+                <WayfindingStepsCard
+                  wayfinding={message.wayfinding}
+                  onSelectCandidate={onSelectWayfindingCandidate}
+                />
+              )}
             </div>
           ) : (
             <span className="inline-flex items-center gap-1.5 py-1 text-muted-foreground">

@@ -1,0 +1,2650 @@
+{
+  "campus_id": "MINH_KHAI",
+  "name": "Cơ sở Minh Khai (Số 4 ngõ Chùa Hưng Ký)",
+  "university": "Trường Đại học Phương Đông (PDU)",
+  "address": "Số 4 ngõ Chùa Hưng Ký (ngõ 228 phố Minh Khai), phường Tương Mai (trước đây thuộc phường Minh Khai, quận Hai Bà Trưng), TP. Hà Nội",
+  "schema_version": 1,
+  "coordinate_system": {
+    "campus": "Đơn vị tương đối; = pixel ảnh tham chiếu / 6. Không phải tọa độ GPS.",
+    "floor_plan": "Tọa độ vector cục bộ theo mặt bằng tầng của từng tòa (x dọc cánh dài Tòa A).",
+    "reference_image": {
+      "src": "assets/reference-footprint-toa-a.png",
+      "width": 1083,
+      "height": 765,
+      "scale": 6
+    }
+  },
+  "disclaimer": "Sơ đồ mô phỏng tổng mặt bằng (2D & 2.5D) các khu vực Tòa A, Tòa B, Tòa D (đang hoàn thiện) và Nhà để xe tại Cơ sở Minh Khai (Số 4 ngõ Chùa Hưng Ký). Dữ liệu phòng chi tiết của Tòa B sẽ được bổ sung sau.",
+  "ground": {
+    "polygon": [
+      [
+        64.42,
+        203.48
+      ],
+      [
+        -47.8,
+        -26.61
+      ],
+      [
+        130.16,
+        -113.41
+      ],
+      [
+        242.38,
+        116.68
+      ]
+    ]
+  },
+  "buildings": [
+    {
+      "building_id": "A",
+      "name": "Tòa A",
+      "status": "active",
+      "detail_available": true,
+      "data_quality": "simulated",
+      "placement": {
+        "x": 49.39,
+        "y": 58.94,
+        "rotation_deg": 19.13
+      },
+      "floor_height": 3.6,
+      "style": {
+        "roof": "#c4553f",
+        "wall": "#eef1f5"
+      },
+      "footprint": {
+        "parts": [
+          {
+            "part_id": "A-WING-LONG",
+            "zone": "wing_long",
+            "label": "Cánh dài",
+            "polygon": [
+              [
+                10,
+                0
+              ],
+              [
+                96,
+                0
+              ],
+              [
+                96,
+                20
+              ],
+              [
+                10,
+                20
+              ]
+            ]
+          },
+          {
+            "part_id": "A-JOINT",
+            "zone": "joint",
+            "label": "Khu nối hai cánh",
+            "polygon": [
+              [
+                0,
+                20
+              ],
+              [
+                10,
+                20
+              ],
+              [
+                10,
+                0
+              ],
+              [
+                8.08,
+                0
+              ],
+              [
+                6.7,
+                -1.33
+              ],
+              [
+                -7.19,
+                13.05
+              ]
+            ]
+          },
+          {
+            "part_id": "A-WING-SHORT",
+            "zone": "wing_short",
+            "label": "Cánh ngắn",
+            "polygon": [
+              [
+                -7.19,
+                13.05
+              ],
+              [
+                -44.6,
+                -23.07
+              ],
+              [
+                -30.71,
+                -37.46
+              ],
+              [
+                6.7,
+                -1.33
+              ]
+            ]
+          },
+          {
+            "part_id": "A-OFFICE",
+            "zone": "office_block",
+            "label": "Khối văn phòng nhô ra",
+            "polygon": [
+              [
+                32.5,
+                -13.5
+              ],
+              [
+                65,
+                -13.5
+              ],
+              [
+                65,
+                0
+              ],
+              [
+                32.5,
+                0
+              ]
+            ]
+          }
+        ]
+      },
+      "entrances": [
+        {
+          "entrance_id": "A-MAIN",
+          "name": "Lối vào chính",
+          "point": [
+            48.75,
+            -13.5
+          ],
+          "direction": [
+            0,
+            -1
+          ]
+        }
+      ],
+      "floors": [
+        {
+          "floor_id": "A-F1",
+          "level": 1,
+          "name": "Tầng 1",
+          "plan_status": "simulated",
+          "parts": [
+            "A-WING-LONG",
+            "A-JOINT",
+            "A-WING-SHORT",
+            "A-OFFICE"
+          ],
+          "rooms": [
+            {
+              "room_id": "A101",
+              "code": "A101",
+              "name": "Phòng 101",
+              "building_id": "A",
+              "floor_id": "A-F1",
+              "room_type": "unspecified",
+              "zone": "wing_long",
+              "unit": null,
+              "note": "Chưa có thông tin công năng.",
+              "aliases": [
+                "101"
+              ],
+              "short_name": null,
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    74.5,
+                    0
+                  ],
+                  [
+                    96,
+                    0
+                  ],
+                  [
+                    96,
+                    20
+                  ],
+                  [
+                    74.5,
+                    20
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A102",
+              "code": "A102",
+              "name": "Phòng 102",
+              "building_id": "A",
+              "floor_id": "A-F1",
+              "room_type": "unspecified",
+              "zone": "wing_long",
+              "unit": null,
+              "note": "Chưa có thông tin công năng.",
+              "aliases": [
+                "102"
+              ],
+              "short_name": null,
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    53,
+                    0
+                  ],
+                  [
+                    74.5,
+                    0
+                  ],
+                  [
+                    74.5,
+                    20
+                  ],
+                  [
+                    53,
+                    20
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A-F1-CT-CHINH",
+              "code": null,
+              "name": "Cầu thang chính",
+              "building_id": "A",
+              "floor_id": "A-F1",
+              "room_type": "staircase",
+              "zone": "wing_long",
+              "unit": null,
+              "note": "Gắn với khối văn phòng nhô ra / lối vào chính.",
+              "aliases": [],
+              "short_name": "CT chính",
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    45,
+                    0
+                  ],
+                  [
+                    53,
+                    0
+                  ],
+                  [
+                    53,
+                    20
+                  ],
+                  [
+                    45,
+                    20
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A103",
+              "code": "A103",
+              "name": "Phòng 103",
+              "building_id": "A",
+              "floor_id": "A-F1",
+              "room_type": "unspecified",
+              "zone": "wing_long",
+              "unit": null,
+              "note": "Chưa có thông tin công năng.",
+              "aliases": [
+                "103"
+              ],
+              "short_name": null,
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    31,
+                    0
+                  ],
+                  [
+                    45,
+                    0
+                  ],
+                  [
+                    45,
+                    20
+                  ],
+                  [
+                    31,
+                    20
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A-F1-STUDIO",
+              "code": null,
+              "name": "Studio",
+              "building_id": "A",
+              "floor_id": "A-F1",
+              "room_type": "studio",
+              "zone": "wing_long",
+              "unit": null,
+              "note": null,
+              "aliases": [],
+              "short_name": null,
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    17,
+                    0
+                  ],
+                  [
+                    31,
+                    0
+                  ],
+                  [
+                    31,
+                    20
+                  ],
+                  [
+                    17,
+                    20
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A-F1-WC",
+              "code": null,
+              "name": "Nhà vệ sinh",
+              "building_id": "A",
+              "floor_id": "A-F1",
+              "room_type": "restroom",
+              "zone": "wing_long",
+              "unit": null,
+              "note": null,
+              "aliases": [],
+              "short_name": "WC",
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    10,
+                    0
+                  ],
+                  [
+                    17,
+                    0
+                  ],
+                  [
+                    17,
+                    20
+                  ],
+                  [
+                    10,
+                    20
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A-F1-CT-PHU",
+              "code": null,
+              "name": "Cầu thang phụ",
+              "building_id": "A",
+              "floor_id": "A-F1",
+              "room_type": "staircase",
+              "zone": "joint",
+              "unit": null,
+              "note": null,
+              "aliases": [],
+              "short_name": "CT phụ",
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    0,
+                    20
+                  ],
+                  [
+                    10,
+                    20
+                  ],
+                  [
+                    10,
+                    0
+                  ],
+                  [
+                    8.08,
+                    0
+                  ],
+                  [
+                    6.7,
+                    -1.33
+                  ],
+                  [
+                    -7.19,
+                    13.05
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A-F1-HT1",
+              "code": null,
+              "name": "Hội trường lớn 1",
+              "building_id": "A",
+              "floor_id": "A-F1",
+              "room_type": "hall",
+              "zone": "wing_short",
+              "unit": null,
+              "note": null,
+              "aliases": [
+                "HT1"
+              ],
+              "short_name": "Hội trường 1",
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    -7.19,
+                    13.05
+                  ],
+                  [
+                    -25.9,
+                    -5.01
+                  ],
+                  [
+                    -12,
+                    -19.39
+                  ],
+                  [
+                    6.7,
+                    -1.33
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A-F1-HT2",
+              "code": null,
+              "name": "Hội trường lớn 2",
+              "building_id": "A",
+              "floor_id": "A-F1",
+              "room_type": "hall",
+              "zone": "wing_short",
+              "unit": null,
+              "note": null,
+              "aliases": [
+                "HT2"
+              ],
+              "short_name": "Hội trường 2",
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    -25.9,
+                    -5.01
+                  ],
+                  [
+                    -44.6,
+                    -23.07
+                  ],
+                  [
+                    -30.71,
+                    -37.46
+                  ],
+                  [
+                    -12,
+                    -19.39
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A-F1-VP-SANH",
+              "code": null,
+              "name": "Sảnh",
+              "building_id": "A",
+              "floor_id": "A-F1",
+              "room_type": "lobby",
+              "zone": "office_block",
+              "unit": null,
+              "note": "Sảnh lối vào chính, dưới khối văn phòng nhô ra.",
+              "aliases": [],
+              "short_name": null,
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    32.5,
+                    -13.5
+                  ],
+                  [
+                    52,
+                    -13.5
+                  ],
+                  [
+                    52,
+                    0
+                  ],
+                  [
+                    32.5,
+                    0
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A-F1-VP-CT",
+              "code": null,
+              "name": "Cầu thang (khối văn phòng)",
+              "building_id": "A",
+              "floor_id": "A-F1",
+              "room_type": "staircase",
+              "zone": "office_block",
+              "unit": null,
+              "note": null,
+              "aliases": [],
+              "short_name": "Cầu thang",
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    52,
+                    -13.5
+                  ],
+                  [
+                    65,
+                    -13.5
+                  ],
+                  [
+                    65,
+                    0
+                  ],
+                  [
+                    52,
+                    0
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            }
+          ],
+          "unmapped_areas": []
+        },
+        {
+          "floor_id": "A-F2",
+          "level": 2,
+          "name": "Tầng 2",
+          "plan_status": "simulated",
+          "parts": [
+            "A-WING-LONG",
+            "A-JOINT",
+            "A-WING-SHORT",
+            "A-OFFICE"
+          ],
+          "rooms": [
+            {
+              "room_id": "A201",
+              "code": "A201",
+              "name": "Phòng 201 – Phòng máy",
+              "building_id": "A",
+              "floor_id": "A-F2",
+              "room_type": "computer_lab",
+              "zone": "wing_long",
+              "unit": null,
+              "note": null,
+              "aliases": [
+                "X01",
+                "201"
+              ],
+              "short_name": null,
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    74.5,
+                    0
+                  ],
+                  [
+                    96,
+                    0
+                  ],
+                  [
+                    96,
+                    20
+                  ],
+                  [
+                    74.5,
+                    20
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A202",
+              "code": "A202",
+              "name": "Phòng 202 – Phòng máy",
+              "building_id": "A",
+              "floor_id": "A-F2",
+              "room_type": "computer_lab",
+              "zone": "wing_long",
+              "unit": null,
+              "note": null,
+              "aliases": [
+                "X02",
+                "202"
+              ],
+              "short_name": null,
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    53,
+                    0
+                  ],
+                  [
+                    74.5,
+                    0
+                  ],
+                  [
+                    74.5,
+                    20
+                  ],
+                  [
+                    53,
+                    20
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A-F2-CT-CHINH",
+              "code": null,
+              "name": "Cầu thang chính",
+              "building_id": "A",
+              "floor_id": "A-F2",
+              "room_type": "staircase",
+              "zone": "wing_long",
+              "unit": null,
+              "note": null,
+              "aliases": [],
+              "short_name": "CT chính",
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    45,
+                    0
+                  ],
+                  [
+                    53,
+                    0
+                  ],
+                  [
+                    53,
+                    20
+                  ],
+                  [
+                    45,
+                    20
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A203",
+              "code": "A203",
+              "name": "Phòng 203",
+              "building_id": "A",
+              "floor_id": "A-F2",
+              "room_type": "unspecified",
+              "zone": "wing_long",
+              "unit": null,
+              "note": "Chưa có thông tin công năng.",
+              "aliases": [
+                "X03",
+                "203"
+              ],
+              "short_name": null,
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    31,
+                    0
+                  ],
+                  [
+                    45,
+                    0
+                  ],
+                  [
+                    45,
+                    20
+                  ],
+                  [
+                    31,
+                    20
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A204",
+              "code": "A204",
+              "name": "Phòng 204",
+              "building_id": "A",
+              "floor_id": "A-F2",
+              "room_type": "unspecified",
+              "zone": "wing_long",
+              "unit": null,
+              "note": "Chưa có thông tin công năng.",
+              "aliases": [
+                "X04",
+                "204"
+              ],
+              "short_name": null,
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    17,
+                    0
+                  ],
+                  [
+                    31,
+                    0
+                  ],
+                  [
+                    31,
+                    20
+                  ],
+                  [
+                    17,
+                    20
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A-F2-WC",
+              "code": null,
+              "name": "Nhà vệ sinh",
+              "building_id": "A",
+              "floor_id": "A-F2",
+              "room_type": "restroom",
+              "zone": "wing_long",
+              "unit": null,
+              "note": null,
+              "aliases": [],
+              "short_name": "WC",
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    10,
+                    0
+                  ],
+                  [
+                    17,
+                    0
+                  ],
+                  [
+                    17,
+                    20
+                  ],
+                  [
+                    10,
+                    20
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A-F2-CT-PHU",
+              "code": null,
+              "name": "Cầu thang phụ",
+              "building_id": "A",
+              "floor_id": "A-F2",
+              "room_type": "staircase",
+              "zone": "joint",
+              "unit": null,
+              "note": null,
+              "aliases": [],
+              "short_name": "CT phụ",
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    0,
+                    20
+                  ],
+                  [
+                    10,
+                    20
+                  ],
+                  [
+                    10,
+                    0
+                  ],
+                  [
+                    8.08,
+                    0
+                  ],
+                  [
+                    6.7,
+                    -1.33
+                  ],
+                  [
+                    -7.19,
+                    13.05
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A205",
+              "code": "A205",
+              "name": "Phòng 205",
+              "building_id": "A",
+              "floor_id": "A-F2",
+              "room_type": "unspecified",
+              "zone": "wing_short",
+              "unit": null,
+              "note": "Chưa có thông tin công năng.",
+              "aliases": [
+                "X05",
+                "205"
+              ],
+              "short_name": null,
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    -7.19,
+                    13.05
+                  ],
+                  [
+                    -19.66,
+                    1.01
+                  ],
+                  [
+                    -5.77,
+                    -13.37
+                  ],
+                  [
+                    6.7,
+                    -1.33
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A206",
+              "code": "A206",
+              "name": "Phòng 206",
+              "building_id": "A",
+              "floor_id": "A-F2",
+              "room_type": "unspecified",
+              "zone": "wing_short",
+              "unit": null,
+              "note": "Chưa có thông tin công năng.",
+              "aliases": [
+                "X06",
+                "206"
+              ],
+              "short_name": null,
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    -19.66,
+                    1.01
+                  ],
+                  [
+                    -32.13,
+                    -11.03
+                  ],
+                  [
+                    -18.24,
+                    -25.42
+                  ],
+                  [
+                    -5.77,
+                    -13.37
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A207",
+              "code": "A207",
+              "name": "Phòng 207",
+              "building_id": "A",
+              "floor_id": "A-F2",
+              "room_type": "unspecified",
+              "zone": "wing_short",
+              "unit": null,
+              "note": "Chưa có thông tin công năng.",
+              "aliases": [
+                "X07",
+                "207"
+              ],
+              "short_name": null,
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    -32.13,
+                    -11.03
+                  ],
+                  [
+                    -44.6,
+                    -23.07
+                  ],
+                  [
+                    -30.71,
+                    -37.46
+                  ],
+                  [
+                    -18.24,
+                    -25.42
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A-F2-VP-01",
+              "code": null,
+              "name": "Văn phòng nghỉ giảng viên",
+              "building_id": "A",
+              "floor_id": "A-F2",
+              "room_type": "faculty_lounge",
+              "zone": "office_block",
+              "unit": null,
+              "note": null,
+              "aliases": [],
+              "short_name": "VP nghỉ GV",
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    32.5,
+                    -13.5
+                  ],
+                  [
+                    43.33,
+                    -13.5
+                  ],
+                  [
+                    43.33,
+                    0
+                  ],
+                  [
+                    32.5,
+                    0
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A-F2-VP-02",
+              "code": null,
+              "name": "Văn phòng Khoa Cơ điện tử (1)",
+              "building_id": "A",
+              "floor_id": "A-F2",
+              "room_type": "office",
+              "zone": "office_block",
+              "unit": "Khoa Cơ điện tử",
+              "note": null,
+              "aliases": [],
+              "short_name": "VP K.Cơ điện tử",
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    43.33,
+                    -13.5
+                  ],
+                  [
+                    54.17,
+                    -13.5
+                  ],
+                  [
+                    54.17,
+                    0
+                  ],
+                  [
+                    43.33,
+                    0
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A-F2-VP-03",
+              "code": null,
+              "name": "Văn phòng Khoa Cơ điện tử (2)",
+              "building_id": "A",
+              "floor_id": "A-F2",
+              "room_type": "office",
+              "zone": "office_block",
+              "unit": "Khoa Cơ điện tử",
+              "note": null,
+              "aliases": [],
+              "short_name": "VP K.Cơ điện tử",
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    54.17,
+                    -13.5
+                  ],
+                  [
+                    65,
+                    -13.5
+                  ],
+                  [
+                    65,
+                    0
+                  ],
+                  [
+                    54.17,
+                    0
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            }
+          ],
+          "unmapped_areas": []
+        },
+        {
+          "floor_id": "A-F3",
+          "level": 3,
+          "name": "Tầng 3",
+          "plan_status": "simulated",
+          "parts": [
+            "A-WING-LONG",
+            "A-JOINT",
+            "A-WING-SHORT",
+            "A-OFFICE"
+          ],
+          "rooms": [
+            {
+              "room_id": "A301",
+              "code": "A301",
+              "name": "Phòng 301 – Phòng máy",
+              "building_id": "A",
+              "floor_id": "A-F3",
+              "room_type": "computer_lab",
+              "zone": "wing_long",
+              "unit": null,
+              "note": null,
+              "aliases": [
+                "X01",
+                "301"
+              ],
+              "short_name": null,
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    74.5,
+                    0
+                  ],
+                  [
+                    96,
+                    0
+                  ],
+                  [
+                    96,
+                    20
+                  ],
+                  [
+                    74.5,
+                    20
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A302",
+              "code": "A302",
+              "name": "Phòng 302 – Phòng máy",
+              "building_id": "A",
+              "floor_id": "A-F3",
+              "room_type": "computer_lab",
+              "zone": "wing_long",
+              "unit": null,
+              "note": null,
+              "aliases": [
+                "X02",
+                "302"
+              ],
+              "short_name": null,
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    53,
+                    0
+                  ],
+                  [
+                    74.5,
+                    0
+                  ],
+                  [
+                    74.5,
+                    20
+                  ],
+                  [
+                    53,
+                    20
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A-F3-CT-CHINH",
+              "code": null,
+              "name": "Cầu thang chính",
+              "building_id": "A",
+              "floor_id": "A-F3",
+              "room_type": "staircase",
+              "zone": "wing_long",
+              "unit": null,
+              "note": null,
+              "aliases": [],
+              "short_name": "CT chính",
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    45,
+                    0
+                  ],
+                  [
+                    53,
+                    0
+                  ],
+                  [
+                    53,
+                    20
+                  ],
+                  [
+                    45,
+                    20
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A303",
+              "code": "A303",
+              "name": "Phòng 303",
+              "building_id": "A",
+              "floor_id": "A-F3",
+              "room_type": "unspecified",
+              "zone": "wing_long",
+              "unit": null,
+              "note": "Chưa có thông tin công năng.",
+              "aliases": [
+                "X03",
+                "303"
+              ],
+              "short_name": null,
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    31,
+                    0
+                  ],
+                  [
+                    45,
+                    0
+                  ],
+                  [
+                    45,
+                    20
+                  ],
+                  [
+                    31,
+                    20
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A304",
+              "code": "A304",
+              "name": "Phòng 304",
+              "building_id": "A",
+              "floor_id": "A-F3",
+              "room_type": "unspecified",
+              "zone": "wing_long",
+              "unit": null,
+              "note": "Chưa có thông tin công năng.",
+              "aliases": [
+                "X04",
+                "304"
+              ],
+              "short_name": null,
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    17,
+                    0
+                  ],
+                  [
+                    31,
+                    0
+                  ],
+                  [
+                    31,
+                    20
+                  ],
+                  [
+                    17,
+                    20
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A-F3-WC",
+              "code": null,
+              "name": "Nhà vệ sinh",
+              "building_id": "A",
+              "floor_id": "A-F3",
+              "room_type": "restroom",
+              "zone": "wing_long",
+              "unit": null,
+              "note": null,
+              "aliases": [],
+              "short_name": "WC",
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    10,
+                    0
+                  ],
+                  [
+                    17,
+                    0
+                  ],
+                  [
+                    17,
+                    20
+                  ],
+                  [
+                    10,
+                    20
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A-F3-CT-PHU",
+              "code": null,
+              "name": "Cầu thang phụ",
+              "building_id": "A",
+              "floor_id": "A-F3",
+              "room_type": "staircase",
+              "zone": "joint",
+              "unit": null,
+              "note": null,
+              "aliases": [],
+              "short_name": "CT phụ",
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    0,
+                    20
+                  ],
+                  [
+                    10,
+                    20
+                  ],
+                  [
+                    10,
+                    0
+                  ],
+                  [
+                    8.08,
+                    0
+                  ],
+                  [
+                    6.7,
+                    -1.33
+                  ],
+                  [
+                    -7.19,
+                    13.05
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A305",
+              "code": "A305",
+              "name": "Phòng 305",
+              "building_id": "A",
+              "floor_id": "A-F3",
+              "room_type": "unspecified",
+              "zone": "wing_short",
+              "unit": null,
+              "note": "Chưa có thông tin công năng.",
+              "aliases": [
+                "X05",
+                "305"
+              ],
+              "short_name": null,
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    -7.19,
+                    13.05
+                  ],
+                  [
+                    -19.66,
+                    1.01
+                  ],
+                  [
+                    -5.77,
+                    -13.37
+                  ],
+                  [
+                    6.7,
+                    -1.33
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A306",
+              "code": "A306",
+              "name": "Phòng 306",
+              "building_id": "A",
+              "floor_id": "A-F3",
+              "room_type": "unspecified",
+              "zone": "wing_short",
+              "unit": null,
+              "note": "Chưa có thông tin công năng.",
+              "aliases": [
+                "X06",
+                "306"
+              ],
+              "short_name": null,
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    -19.66,
+                    1.01
+                  ],
+                  [
+                    -32.13,
+                    -11.03
+                  ],
+                  [
+                    -18.24,
+                    -25.42
+                  ],
+                  [
+                    -5.77,
+                    -13.37
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A307",
+              "code": "A307",
+              "name": "Phòng 307",
+              "building_id": "A",
+              "floor_id": "A-F3",
+              "room_type": "unspecified",
+              "zone": "wing_short",
+              "unit": null,
+              "note": "Chưa có thông tin công năng.",
+              "aliases": [
+                "X07",
+                "307"
+              ],
+              "short_name": null,
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    -32.13,
+                    -11.03
+                  ],
+                  [
+                    -44.6,
+                    -23.07
+                  ],
+                  [
+                    -30.71,
+                    -37.46
+                  ],
+                  [
+                    -18.24,
+                    -25.42
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A-F3-VP-01",
+              "code": null,
+              "name": "Văn phòng Khoa Kiến trúc (1)",
+              "building_id": "A",
+              "floor_id": "A-F3",
+              "room_type": "office",
+              "zone": "office_block",
+              "unit": "Khoa Kiến trúc",
+              "note": null,
+              "aliases": [],
+              "short_name": "VP K.Kiến trúc",
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    32.5,
+                    -13.5
+                  ],
+                  [
+                    43.33,
+                    -13.5
+                  ],
+                  [
+                    43.33,
+                    0
+                  ],
+                  [
+                    32.5,
+                    0
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A-F3-VP-02",
+              "code": null,
+              "name": "Văn phòng Khoa Kiến trúc (2)",
+              "building_id": "A",
+              "floor_id": "A-F3",
+              "room_type": "office",
+              "zone": "office_block",
+              "unit": "Khoa Kiến trúc",
+              "note": null,
+              "aliases": [],
+              "short_name": "VP K.Kiến trúc",
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    43.33,
+                    -13.5
+                  ],
+                  [
+                    54.17,
+                    -13.5
+                  ],
+                  [
+                    54.17,
+                    0
+                  ],
+                  [
+                    43.33,
+                    0
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A-F3-VP-03",
+              "code": null,
+              "name": "Văn phòng Khoa Kiến trúc (3)",
+              "building_id": "A",
+              "floor_id": "A-F3",
+              "room_type": "office",
+              "zone": "office_block",
+              "unit": "Khoa Kiến trúc",
+              "note": null,
+              "aliases": [],
+              "short_name": "VP K.Kiến trúc",
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    54.17,
+                    -13.5
+                  ],
+                  [
+                    65,
+                    -13.5
+                  ],
+                  [
+                    65,
+                    0
+                  ],
+                  [
+                    54.17,
+                    0
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            }
+          ],
+          "unmapped_areas": []
+        },
+        {
+          "floor_id": "A-F4",
+          "level": 4,
+          "name": "Tầng 4",
+          "plan_status": "simulated",
+          "parts": [
+            "A-WING-LONG",
+            "A-JOINT",
+            "A-WING-SHORT",
+            "A-OFFICE"
+          ],
+          "rooms": [
+            {
+              "room_id": "A401",
+              "code": "A401",
+              "name": "Phòng 401 – Phòng máy",
+              "building_id": "A",
+              "floor_id": "A-F4",
+              "room_type": "computer_lab",
+              "zone": "wing_long",
+              "unit": null,
+              "note": null,
+              "aliases": [
+                "X01",
+                "401"
+              ],
+              "short_name": null,
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    74.5,
+                    0
+                  ],
+                  [
+                    96,
+                    0
+                  ],
+                  [
+                    96,
+                    20
+                  ],
+                  [
+                    74.5,
+                    20
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A402",
+              "code": "A402",
+              "name": "Phòng 402 – Phòng máy",
+              "building_id": "A",
+              "floor_id": "A-F4",
+              "room_type": "computer_lab",
+              "zone": "wing_long",
+              "unit": null,
+              "note": null,
+              "aliases": [
+                "X02",
+                "402"
+              ],
+              "short_name": null,
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    53,
+                    0
+                  ],
+                  [
+                    74.5,
+                    0
+                  ],
+                  [
+                    74.5,
+                    20
+                  ],
+                  [
+                    53,
+                    20
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A-F4-CT-CHINH",
+              "code": null,
+              "name": "Cầu thang chính",
+              "building_id": "A",
+              "floor_id": "A-F4",
+              "room_type": "staircase",
+              "zone": "wing_long",
+              "unit": null,
+              "note": null,
+              "aliases": [],
+              "short_name": "CT chính",
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    45,
+                    0
+                  ],
+                  [
+                    53,
+                    0
+                  ],
+                  [
+                    53,
+                    20
+                  ],
+                  [
+                    45,
+                    20
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A403",
+              "code": "A403",
+              "name": "Phòng 403",
+              "building_id": "A",
+              "floor_id": "A-F4",
+              "room_type": "unspecified",
+              "zone": "wing_long",
+              "unit": null,
+              "note": "Chưa có thông tin công năng.",
+              "aliases": [
+                "X03",
+                "403"
+              ],
+              "short_name": null,
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    31,
+                    0
+                  ],
+                  [
+                    45,
+                    0
+                  ],
+                  [
+                    45,
+                    20
+                  ],
+                  [
+                    31,
+                    20
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A404",
+              "code": "A404",
+              "name": "Phòng 404",
+              "building_id": "A",
+              "floor_id": "A-F4",
+              "room_type": "unspecified",
+              "zone": "wing_long",
+              "unit": null,
+              "note": "Chưa có thông tin công năng.",
+              "aliases": [
+                "X04",
+                "404"
+              ],
+              "short_name": null,
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    17,
+                    0
+                  ],
+                  [
+                    31,
+                    0
+                  ],
+                  [
+                    31,
+                    20
+                  ],
+                  [
+                    17,
+                    20
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A-F4-WC",
+              "code": null,
+              "name": "Nhà vệ sinh",
+              "building_id": "A",
+              "floor_id": "A-F4",
+              "room_type": "restroom",
+              "zone": "wing_long",
+              "unit": null,
+              "note": null,
+              "aliases": [],
+              "short_name": "WC",
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    10,
+                    0
+                  ],
+                  [
+                    17,
+                    0
+                  ],
+                  [
+                    17,
+                    20
+                  ],
+                  [
+                    10,
+                    20
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A-F4-CT-PHU",
+              "code": null,
+              "name": "Cầu thang phụ",
+              "building_id": "A",
+              "floor_id": "A-F4",
+              "room_type": "staircase",
+              "zone": "joint",
+              "unit": null,
+              "note": null,
+              "aliases": [],
+              "short_name": "CT phụ",
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    0,
+                    20
+                  ],
+                  [
+                    10,
+                    20
+                  ],
+                  [
+                    10,
+                    0
+                  ],
+                  [
+                    8.08,
+                    0
+                  ],
+                  [
+                    6.7,
+                    -1.33
+                  ],
+                  [
+                    -7.19,
+                    13.05
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A405",
+              "code": "A405",
+              "name": "Phòng 405",
+              "building_id": "A",
+              "floor_id": "A-F4",
+              "room_type": "unspecified",
+              "zone": "wing_short",
+              "unit": null,
+              "note": "Chưa có thông tin công năng.",
+              "aliases": [
+                "X05",
+                "405"
+              ],
+              "short_name": null,
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    -7.19,
+                    13.05
+                  ],
+                  [
+                    -19.66,
+                    1.01
+                  ],
+                  [
+                    -5.77,
+                    -13.37
+                  ],
+                  [
+                    6.7,
+                    -1.33
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A406",
+              "code": "A406",
+              "name": "Phòng 406",
+              "building_id": "A",
+              "floor_id": "A-F4",
+              "room_type": "unspecified",
+              "zone": "wing_short",
+              "unit": null,
+              "note": "Chưa có thông tin công năng.",
+              "aliases": [
+                "X06",
+                "406"
+              ],
+              "short_name": null,
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    -19.66,
+                    1.01
+                  ],
+                  [
+                    -32.13,
+                    -11.03
+                  ],
+                  [
+                    -18.24,
+                    -25.42
+                  ],
+                  [
+                    -5.77,
+                    -13.37
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A407",
+              "code": "A407",
+              "name": "Phòng 407",
+              "building_id": "A",
+              "floor_id": "A-F4",
+              "room_type": "unspecified",
+              "zone": "wing_short",
+              "unit": null,
+              "note": "Chưa có thông tin công năng.",
+              "aliases": [
+                "X07",
+                "407"
+              ],
+              "short_name": null,
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    -32.13,
+                    -11.03
+                  ],
+                  [
+                    -44.6,
+                    -23.07
+                  ],
+                  [
+                    -30.71,
+                    -37.46
+                  ],
+                  [
+                    -18.24,
+                    -25.42
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A-F4-VP-01",
+              "code": null,
+              "name": "Văn phòng Khoa Công nghệ số và Truyền thông (1)",
+              "building_id": "A",
+              "floor_id": "A-F4",
+              "room_type": "office",
+              "zone": "office_block",
+              "unit": "Khoa Công nghệ số và Truyền thông",
+              "note": "Đơn vị đào tạo (Khoa). Không phải Trung tâm CNTT.",
+              "aliases": [],
+              "short_name": "VP K.CNS&TT",
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    32.5,
+                    -13.5
+                  ],
+                  [
+                    43.33,
+                    -13.5
+                  ],
+                  [
+                    43.33,
+                    0
+                  ],
+                  [
+                    32.5,
+                    0
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A-F4-VP-02",
+              "code": null,
+              "name": "Văn phòng Khoa Công nghệ số và Truyền thông (2)",
+              "building_id": "A",
+              "floor_id": "A-F4",
+              "room_type": "office",
+              "zone": "office_block",
+              "unit": "Khoa Công nghệ số và Truyền thông",
+              "note": "Đơn vị đào tạo (Khoa). Không phải Trung tâm CNTT.",
+              "aliases": [],
+              "short_name": "VP K.CNS&TT",
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    43.33,
+                    -13.5
+                  ],
+                  [
+                    54.17,
+                    -13.5
+                  ],
+                  [
+                    54.17,
+                    0
+                  ],
+                  [
+                    43.33,
+                    0
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A-F4-VP-03",
+              "code": null,
+              "name": "Văn phòng Khoa Công nghệ số và Truyền thông (3)",
+              "building_id": "A",
+              "floor_id": "A-F4",
+              "room_type": "office",
+              "zone": "office_block",
+              "unit": "Khoa Công nghệ số và Truyền thông",
+              "note": "Đơn vị đào tạo (Khoa). Không phải Trung tâm CNTT.",
+              "aliases": [],
+              "short_name": "VP K.CNS&TT",
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    54.17,
+                    -13.5
+                  ],
+                  [
+                    65,
+                    -13.5
+                  ],
+                  [
+                    65,
+                    0
+                  ],
+                  [
+                    54.17,
+                    0
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            }
+          ],
+          "unmapped_areas": []
+        },
+        {
+          "floor_id": "A-F5",
+          "level": 5,
+          "name": "Tầng 5",
+          "plan_status": "no_data",
+          "plan_note": "Chưa có dữ liệu mặt bằng khối chính tầng 5. Chỉ có dữ liệu khối văn phòng.",
+          "parts": [
+            "A-WING-LONG",
+            "A-JOINT",
+            "A-WING-SHORT",
+            "A-OFFICE"
+          ],
+          "rooms": [
+            {
+              "room_id": "A-F5-VP-CNTT",
+              "code": null,
+              "name": "Phòng CNTT – Trung tâm CNTT",
+              "building_id": "A",
+              "floor_id": "A-F5",
+              "room_type": "it_center",
+              "zone": "office_block",
+              "unit": "Trung tâm CNTT",
+              "note": "Thuộc Trung tâm CNTT (không phải Khoa CNTT, không thuộc Khoa Công nghệ số và Truyền thông).",
+              "aliases": [
+                "CNTT",
+                "Trung tam CNTT"
+              ],
+              "short_name": "Phòng CNTT · Trung tâm CNTT",
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    32.5,
+                    -13.5
+                  ],
+                  [
+                    65,
+                    -13.5
+                  ],
+                  [
+                    65,
+                    0
+                  ],
+                  [
+                    32.5,
+                    0
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            }
+          ],
+          "unmapped_areas": [
+            {
+              "area_id": "A-F5-NODATA-WING-LONG",
+              "zone": "wing_long",
+              "note": "Chưa có dữ liệu mặt bằng",
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    10,
+                    0
+                  ],
+                  [
+                    96,
+                    0
+                  ],
+                  [
+                    96,
+                    20
+                  ],
+                  [
+                    10,
+                    20
+                  ]
+                ]
+              }
+            },
+            {
+              "area_id": "A-F5-NODATA-JOINT",
+              "zone": "joint",
+              "note": "Chưa có dữ liệu mặt bằng",
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    0,
+                    20
+                  ],
+                  [
+                    10,
+                    20
+                  ],
+                  [
+                    10,
+                    0
+                  ],
+                  [
+                    8.08,
+                    0
+                  ],
+                  [
+                    6.7,
+                    -1.33
+                  ],
+                  [
+                    -7.19,
+                    13.05
+                  ]
+                ]
+              }
+            },
+            {
+              "area_id": "A-F5-NODATA-WING-SHORT",
+              "zone": "wing_short",
+              "note": "Chưa có dữ liệu mặt bằng",
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    -7.19,
+                    13.05
+                  ],
+                  [
+                    -44.6,
+                    -23.07
+                  ],
+                  [
+                    -30.71,
+                    -37.46
+                  ],
+                  [
+                    6.7,
+                    -1.33
+                  ]
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "floor_id": "A-F6",
+          "level": 6,
+          "name": "Tầng 6",
+          "plan_status": "simulated",
+          "plan_note": "Tầng 6 không có khối văn phòng nhô ra.",
+          "parts": [
+            "A-WING-LONG",
+            "A-JOINT",
+            "A-WING-SHORT"
+          ],
+          "rooms": [
+            {
+              "room_id": "A601",
+              "code": "A601",
+              "name": "Phòng 601 (phòng lớn)",
+              "building_id": "A",
+              "floor_id": "A-F6",
+              "room_type": "unspecified",
+              "zone": "wing_long",
+              "unit": null,
+              "note": "Phòng lớn. Chưa có thông tin công năng chi tiết.",
+              "aliases": [
+                "601"
+              ],
+              "short_name": null,
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    53,
+                    0
+                  ],
+                  [
+                    96,
+                    0
+                  ],
+                  [
+                    96,
+                    20
+                  ],
+                  [
+                    53,
+                    20
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A-F6-CT-CHINH",
+              "code": null,
+              "name": "Cầu thang chính",
+              "building_id": "A",
+              "floor_id": "A-F6",
+              "room_type": "staircase",
+              "zone": "wing_long",
+              "unit": null,
+              "note": null,
+              "aliases": [],
+              "short_name": "CT chính",
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    45,
+                    0
+                  ],
+                  [
+                    53,
+                    0
+                  ],
+                  [
+                    53,
+                    20
+                  ],
+                  [
+                    45,
+                    20
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A-F6-THU-VIEN",
+              "code": null,
+              "name": "Thư viện",
+              "building_id": "A",
+              "floor_id": "A-F6",
+              "room_type": "library",
+              "zone": "wing_long",
+              "unit": null,
+              "note": null,
+              "aliases": [
+                "Thu vien",
+                "Library"
+              ],
+              "short_name": "Thư viện",
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    10,
+                    0
+                  ],
+                  [
+                    45,
+                    0
+                  ],
+                  [
+                    45,
+                    20
+                  ],
+                  [
+                    10,
+                    20
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A-F6-CT-PHU",
+              "code": null,
+              "name": "Cầu thang phụ",
+              "building_id": "A",
+              "floor_id": "A-F6",
+              "room_type": "staircase",
+              "zone": "joint",
+              "unit": null,
+              "note": null,
+              "aliases": [],
+              "short_name": "CT phụ",
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    0,
+                    20
+                  ],
+                  [
+                    10,
+                    20
+                  ],
+                  [
+                    10,
+                    0
+                  ],
+                  [
+                    8.08,
+                    0
+                  ],
+                  [
+                    6.7,
+                    -1.33
+                  ],
+                  [
+                    -7.19,
+                    13.05
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            },
+            {
+              "room_id": "A-F6-KHO",
+              "code": null,
+              "name": "Kho",
+              "building_id": "A",
+              "floor_id": "A-F6",
+              "room_type": "storage",
+              "zone": "wing_short",
+              "unit": null,
+              "note": "Vị trí mô phỏng. Phần còn lại của cánh ngắn tầng 6 chưa có dữ liệu.",
+              "aliases": [],
+              "short_name": null,
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    -7.19,
+                    13.05
+                  ],
+                  [
+                    -18.7,
+                    1.94
+                  ],
+                  [
+                    -4.81,
+                    -12.45
+                  ],
+                  [
+                    6.7,
+                    -1.33
+                  ]
+                ],
+                "note": "Vị trí và kích thước phòng là mô phỏng, chưa theo bản vẽ kỹ thuật."
+              }
+            }
+          ],
+          "unmapped_areas": [
+            {
+              "area_id": "A-F6-NODATA-WING-SHORT",
+              "zone": "wing_short",
+              "note": "Chưa có dữ liệu",
+              "geometry": {
+                "type": "polygon",
+                "points": [
+                  [
+                    -18.7,
+                    1.94
+                  ],
+                  [
+                    -44.6,
+                    -23.07
+                  ],
+                  [
+                    -30.71,
+                    -37.46
+                  ],
+                  [
+                    -4.81,
+                    -12.45
+                  ]
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "building_id": "B",
+      "name": "Tòa B",
+      "status": "active",
+      "detail_available": false,
+      "data_quality": "simulated",
+      "placement": {
+        "x": 0,
+        "y": 0,
+        "rotation_deg": 0
+      },
+      "floor_height": 3.6,
+      "placeholder_levels": 3,
+      "style": {
+        "roof": "#688db8",
+        "wall": "#f2efe9"
+      },
+      "footprint": {
+        "parts": [
+          {
+            "part_id": "B-MAIN",
+            "zone": "wing_long",
+            "label": "Khối chính Tòa B",
+            "polygon": [
+              [
+                34.27,
+                -4.33
+              ],
+              [
+                118.96,
+                10.6
+              ],
+              [
+                121.92,
+                -6.14
+              ],
+              [
+                37.22,
+                -21.07
+              ]
+            ]
+          },
+          {
+            "part_id": "B-NORTH",
+            "zone": "wing_short",
+            "label": "Đầu Bắc (phía Cổng chính)",
+            "polygon": [
+              [
+                32.88,
+                3.55
+              ],
+              [
+                48.64,
+                6.32
+              ],
+              [
+                50.03,
+                -1.55
+              ],
+              [
+                34.27,
+                -4.33
+              ]
+            ]
+          },
+          {
+            "part_id": "B-SOUTH",
+            "zone": "wing_short",
+            "label": "Đầu Nam",
+            "polygon": [
+              [
+                102.22,
+                -9.61
+              ],
+              [
+                121.92,
+                -6.14
+              ],
+              [
+                124.17,
+                -18.94
+              ],
+              [
+                104.48,
+                -22.42
+              ]
+            ]
+          }
+        ]
+      },
+      "entrances": [],
+      "floors": []
+    },
+    {
+      "building_id": "D",
+      "name": "Tòa D",
+      "status": "under_construction",
+      "detail_available": false,
+      "data_quality": "simulated",
+      "placement": {
+        "x": 0,
+        "y": 0,
+        "rotation_deg": 0
+      },
+      "floor_height": 3.6,
+      "placeholder_levels": 3,
+      "style": {
+        "roof": "#cfc6b6",
+        "wall": "#e3ddd2"
+      },
+      "footprint": {
+        "parts": [
+          {
+            "part_id": "D-MASS",
+            "zone": "placeholder",
+            "label": "Khối công trình đang hoàn thiện",
+            "polygon": [
+              [
+                124.36,
+                66.33
+              ],
+              [
+                138.86,
+                12.23
+              ],
+              [
+                155.28,
+                16.63
+              ],
+              [
+                140.78,
+                70.73
+              ]
+            ]
+          }
+        ]
+      },
+      "entrances": [],
+      "floors": []
+    },
+    {
+      "building_id": "PARKING",
+      "name": "Nhà để xe",
+      "status": "active",
+      "detail_available": false,
+      "data_quality": "simulated",
+      "placement": {
+        "x": 0,
+        "y": 0,
+        "rotation_deg": 0
+      },
+      "floor_height": 2.8,
+      "placeholder_levels": 2,
+      "style": {
+        "roof": "#4e79c4",
+        "wall": "#dce6f5"
+      },
+      "footprint": {
+        "parts": [
+          {
+            "part_id": "PARKING-MASS",
+            "zone": "placeholder",
+            "label": "Khu vực nhà để xe",
+            "polygon": [
+              [
+                54.86,
+                84.65
+              ],
+              [
+                80.79,
+                130.97
+              ],
+              [
+                117.44,
+                133.12
+              ],
+              [
+                125.73,
+                109.05
+              ]
+            ]
+          }
+        ]
+      },
+      "entrances": [],
+      "floors": []
+    }
+  ]
+}
