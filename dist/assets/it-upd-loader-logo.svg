@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 270 335" role="img" aria-label="IT UPD">
+  <defs>
+    <linearGradient id="upd-purple" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#16083e"/>
+      <stop offset=".53" stop-color="#5424e8"/>
+      <stop offset="1" stop-color="#3109bc"/>
+    </linearGradient>
+  </defs>
+  <g fill="none" stroke="url(#upd-purple)" stroke-width="28" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M68 58V28H232V108H168V240H112V108H34V220"/>
+    <path d="M20 280H112V240"/>
+  </g>
+  <text x="132" y="326" fill="#080715" font-family="Arial, Helvetica, sans-serif" font-size="55" font-weight="800" letter-spacing="-3">UPD</text>
+</svg>

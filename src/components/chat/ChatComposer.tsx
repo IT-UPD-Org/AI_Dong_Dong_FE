@@ -36,13 +36,13 @@ export function ChatComposer({
           max-w-4xl
           items-end gap-2
           rounded-full
-          border border-black/15
-          bg-white
+          border border-border
+          bg-field
           p-2
           shadow-sm
           transition-all
-          focus-within:border-[#00a86b]/50
-          focus-within:shadow-[0_0_0_3px_rgba(0,168,107,0.08)]
+          focus-within:border-brand-bright/50
+          focus-within:ring-2 focus-within:ring-brand/20
         "
       >
         <button
@@ -52,10 +52,10 @@ export function ChatComposer({
             shrink-0
             rounded-full
             p-3
-            text-black/40
+            text-muted-foreground
             transition-colors
-            hover:bg-black/5
-            hover:text-[#04714a]
+            hover:bg-hover
+            hover:text-brand-text
           "
         >
           <Paperclip size={18} />
@@ -73,12 +73,12 @@ export function ChatComposer({
             min-w-0
             flex-1
             resize-none
-            bg-transparent
+            bg-transparent text-foreground
             px-2 py-3
             text-sm
             leading-6
             outline-none
-            placeholder:text-black/35
+            placeholder:text-muted-foreground
           "
         />
 
@@ -89,12 +89,12 @@ export function ChatComposer({
           className="
             shrink-0
             rounded-full
-            bg-[#00a86b]
+            bg-brand
             p-3
-            text-black
+            text-brand-foreground
             transition-all
-            hover:bg-[#04714a]
-            hover:text-white
+            hover:bg-brand-hover
+
             disabled:cursor-not-allowed
             disabled:opacity-30
           "
@@ -103,7 +103,7 @@ export function ChatComposer({
         </button>
       </form>
 
-      <p className="mt-3 text-center text-[11px] text-black/35">
+      <p className="mt-3 text-center text-[11px] text-muted-foreground">
         IT UPD GenAI có thể mắc lỗi, vui lòng kiểm tra lại thông tin trước khi
         áp dụng vào thực tế.
       </p>

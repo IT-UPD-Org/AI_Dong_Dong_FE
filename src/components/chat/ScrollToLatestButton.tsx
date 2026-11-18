@@ -21,11 +21,11 @@ export function ScrollToLatestButton({
         flex -translate-x-1/2
         items-center gap-1.5
         rounded-full
-        border border-black/10
-        bg-white
+        border border-border
+        bg-elevated
         px-4 py-2
         text-xs font-medium
-        text-[#11130f]
+        text-foreground
         shadow-md
         transition-all
         hover:scale-105 hover:shadow-lg

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Paperclip, X, AlertTriangle } from "lucide-react";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 interface DocumentUploadPopupProps {
   onClose: () => void;
@@ -7,10 +8,13 @@ interface DocumentUploadPopupProps {
 }
 
 export function DocumentUploadPopup({ onClose, onUploadFiles }: DocumentUploadPopupProps) {
+  const { lang } = useLanguage();
+  const isEn = lang === "en";
   const fileInputRef = useRef<HTMLInputElement>(null);
   const popupRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
 
+  // Đóng khi click outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
@@ -21,6 +25,7 @@ export function DocumentUploadPopup({ onClose, onUploadFiles }: DocumentUploadPo
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [onClose]);
 
+  // Đóng khi ấn Escape
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
@@ -42,11 +47,18 @@ export function DocumentUploadPopup({ onClose, onUploadFiles }: DocumentUploadPo
   return (
     <div
       ref={popupRef}
-      className="absolute bottom-full left-0 z-50 mb-2 w-80 max-w-full rounded-2xl border border-black/10 bg-white p-4 shadow-xl animate-in fade-in slide-in-from-bottom-2 duration-200"
+      className="absolute bottom-full left-0 z-50 mb-2 w-80 max-w-full rounded-2xl border border-border bg-elevated p-4 shadow-xl text-foreground animate-in fade-in slide-in-from-bottom-2 duration-200"
     >
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold text-gray-900">Tải tài liệu lên</h3>
-        <button type="button" onClick={onClose} aria-label="Đóng tải tài liệu" className="rounded-full p-1 text-gray-500 hover:bg-gray-100">
+        <h3 className="text-sm font-semibold text-foreground">
+          {isEn ? "Upload documents" : "Tải tài liệu lên"}
+        </h3>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label={isEn ? "Close upload" : "Đóng tải tài liệu"}
+          className="rounded-full p-1 text-muted-foreground hover:bg-hover hover:text-foreground cursor-pointer"
+        >
           <X size={16} />
         </button>
       </div>
@@ -54,7 +66,9 @@ export function DocumentUploadPopup({ onClose, onUploadFiles }: DocumentUploadPo
       <button
         type="button"
         className={`flex w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-6 text-center transition-colors ${
-          isDragging ? "border-[#04714a] bg-[#04714a]/5" : "border-gray-200 hover:border-gray-300"
+          isDragging
+            ? "border-brand bg-brand-soft"
+            : "border-border hover:border-brand/40 bg-surface"
         }`}
         onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
         onDragLeave={() => setIsDragging(false)}
@@ -65,15 +79,19 @@ export function DocumentUploadPopup({ onClose, onUploadFiles }: DocumentUploadPo
         }}
         onClick={() => fileInputRef.current?.click()}
       >
-        <Paperclip size={24} className="mb-2 text-gray-400" />
-        <p className="text-sm font-medium text-gray-700">Kéo thả hoặc nhấn để chọn file</p>
-        <p className="mt-1 text-xs text-gray-500">.doc, .docx, .xls, .xlsx, .pdf, .ppt, .pptx</p>
+        <Paperclip size={24} className="mb-2 text-muted-foreground" />
+        <p className="text-sm font-medium text-foreground">
+          {isEn ? "Drag & drop or click to select files" : "Kéo thả hoặc nhấn để chọn file"}
+        </p>
+        <p className="mt-1 text-xs text-muted-foreground">.doc, .docx, .xls, .xlsx, .pdf, .ppt, .pptx</p>
       </button>
 
-      <div className="mt-4 flex items-start gap-2 rounded-lg bg-amber-50 p-3 text-xs text-amber-800">
-        <AlertTriangle size={16} className="shrink-0 mt-0.5 text-amber-600" />
+      <div className="mt-4 flex items-start gap-2 rounded-lg bg-amber-500/10 p-3 text-xs text-amber-800 dark:text-amber-200 border border-amber-500/20">
+        <AlertTriangle size={16} className="shrink-0 mt-0.5 text-amber-700 dark:text-amber-400" />
         <p>
-          ⚠ Khuyến nghị không upload PDF nếu không cần thiết. Với tài liệu có thể chỉnh sửa, Word thường phù hợp hơn cho việc xử lý nội dung.
+          {isEn
+            ? "Uploaded files will be used for this conversation and saved to your knowledge base."
+            : "File sau khi tải lên sẽ được dùng cho đoạn chat này và lưu vào kho tài liệu."}
         </p>
       </div>
 

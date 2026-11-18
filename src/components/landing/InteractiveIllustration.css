@@ -15,7 +15,7 @@
 
 .interactive-illustration__viewport[data-dragging="true"] { cursor: grabbing; }
 .interactive-illustration__viewport:focus { outline: none; }
-.interactive-illustration__viewport[data-keyboard-focus="true"] { outline: 2px solid #00a86b; outline-offset: 4px; }
+.interactive-illustration__viewport[data-keyboard-focus="true"] { outline: 2px solid var(--brand-bright); outline-offset: 4px; }
 .interactive-illustration__viewport svg { display: block; width: 100%; height: auto; }
 
 /* Crop the SVG's empty border, keeping the same artwork scale and a circular hit area. */
@@ -29,7 +29,7 @@
 
 .interactive-illustration--circle .interactive-illustration__viewport[data-keyboard-focus="true"] {
   outline: none;
-  box-shadow: inset 0 0 0 2px #00a86b;
+  box-shadow: inset 0 0 0 2px var(--brand-bright);
 }
 
 .interactive-sphere__pulse { animation: illustration-node-pulse 3s ease-in-out infinite; }

@@ -1,107 +1,129 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import * as Sentry from '@sentry/react';
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { authApi } from '../api/auth.api';
-import { getStoredToken, removeStoredToken, setStoredToken } from '../api/client';
-import type { AuthResponse, MagicLinkResponse, User } from '../api/types';
+import { getStoredToken, removeStoredToken } from '../api/client';
+import type { User } from '../api/types';
+import { identifyUser } from '../lib/analytics';
 
 interface AuthContextType {
   user: User | null;
-  token: string | null;
   isAuthenticated: boolean;
+  isAdmin: boolean;
   isLoading: boolean;
-  requestMagicLink: (email: string) => Promise<MagicLinkResponse>;
-  verifyMagicLink: (token: string) => Promise<AuthResponse>;
-  logout: () => void;
+  devLogin: (email: string, name: string) => Promise<User>;
+  passwordLogin: (email: string, password: string) => Promise<User>;
+  microsoftLogin: (code: string, codeVerifier: string, nonce: string, redirectUri: string) => Promise<User>;
+  refreshUser: () => Promise<void>;
+  setUser: (user: User) => void;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [token, setToken] = useState<string | null>(getStoredToken());
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const authVersionRef = useRef(0);
+  // Without a stored token there is nothing to verify, so auth is ready at once.
+  const [isLoading, setIsLoading] = useState<boolean>(() => Boolean(getStoredToken()));
+  const trackedUserId = useRef<string | null>(null);
 
-  // Khởi tạo và kiểm tra token khi load trang
+  // Tie error reports and analytics to the signed-in account. Sentry (self-hosted
+  // Rustrak) gets the name and email so events show who hit them; analytics only
+  // gets the opaque ID and role.
+  useEffect(() => {
+    if (!user) {
+      Sentry.setUser(null);
+      trackedUserId.current = null;
+      return;
+    }
+
+    Sentry.setUser({ id: user.id, username: user.name, email: user.email });
+
+    if (trackedUserId.current !== user.id) {
+      trackedUserId.current = user.id;
+      identifyUser(user.id, { role: user.role });
+    }
+  }, [user]);
+
+  const clearSession = useCallback(() => {
+    removeStoredToken();
+    localStorage.removeItem('dev_mock_user');
+    setUser(null);
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
-    const version = authVersionRef.current;
-    const isCurrent = () => !cancelled && version === authVersionRef.current;
+
     async function initAuth() {
-      const storedToken = getStoredToken();
-      if (storedToken) {
+      if (getStoredToken()) {
         try {
           const currentUser = await authApi.getCurrentUser();
-          if (!isCurrent()) return;
-          if (currentUser) {
+          if (!cancelled) {
             setUser(currentUser);
-            setToken(storedToken);
-          } else {
-            // Token không còn hợp lệ
-            removeStoredToken();
-            setToken(null);
-            setUser(null);
           }
         } catch {
-          if (!isCurrent()) return;
-          removeStoredToken();
-          setToken(null);
-          setUser(null);
+          if (!cancelled) {
+            clearSession();
+          }
         }
       }
-      if (isCurrent()) setIsLoading(false);
+      if (!cancelled) setIsLoading(false);
     }
 
     initAuth();
 
-    // Lắng nghe sự kiện 401 tự động logout
-    const handleUnauthorized = () => {
-      logout();
-    };
-    window.addEventListener('auth:unauthorized', handleUnauthorized);
+    // apiClient fires this on any 401 so an expired token signs the user out.
+    window.addEventListener('auth:unauthorized', clearSession);
     return () => {
       cancelled = true;
-      window.removeEventListener('auth:unauthorized', handleUnauthorized);
+      window.removeEventListener('auth:unauthorized', clearSession);
     };
-  }, []);
+  }, [clearSession]);
 
-  const requestMagicLink = async (email: string): Promise<MagicLinkResponse> => {
-    return await authApi.requestMagicLink(email);
+  const devLogin = async (email: string, name: string) => {
+    const loggedIn = await authApi.devLogin(email, name);
+    setUser(loggedIn);
+    return loggedIn;
   };
 
-  const verifyMagicLink = async (verifyToken: string): Promise<AuthResponse> => {
-    const version = ++authVersionRef.current;
-    setIsLoading(true);
+  const passwordLogin = async (email: string, password: string) => {
+    const loggedIn = await authApi.passwordLogin(email, password);
+    setUser(loggedIn);
+    return loggedIn;
+  };
+
+  const microsoftLogin = async (code: string, codeVerifier: string, nonce: string, redirectUri: string) => {
+    const loggedIn = await authApi.microsoftLogin(code, codeVerifier, nonce, redirectUri);
+    setUser(loggedIn);
+    return loggedIn;
+  };
+
+  const refreshUser = async () => {
+    setUser(await authApi.getCurrentUser());
+  };
+
+  const logout = async () => {
     try {
-      const res = await authApi.verifyMagicLink(verifyToken);
-      if (version !== authVersionRef.current) {
-        throw new Error('Phiên đăng nhập đã thay đổi. Vui lòng thử lại.');
-      }
-      setStoredToken(res.access_token);
-      setToken(res.access_token);
-      setUser(res.user);
-      return res;
+      await authApi.logout();
+    } catch {
+      // Local session is cleared regardless of network error
     } finally {
-      if (version === authVersionRef.current) setIsLoading(false);
+      localStorage.removeItem('dev_mock_user');
+      setUser(null);
     }
-  };
-
-  const logout = () => {
-    authVersionRef.current += 1;
-    void authApi.logout();
-    setToken(null);
-    setUser(null);
-    setIsLoading(false);
   };
 
   return (
     <AuthContext.Provider
       value={{
         user,
-        token,
-        isAuthenticated: !!token && !!user,
+        isAuthenticated: !!user,
+        isAdmin: user?.role === 'admin',
         isLoading,
-        requestMagicLink,
-        verifyMagicLink,
+        devLogin,
+        passwordLogin,
+        microsoftLogin,
+        refreshUser,
+        setUser,
         logout,
       }}
     >

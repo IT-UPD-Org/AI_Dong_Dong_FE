@@ -1,65 +1,104 @@
-export interface ServerEvent {
+import { ApiError, authHeaders, buildApiUrl, describeError, handleUnauthorized } from './client';
+
+export interface SseEvent {
   event: string;
-  data: string;
+  data: unknown;
+  id?: string;
 }
 
-/** Read complete SSE events even when HTTP chunks split lines or UTF-8 characters. */
-export async function* readServerEvents(
-  body: ReadableStream<Uint8Array>,
-  signal?: AbortSignal,
-): AsyncGenerator<ServerEvent> {
-  const reader = body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
-  let event = "";
-  let data: string[] = [];
+/**
+ * POST to an endpoint that responds with Server-Sent Events and yield each event.
+ *
+ * EventSource only supports GET and cannot send the auth header, so streams
+ * are read manually from the fetch response.
+ */
+export function streamSse(endpoint: string, body: BodyInit, signal?: AbortSignal): AsyncGenerator<SseEvent> {
+  return readSse(endpoint, 'POST', body, signal);
+}
 
-  function consumeLine(line: string): ServerEvent | undefined {
-    if (line === "") {
-      const result = data.length ? { event: event || "message", data: data.join("\n") } : undefined;
-      event = "";
-      data = [];
-      return result;
-    }
-    if (line.startsWith(":")) return;
-    const colon = line.indexOf(":");
-    const field = colon === -1 ? line : line.slice(0, colon);
-    const value = colon === -1 ? "" : line.slice(colon + 1).replace(/^ /, "");
-    if (field === "event") event = value;
-    if (field === "data") data.push(value);
+/** GET an SSE endpoint (for example `/resume`) and yield each event. Never reconnects on its own. */
+export function streamSseGet(endpoint: string, signal?: AbortSignal): AsyncGenerator<SseEvent> {
+  return readSse(endpoint, 'GET', undefined, signal);
+}
+
+async function* readSse(
+  endpoint: string,
+  method: 'GET' | 'POST',
+  body: BodyInit | undefined,
+  signal?: AbortSignal,
+): AsyncGenerator<SseEvent> {
+  const headers = authHeaders({ Accept: 'text/event-stream' });
+  if (body !== undefined && !(body instanceof FormData)) {
+    headers.set('Content-Type', 'application/json');
   }
 
-  const cancel = () => { void reader.cancel().catch(() => {}); };
-  signal?.addEventListener("abort", cancel, { once: true });
+  let response: Response;
+  try {
+    response = await fetch(buildApiUrl(endpoint), { method, headers, body, signal });
+  } catch (error) {
+    if ((error as Error).name === 'AbortError') throw error;
+    throw new ApiError((error as Error).message || 'Lỗi kết nối mạng đến máy chủ.', 0);
+  }
+
+  handleUnauthorized(response.status);
+  if (!response.ok || !response.body) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new ApiError(describeError(errorData, response.status), response.status, errorData);
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+
   try {
     while (true) {
-      signal?.throwIfAborted();
       const { done, value } = await reader.read();
-      signal?.throwIfAborted();
-      buffer += decoder.decode(value, { stream: !done });
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
 
-      let newline = buffer.search(/[\r\n]/);
-      while (newline !== -1) {
-        // A CR at the end of a chunk may still be followed by LF in the next chunk.
-        if (!done && buffer[newline] === "\r" && newline === buffer.length - 1) break;
-        const line = buffer.slice(0, newline);
-        const length = buffer[newline] === "\r" && buffer[newline + 1] === "\n" ? 2 : 1;
-        buffer = buffer.slice(newline + length);
-        const result = consumeLine(line);
-        if (result) yield result;
-        newline = buffer.search(/[\r\n]/);
-      }
-
-      if (done) {
-        if (buffer) consumeLine(buffer);
-        const lastEvent = consumeLine("");
-        if (lastEvent) yield lastEvent;
-        return;
+      // Events are separated by a blank line; normalize CRLF so both line endings work.
+      buffer = buffer.replace(/\r\n/g, '\n');
+      let boundary: number;
+      while ((boundary = buffer.indexOf('\n\n')) !== -1) {
+        const raw = buffer.slice(0, boundary);
+        buffer = buffer.slice(boundary + 2);
+        const parsed = parseEvent(raw);
+        if (parsed) yield parsed;
       }
     }
+    const trailing = parseEvent(buffer.trim());
+    if (trailing) yield trailing;
   } finally {
-    signal?.removeEventListener("abort", cancel);
-    await reader.cancel().catch(() => {});
     reader.releaseLock();
   }
+}
+
+function parseEvent(raw: string): SseEvent | null {
+  if (!raw) return null;
+  let event = 'message';
+  let id: string | undefined;
+  const dataLines: string[] = [];
+
+  for (const line of raw.split('\n')) {
+    if (!line || line.startsWith(':')) continue;
+    const colon = line.indexOf(':');
+    const field = colon === -1 ? line : line.slice(0, colon);
+    // Per the SSE spec a single leading space after the colon is not part of the value.
+    let value = colon === -1 ? '' : line.slice(colon + 1);
+    if (value.startsWith(' ')) value = value.slice(1);
+
+    if (field === 'event') event = value;
+    else if (field === 'data') dataLines.push(value);
+    else if (field === 'id') id = value;
+  }
+
+  if (dataLines.length === 0) return null;
+  const text = dataLines.join('\n');
+  let data: unknown = text;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    // Non-JSON payloads are passed through as raw text.
+  }
+  return { event, data, id };
 }

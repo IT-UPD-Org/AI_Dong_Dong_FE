@@ -1,15 +1,18 @@
-import { ApiError, apiClient, buildApiUrl, getStoredToken, removeStoredToken } from './client';
-import { readServerEvents } from './sse';
+import { apiClient } from './client';
+import { streamSse, streamSseGet, type SseEvent } from './sse';
 import type {
   AgentLevel,
   BEMessage,
+  BEToolCall,
   ChatMessage,
   ChatStreamChunk,
-  ChatConversationModel,
   Conversation,
+  ConversationDetail,
+  ConversationSummary,
   ModelTypeEnum,
   SendMessagePayload,
 } from './types';
+import type { ReplyStep } from '../lib/groupMessages';
 
 export function mapLevelToModelType(level?: AgentLevel): ModelTypeEnum {
   switch (level) {
@@ -23,65 +26,107 @@ export function mapLevelToModelType(level?: AgentLevel): ModelTypeEnum {
   }
 }
 
-export function convertBEMessageToChatMessage(msg: BEMessage): ChatMessage {
-  const item = 'root' in msg ? msg.root : msg;
-  const role = item.type === 'agent' ? 'assistant' : item.type === 'system' ? 'system' : 'user';
-  const content = item.content || '';
-  const isComplete = item.type !== 'agent' || item.complete;
-  const id: string = 'id' in item && item.id ? String(item.id) : crypto.randomUUID();
+export const HIDDEN_REPLY_NOTICE = 'Câu trả lời này đã bị ẩn vì vi phạm quy định sử dụng.';
+const VIOLATION_FALLBACK = 'Tin nhắn của bạn không được gửi vì vi phạm quy định sử dụng.';
 
+export function convertBEMessageToChatMessage(msg: BEMessage): ChatMessage {
+  if (msg.type === 'agent' && msg.hidden) {
+    return {
+      id: String(msg.id),
+      role: 'assistant',
+      content: HIDDEN_REPLY_NOTICE,
+      status: 'completed',
+      hidden: true,
+    };
+  }
+  if (msg.type === 'agent') {
+    return {
+      id: String(msg.id),
+      role: 'assistant',
+      content: msg.content || '',
+      status: msg.complete ? 'completed' : 'generating',
+      toolCalls: msg.tool_calls,
+    };
+  }
+  if (msg.type === 'user') {
+    return {
+      id: String(msg.id),
+      role: 'user',
+      content: msg.content,
+      status: 'idle',
+      files: msg.files?.map(String),
+    };
+  }
+  return { id: crypto.randomUUID(), role: 'system', content: msg.content, status: 'idle' };
+}
+
+export function toConversation(c: ConversationSummary): Conversation {
   return {
-    id,
-    role,
-    content,
-    status: role === 'assistant' ? (isComplete ? 'completed' : 'generating') : 'idle',
-    toolCalls: item.type === 'agent' ? item.tool_calls : undefined,
+    id: String(c.id),
+    title: c.title || 'Cuộc trò chuyện mới',
+    disabled: c.disabled,
+    asyncStatus: c.async_status,
   };
 }
 
+/** Payload of the backend's `content` and `tool_calls` stream events. */
+interface StreamPayload {
+  type: 'content' | 'tool_calls';
+  id: string;
+  message_id: string;
+  content?: string;
+  tool_calls?: BEToolCall[];
+}
+
 export const chatApi = {
-  /**
-   * Lấy danh sách các cuộc trò chuyện của user từ BE
-   */
-  async getConversations(page: number = 1, allChats: boolean = false): Promise<Conversation[]> {
-    const token = getStoredToken();
-    const url = buildApiUrl(`/chats?page=${page}&all_chats=${allChats}`);
+  /** The current user's own conversations. Admins list everyone's with `adminApi.getAllChats`. */
+  async getConversations(page = 1): Promise<Conversation[]> {
+    const data = await apiClient<ConversationSummary[]>(`/api/chats?page=${page}`);
+    return data.map(toConversation);
+  },
 
-    try {
-      const res = await fetch(url, {
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-      });
+  getConversation(conversationId: string): Promise<ConversationDetail> {
+    return apiClient<ConversationDetail>(`/api/chats/${conversationId}`);
+  },
 
-      if (!res.ok) {
-        throw new Error(`Failed to fetch chats: ${res.status}`);
-      }
+  /** Stop the running reply; the partial reply is kept. 409 when nothing is running. */
+  stopReply(conversationId: string): Promise<void> {
+    return apiClient<void>(`/api/chats/${conversationId}/stop`, { method: 'POST' });
+  },
 
-      const data: ChatConversationModel[] = await res.json();
-      return data.map((c) => ({
-        id: String(c.id),
-        title: c.title || 'Cuộc trò chuyện mới',
-        messageCount: c.messages?.length || 0,
-      }));
-    } catch (err) {
-      console.warn('[chatApi] Fallback: Không thể tải danh sách chats từ BE, trả về mảng rỗng:', err);
-      return [];
-    }
+  /** Delete a conversation, stopping its reply first if one is running. */
+  deleteConversation(conversationId: string): Promise<void> {
+    return apiClient<void>(`/api/chats/${conversationId}`, { method: 'DELETE' });
+  },
+
+  /** Update a conversation title. Used to fix legacy "New Conversation" entries. */
+  patchTitle(conversationId: string, title: string): Promise<void> {
+    return apiClient<void>(`/api/chats/${conversationId}/title`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title }),
+    });
   },
 
   /**
-   * Lấy chi tiết một cuộc trò chuyện bao gồm toàn bộ tin nhắn
+   * Follow a queued or running reply from its start (`GET /resume`).
+   * ChatPage calls it when the chat is opened with `async_status` other than `none`.
    */
-  async getConversation(conversationId: string): Promise<ChatConversationModel | null> {
-    return apiClient<ChatConversationModel>(`/chats/${conversationId}`);
+  resumeReply(
+    conversationId: string,
+    onChunk: (chunk: ChatStreamChunk) => void,
+    onFinish: (completeMessage: ChatMessage) => void,
+    onError?: (error: Error) => void,
+    signal?: AbortSignal,
+  ): Promise<void> {
+    return readReply(streamSseGet(`/api/chats/${conversationId}/resume`, signal), onChunk, onFinish, onError);
   },
 
   /**
-   * Stream tin nhắn qua SSE:
-   * - Nếu chưa có conversationId: Gọi POST /chats/create
-   * - Nếu đã có conversationId: Gọi POST /chats/{conversationId}/send
+   * Send a message and stream the reply.
+   *
+   * Without a conversation id this creates one (`POST /api/chats/create`), otherwise it
+   * appends to the existing conversation (`POST /api/chats/{id}/send`).
    */
   async streamMessage(
     payload: SendMessagePayload,
@@ -90,166 +135,110 @@ export const chatApi = {
     onError?: (error: Error) => void,
     signal?: AbortSignal,
   ): Promise<void> {
-    const token = getStoredToken();
-    const modelType = payload.modelType || mapLevelToModelType(payload.modelLevel);
-    const hasConversation = !!payload.conversationId;
-
-    const endpoint = hasConversation
-      ? `/chats/${payload.conversationId}/send`
-      : '/chats/create';
-    const url = buildApiUrl(endpoint);
-    let receivedData = false;
-
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
-        signal,
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          content: payload.message,
-          model_type: modelType,
-        }),
-      });
-
-      if (!response.ok || !response.body) {
-        if (response.status === 401 && token && getStoredToken() === token) {
-          removeStoredToken();
-          window.dispatchEvent(new CustomEvent('auth:unauthorized'));
-        }
-        throw new ApiError('Không thể gửi câu hỏi. Vui lòng thử lại.', response.status);
-      }
-
-      let fullText = '';
-      let assistantMsgId: string = crypto.randomUUID();
-      let conversationId = payload.conversationId;
-
-      for await (const { event, data } of readServerEvents(response.body, signal)) {
-        if (data === '[DONE]' || event === 'done') break;
-        receivedData = true;
-        let parsed: unknown;
-        try {
-          parsed = JSON.parse(data);
-        } catch {
-          parsed = data;
-        }
-        const outer = typeof parsed === 'object' && parsed !== null
-          ? parsed as Record<string, unknown> : {};
-        const item = typeof outer.root === 'object' && outer.root !== null
-          ? outer.root as Record<string, unknown> : outer;
-        const kind = event === 'message' ? item.type : event;
-
-        if (kind === 'error' || outer.error || outer.status === 'error') {
-          throw new Error(typeof outer.error === 'string' ? outer.error : 'Máy chủ không thể hoàn tất câu trả lời.');
-        }
-        if (kind === 'conversation_created' || (outer.id && outer.title)) {
-          conversationId = String(outer.id);
-          if (outer.message_id) assistantMsgId = String(outer.message_id);
-          onChunk({
-            conversationId,
-            title: typeof outer.title === 'string' ? outer.title : 'Cuộc trò chuyện mới',
-            status: 'generating',
-          });
-          continue;
-        }
-        if (kind === 'user_message_id') continue;
-        if (kind === 'tool_calls') {
-          onChunk({ status: 'searching', conversationId });
-          continue;
-        }
-        if (kind === 'agent') {
-          if (typeof item.content === 'string') fullText = item.content;
-          if (item.id) assistantMsgId = String(item.id);
-          if (item.complete) onChunk({ status: 'completed', conversationId });
-          continue;
-        }
-        const statuses = ['idle', 'thinking', 'searching', 'generating', 'completed', 'error'] as const;
-        const status = statuses.find((value) => value === outer.status);
-        if (status) onChunk({ status, conversationId });
-        const delta = typeof parsed === 'string' ? parsed : item.delta ?? item.content;
-        if (typeof delta === 'string' && delta) {
-          fullText += delta;
-          if (item.message_id) assistantMsgId = String(item.message_id);
-          onChunk({ delta, status: 'generating', conversationId });
-        }
-      }
-      signal?.throwIfAborted();
-
-      onFinish({
-        id: assistantMsgId,
-        role: 'assistant',
-        content: fullText,
-        sources: [],
-        status: 'completed',
-      });
-    } catch (error: unknown) {
-      if (signal?.aborted) throw signal.reason;
-      const err = error instanceof Error ? error : new Error('Không thể kết nối máy chủ.');
-      const mayUseMock = import.meta.env.DEV && import.meta.env.VITE_MS_AUTH_MODE !== 'real'
-        && !receivedData && (!(err instanceof ApiError) || err.status === 0 || err.status === 404 || err.status >= 500);
-      if (mayUseMock) {
-        console.warn('[chatApi] Máy chủ chưa sẵn sàng, đang dùng câu trả lời mô phỏng.');
-        await mockStreamResponse(payload.message, onChunk, onFinish, signal);
-        return;
-      }
-      onError?.(err);
-      throw err;
-    }
+    const endpoint = payload.conversationId ? `/api/chats/${payload.conversationId}/send` : '/api/chats/create';
+    const body = JSON.stringify({
+      content: payload.message,
+      model_type: payload.modelType || mapLevelToModelType(payload.modelLevel),
+      files: payload.attachmentIds ?? [],
+    });
+    return readReply(streamSse(endpoint, body, signal), onChunk, onFinish, onError);
   },
 };
 
-async function mockStreamResponse(
-  userPrompt: string,
+/**
+ * Turn a reply's SSE events into chunk/finish callbacks.
+ *
+ * Terminal events: `error` (agent failed), `stopped` (user stopped it; the
+ * partial reply is kept), `violation` (moderation rejected the message; it
+ * was not saved) and `run_in_progress` (another reply is already
+ * running; the message was not saved). For `run_in_progress` the caller is
+ * told via `runInProgress` and decides whether to call `resumeReply`; it is
+ * never resumed automatically.
+ */
+async function readReply(
+  events: AsyncGenerator<SseEvent>,
   onChunk: (chunk: ChatStreamChunk) => void,
   onFinish: (completeMessage: ChatMessage) => void,
-  signal?: AbortSignal,
-) {
-  const needsSearch = /tìm|search|link|nguồn|internet|tra cứu/i.test(userPrompt);
-
-  onChunk({ status: 'thinking' });
-  await waitForMock(600, signal);
-
-  if (needsSearch) {
-    onChunk({ status: 'searching' });
-    await waitForMock(800, signal);
-  }
-
-  onChunk({ status: 'generating' });
-  await waitForMock(400, signal);
-
-  const answerTemplate = `Chào bạn, mình là trợ lý ảo IT UPD GenAI của Trường Đại học Phương Đông.\n\nVề câu hỏi của bạn: "${userPrompt}":\n\n- Mình đã tiếp nhận và đang đồng bộ dữ liệu với máy chủ.\n- Bạn có thể đặt thêm câu hỏi về môn học, tài liệu hoặc thông tin đào tạo nhé!`;
-  const words = answerTemplate.split(' ');
-  let accumulated = '';
-
-  for (let i = 0; i < words.length; i++) {
-    const word = (i === 0 ? '' : ' ') + words[i];
-    accumulated += word;
-    onChunk({ delta: word, status: 'generating' });
-    await waitForMock(20, signal);
-  }
-
-  onFinish({
-    id: crypto.randomUUID(),
-    role: 'assistant',
-    content: accumulated,
-    sources: [],
-    status: 'completed',
-  });
-}
-
-function waitForMock(milliseconds: number, signal?: AbortSignal): Promise<void> {
-  signal?.throwIfAborted();
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => {
-      signal?.removeEventListener('abort', cancel);
-      resolve();
-    }, milliseconds);
-    function cancel() {
-      clearTimeout(timer);
-      reject(signal?.reason);
+  onError?: (error: Error) => void,
+): Promise<void> {
+  let fullText = '';
+  let assistantId: string | undefined;
+  let toolCalls: BEToolCall[] = [];
+  // One entry per assistant message (tool round), in order, so the live view groups like the saved one.
+  const steps: ReplyStep[] = [];
+  const stepFor = (messageId: string | undefined): ReplyStep => {
+    const id = messageId ?? 'pending';
+    let step = steps.find((s) => s.id === id);
+    if (!step) {
+      step = { id, content: '', toolCalls: [] };
+      steps.push(step);
     }
-    signal?.addEventListener('abort', cancel, { once: true });
-  });
+    return step;
+  };
+  let stopped = false;
+  let hidden = false;
+
+  try {
+    onChunk({ status: 'thinking' });
+
+    for await (const evt of events) {
+      if (evt.event === 'conversation_created') {
+        const data = evt.data as { id: string; title: string };
+        onChunk({ conversationId: String(data.id), title: data.title });
+        continue;
+      }
+      if (evt.event === 'user_message_id') {
+        continue;
+      }
+      if (evt.event === 'run_in_progress') {
+        onChunk({ status: 'idle', runInProgress: true });
+        return;
+      }
+      if (evt.event === 'violation') {
+        const detail = (evt.data as { detail?: string } | null)?.detail;
+        onChunk({ status: 'idle', violation: detail || VIOLATION_FALLBACK });
+        return;
+      }
+      if (evt.event === 'output_violation') {
+        hidden = true;
+        continue;
+      }
+      if (evt.event === 'stopped') {
+        stopped = true;
+        continue;
+      }
+      if (evt.event === 'error') {
+        const detail = (evt.data as { detail?: string } | null)?.detail;
+        throw new Error(detail || 'Trợ lý không thể trả lời. Vui lòng thử lại.');
+      }
+
+      const data = evt.data as StreamPayload;
+      if (data?.message_id) assistantId = String(data.message_id);
+
+      if (evt.event === 'content' && data.content) {
+        fullText += data.content;
+        stepFor(assistantId).content += data.content;
+        onChunk({ delta: data.content, status: 'generating', messageId: assistantId, steps: steps.map((s) => ({ ...s })) });
+      } else if (evt.event === 'tool_calls' && data.tool_calls) {
+        toolCalls = [...toolCalls, ...data.tool_calls];
+        stepFor(assistantId).toolCalls = data.tool_calls;
+        onChunk({ status: 'searching', toolCalls, messageId: assistantId, steps: steps.map((s) => ({ ...s })) });
+      }
+    }
+
+    onFinish({
+      id: assistantId || crypto.randomUUID(),
+      role: 'assistant',
+      content: hidden ? HIDDEN_REPLY_NOTICE : fullText,
+      status: stopped ? 'stopped' : 'completed',
+      toolCalls: hidden || !toolCalls.length ? undefined : toolCalls,
+      hidden: hidden || undefined,
+      steps: hidden || steps.length < 2 ? undefined : steps,
+    });
+  } catch (err) {
+    const error = err as Error;
+    if (error.name === 'AbortError') return;
+    onChunk({ status: 'error', error: error.message });
+    onError?.(error);
+  }
 }

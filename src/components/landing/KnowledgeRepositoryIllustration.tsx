@@ -298,7 +298,7 @@ function RepositoryScene({
             opacity={label.depth < 0 ? 0.45 : 0.8}
           >
             <text x="-22">{MODELS[index].label}</text>
-            <text x="-22" y="15" fill="#04714a">
+            <text x="-22" y="15" fill="var(--brand-text)">
               {codes[index]}
             </text>
             <path
@@ -333,11 +333,8 @@ function RepositoryScene({
       <g
         fontFamily="monospace"
         fontSize="14"
-        fill="#04714a"
+        fill="var(--brand-text)"
         pointerEvents="none"
-        stroke="#fff"
-        strokeWidth="4"
-        paintOrder="stroke"
       >
         <text x="72" y="80">
           Kết nối trực tiếp với hệ thống

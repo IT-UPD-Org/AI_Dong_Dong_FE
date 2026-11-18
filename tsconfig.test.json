@@ -1,8 +1,7 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "types": ["vitest/globals", "@testing-library/jest-dom/vitest", "vite/client"]
+    "types": ["vitest/globals", "@testing-library/jest-dom"]
   },
-  "include": ["src/__tests__/**/*", "src/components/**/*", "src/api/**/*"],
-  "exclude": ["node_modules"]
+  "include": ["src/__tests__/**/*", "src/components/**/*", "src/api/**/*"]
 }

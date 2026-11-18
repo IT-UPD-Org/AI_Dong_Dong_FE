@@ -175,7 +175,7 @@ function SphereScene({ rotation, readouts, id }: SphereSceneProps) {
       <g
         fontFamily="monospace"
         fontSize="5.5"
-        fill="#04714a"
+        fill="var(--brand-text)"
         opacity=".3"
         pointerEvents="none"
       >

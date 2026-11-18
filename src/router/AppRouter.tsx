@@ -1,7 +1,9 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useSearchParams } from "react-router-dom";
 import { AppShell } from "../components/layout/AppShell";
 import { PublicLayout } from "../components/layout/PublicLayout";
 import { ProtectedRoute } from "../components/auth/ProtectedRoute";
+import { AdminRoute } from "../components/auth/AdminRoute";
+import { AdminPage } from "../pages/admin/AdminPage";
 import { PublicRoute } from "../components/auth/PublicRoute";
 import { LandingPage } from "../pages/LandingPage";
 import { LoginPage } from "../pages/LoginPage";
@@ -15,6 +17,10 @@ import { ContributorsPage } from "../pages/ContributorsPage";
 import { ProfilePage } from "../pages/ProfilePage";
 import { SettingsPage } from "../pages/SettingsPage";
 import { InfoPage } from "../pages/InfoPage";
+import { ProjectTeamPage } from "../pages/ProjectTeamPage";
+import { CreateAccountPage } from "../pages/CreateAccountPage";
+import { ApprovePage } from "../pages/ApprovePage";
+import { CareerUniversePage } from "../pages/CareerUniversePage";
 import { MapPage } from "../pages/MapPage";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -26,6 +32,20 @@ function MapShellSwitch() {
 function MapRoutePage() {
   const { isAuthenticated } = useAuth();
   return <MapPage embedded={isAuthenticated} />;
+}
+
+/**
+ * Shared element for `/chat` (new chat) and `/c/:id` (existing chat).
+ * Old `/chat?id=X` links redirect to `/c/X`.
+ *
+ * The fixed key keeps ChatPage mounted when a new chat's URL changes from
+ * /chat to /c/:id, so the reply that is still streaming is not cancelled.
+ */
+function ChatEntry() {
+  const [params] = useSearchParams();
+  const legacyId = params.get("id");
+  if (legacyId) return <Navigate to={`/c/${encodeURIComponent(legacyId)}`} replace />;
+  return <ChatPage key="chat" />;
 }
 
 export function AppRouter() {
@@ -44,30 +64,18 @@ export function AppRouter() {
             />
           }
         />
-        <Route
-          path="/donate"
-          element={
-            <InfoPage
-              title="Keep knowledge open"
-              eyebrow="Donate"
-              body="Support the infrastructure that helps students find clearer answers."
-            />
-          }
-        />
-        <Route
-          path="/approve"
-          element={
-            <InfoPage
-              title="Approve to try"
-              eyebrow="For university leaders"
-              body="Help us bring a thoughtful, safe AI layer to your campus community."
-            />
-          }
-        />
+        <Route path="/donate" element={<ProjectTeamPage />} />
+        <Route path="/approve" element={<ApprovePage />} />
+        <Route path="/contributors" element={<ContributorsPage />} />
 
-        {/* XÁC THỰC LINK TỪ EMAIL (MAGIC LINK CALLBACK) */}
-        <Route path="/auth/verify" element={<AuthVerifyPage />} />
+        {/* MICROSOFT OAUTH REDIRECT: {origin}/callback is the default redirect URI.
+            /auth/callback stays for sign-ins already registered under the old URI. */}
+        <Route path="/callback" element={<AuthVerifyPage />} />
         <Route path="/auth/callback" element={<AuthVerifyPage />} />
+
+        {/* Public on purpose: it creates the first account. The one-time key
+            printed to the backend console is what protects it. */}
+        <Route path="/admin/create" element={<CreateAccountPage />} />
 
         {/* CÁC ROUTE CHỈ CHO NGƯỜI CHƯA ĐĂNG NHẬP */}
         <Route element={<PublicRoute />}>
@@ -84,13 +92,20 @@ export function AppRouter() {
       {/* PROTECTED ROUTES: CHỈ TRUY CẬP ĐƯỢC SAU KHI ĐƯỢC CẤP QUYỀN (PERMISSION) */}
       <Route element={<ProtectedRoute />}>
         <Route element={<AppShell />}>
-          <Route path="/chat" element={<ChatPage />} />
+          {/* One shared element (same key) for both paths: a new chat moves from
+              /chat to /c/:id mid-stream, and remounting would cancel the reply. */}
+          <Route path="/chat" element={<ChatEntry />} />
+          <Route path="/c/:id" element={<ChatEntry />} />
+          <Route path="/chat/career-universe" element={<CareerUniversePage />} />
           <Route path="/history" element={<HistoryPage />} />
           <Route path="/knowledge" element={<KnowledgePage />} />
           <Route path="/documents" element={<DocumentsPage />} />
           <Route path="/contributors" element={<ContributorsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route element={<AdminRoute />}>
+            <Route path="/admin" element={<AdminPage />} />
+          </Route>
         </Route>
       </Route>
 

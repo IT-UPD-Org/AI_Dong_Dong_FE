@@ -42,7 +42,7 @@ export function ProductDemoVideo() {
   return (
     <section
       ref={sectionRef}
-      className="border-t border-black/10 px-6 py-16 md:px-12 md:py-24"
+      className="border-t border-border px-6 py-16 md:px-12 md:py-24"
     >
       <div className="mx-auto max-w-6xl">
         {/* HEADER */}
@@ -60,15 +60,15 @@ export function ProductDemoVideo() {
             }
           `}
         >
-          <p className="mono text-xs uppercase tracking-[.18em] text-[#04714a]">
+          <p className="mono text-xs uppercase tracking-[.18em] text-brand-text">
             EXPERIENCE UAI-01
           </p>
 
-          <h2 className="mt-4 text-3xl font-bold tracking-tight text-[#04714a] md:text-5xl">
+          <h2 className="mt-4 text-3xl font-bold tracking-tight text-brand-text md:text-5xl">
             Khám phá Đông Đông AI
           </h2>
 
-          <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-black/55 md:text-base">
+          <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-fg-secondary md:text-base">
             Trải nghiệm cách trí tuệ nhân tạo hỗ trợ học tập, tra cứu thông tin
             và khai thác kho tri thức số.
           </p>
@@ -79,8 +79,8 @@ export function ProductDemoVideo() {
           className={`
             overflow-hidden
             rounded-[10px]
-            border border-black/10
-            bg-[#f8faf9]
+            border border-border
+            bg-card
             shadow-xl
             transition-all
             duration-1400
@@ -111,7 +111,7 @@ export function ProductDemoVideo() {
         {/* CAPTION */}
         <p
           className={`
-            mt-4 text-center text-xs text-black/40
+            mt-4 text-center text-xs text-muted-foreground
             transition-all
             duration-700
             ${

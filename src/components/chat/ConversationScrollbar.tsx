@@ -29,7 +29,7 @@ export function ConversationScrollbar({
   return (
     <div className="pointer-events-none absolute inset-y-2 right-0 z-20 hidden w-8 md:block">
       {/* Đường track mảnh chạy dọc */}
-      <div className="absolute inset-y-0 right-3 w-px bg-black/10" />
+      <div className="absolute inset-y-0 right-3 w-px bg-border" />
 
       {items.map((item) => {
         const isHovered = hoveredId === item.id;
@@ -49,9 +49,10 @@ export function ConversationScrollbar({
                   max-w-[240px]
                   truncate
                   rounded-lg
-                  bg-[#11130f]
+                  border border-border
+                  bg-elevated
                   px-3 py-1.5
-                  text-xs text-white
+                  text-xs text-foreground
                   shadow-lg
                 "
               >
@@ -69,10 +70,10 @@ export function ConversationScrollbar({
                 mr-2 rounded-full transition-all duration-150
                 ${
                   isHovered
-                    ? "h-2.5 w-5 bg-[#04714a]"
+                    ? "h-2.5 w-5 bg-brand"
                     : isActive
-                      ? "h-1.5 w-4 bg-[#11130f]"
-                      : "h-1 w-3 bg-black/25 hover:bg-black/40"
+                      ? "h-1.5 w-4 bg-foreground"
+                      : "h-1 w-3 bg-muted-foreground/40 hover:bg-muted-foreground"
                 }
               `}
             />

@@ -24,7 +24,7 @@ export default function PageLoaderPreview() {
   return (
     <>
       {mode === "complete" ? (
-        <main className="grid min-h-svh place-items-center bg-white text-center">
+        <main className="grid min-h-svh place-items-center bg-background text-foreground text-center">
           <p>Hiệu ứng đã hoàn tất. Bấm “Chạy lại” để xem chuyển động.</p>
         </main>
       ) : (
@@ -37,15 +37,28 @@ export default function PageLoaderPreview() {
       )}
       <nav
         aria-label="Điều khiển bản xem thử loader"
-        className="fixed bottom-3 right-3 z-[2147483647] flex flex-wrap gap-2 rounded-xl border border-emerald-100 bg-white/95 p-2 text-xs shadow-sm"
+        className="fixed bottom-3 right-3 z-[2147483647] flex flex-wrap gap-2 rounded-xl border border-border bg-elevated/95 text-foreground p-2 text-xs shadow-md backdrop-blur-md"
       >
-        <button type="button" onClick={() => restart("reference")} className="rounded-lg px-3 py-2 hover:bg-emerald-50">
+        <button
+          type="button"
+          onClick={() => restart("reference")}
+          className="rounded-lg px-3 py-2 hover:bg-hover transition-colors"
+        >
           Trước khi quét (76%)
         </button>
-        <button type="button" onClick={() => restart("playing")} className="rounded-lg bg-emerald-700 px-3 py-2 text-white hover:bg-emerald-800">
+        <button
+          type="button"
+          onClick={() => restart("playing")}
+          className="rounded-lg bg-brand px-3 py-2 text-brand-foreground hover:bg-brand-hover transition-colors"
+        >
           Chạy lại
         </button>
-        <a href="/" className="rounded-lg px-3 py-2 hover:bg-emerald-50">Về trang chủ</a>
+        <a
+          href="/"
+          className="rounded-lg px-3 py-2 hover:bg-hover transition-colors"
+        >
+          Về trang chủ
+        </a>
       </nav>
     </>
   );
