@@ -441,6 +441,43 @@ export function ChatPage() {
     );
   }
 
+  // Handle incoming initial prompt or attachments (e.g. from Career Universe transcript analysis)
+  useEffect(() => {
+    const navState = location.state as {
+      initialPrompt?: string;
+      initialAttachmentIds?: string[];
+    } | null;
+
+    if (!conversationId && navState?.initialPrompt) {
+      const prompt = navState.initialPrompt;
+      const attachments = navState.initialAttachmentIds ?? [];
+
+      window.history.replaceState({}, document.title);
+
+      const assistantMsgId = crypto.randomUUID();
+      const userMsgId = crypto.randomUUID();
+
+      setMsgs([
+        {
+          id: userMsgId,
+          role: "user",
+          content: prompt,
+          files: attachments,
+        },
+        { id: assistantMsgId, role: "assistant", content: "", status: "idle" },
+      ]);
+
+      void processStream(
+        {
+          message: prompt,
+          attachmentIds: attachments,
+          userMsgId,
+        },
+        assistantMsgId,
+      );
+    }
+  }, [newChatKey]);
+
   /** Ask the backend to stop the running reply; the stream then ends with `stopped`. */
   async function stopReply() {
     const id = conversationIdRef.current;

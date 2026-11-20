@@ -88,8 +88,9 @@ library upload/indexing services (conversion, S3 and Qdrant) must be healthy.
   and invalid slugs were rejected; `enabled=false` was retained correctly.
 - Manual Core registry inspection found `list_skills` and `read_skill` without
   starting a worker or querying/mutating a database.
-- Frontend: `corepack pnpm build` passed; `corepack pnpm test` passed **97 tests
-  in 7 files**, including 12 focused library/skill regression checks.
+- Frontend: `corepack pnpm build` passed; `corepack pnpm test` passed **106 tests
+  in 8 files** after integrating the concurrent Career Universe update, including
+  12 focused library/skill regression checks.
 - Local browser inspection with isolated mocked API data confirmed the teacher
   library list/upload form, accessible labels, Light/Dark modal/input colors and
   no root overflow at 320px. This is not a live storage/indexing integration test.

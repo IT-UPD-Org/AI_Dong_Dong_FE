@@ -20,6 +20,7 @@ import { InfoPage } from "../pages/InfoPage";
 import { ProjectTeamPage } from "../pages/ProjectTeamPage";
 import { CreateAccountPage } from "../pages/CreateAccountPage";
 import { ApprovePage } from "../pages/ApprovePage";
+import { CareerUniversePage } from "../pages/CareerUniversePage";
 
 /**
  * Shared element for `/chat` (new chat) and `/c/:id` (existing chat).
@@ -78,6 +79,7 @@ export function AppRouter() {
               /chat to /c/:id mid-stream, and remounting would cancel the reply. */}
           <Route path="/chat" element={<ChatEntry />} />
           <Route path="/c/:id" element={<ChatEntry />} />
+          <Route path="/chat/career-universe" element={<CareerUniversePage />} />
           <Route path="/history" element={<HistoryPage />} />
           <Route path="/knowledge" element={<KnowledgePage />} />
           <Route path="/documents" element={<DocumentsPage />} />
