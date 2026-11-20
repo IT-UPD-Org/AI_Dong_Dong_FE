@@ -249,13 +249,13 @@ export function AppShell() {
     });
 
   const location = useLocation();
-  const isMoreActive = ["/contributors", "/admin"].some(
+  const isMoreActive = ["/contributors", "/admin", "/knowledge"].some(
     (path) => location.pathname === path || location.pathname.startsWith(`${path}/`),
   );
 
   // Phần A (Thêm...): drop và push down (đẩy Phần B - Gần đây lùi xuống)
   const [isMoreOpen, setIsMoreOpen] = useState(() =>
-    ["/contributors", "/admin"].some(
+    ["/contributors", "/admin", "/knowledge"].some(
       (path) => location.pathname === path || location.pathname.startsWith(`${path}/`),
     ),
   );
@@ -352,6 +352,20 @@ export function AppShell() {
             {/* Khi mở ra: Phần A nằm trong flow DOM sẽ tự động đẩy Phần B (Gần đây) lùi xuống */}
             {isMoreOpen && (
               <div className="mt-1 flex flex-col gap-1 pl-4 animate-in slide-in-from-top-1 duration-150">
+                <NavLink
+                  to="/knowledge"
+                  className={({ isActive }) =>
+                    `flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs transition-colors ${
+                      isActive
+                        ? "bg-brand-soft font-semibold text-brand-text"
+                        : "text-fg-secondary hover:bg-brand-soft hover:text-brand-text"
+                    }`
+                  }
+                >
+                  <BookOpenIcon size={15} />
+                  <span>{t("navKnowledge")}</span>
+                </NavLink>
+
                 <NavLink
                   to="/contributors"
                   className={({ isActive }) =>
@@ -622,6 +636,17 @@ export function AppShell() {
             sideOffset={8}
             className="w-48 rounded-xl border border-border bg-elevated p-1.5 shadow-xl text-foreground z-50 animate-in fade-in-0 zoom-in-95"
           >
+            <DropdownMenuItem
+              render={<NavLink to="/knowledge" />}
+              className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors cursor-pointer ${
+                location.pathname === "/knowledge"
+                  ? "bg-brand-soft font-semibold text-brand-text"
+                  : "text-fg-secondary hover:bg-brand-soft hover:text-brand-text"
+              }`}
+            >
+              <BookOpenIcon size={16} />
+              <span>{t("navKnowledge")}</span>
+            </DropdownMenuItem>
             <DropdownMenuItem
               render={<NavLink to="/contributors" />}
               className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors cursor-pointer ${

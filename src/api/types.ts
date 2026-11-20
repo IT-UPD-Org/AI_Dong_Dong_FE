@@ -293,3 +293,10 @@ export interface AdminFile extends BEFile {
   object_key: string;
   user_id: string;
 }
+
+// ---------------------------------------------------------------------------
+// Library & Skills
+// ---------------------------------------------------------------------------
+
+export type { LibraryDocument, LibraryDocumentUpdate } from './library.api';
+export type { Skill, SkillCreateInput, SkillUpdateInput } from './skills.api';
