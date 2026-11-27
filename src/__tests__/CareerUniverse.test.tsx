@@ -237,9 +237,9 @@ describe("Career Universe Page & UI Interaction", () => {
     const moreBtns = screen.getAllByRole("button", { name: /Thêm.../i });
     await user.click(moreBtns[0]);
 
-    // "Cây Nghề Nghiệp - Career Tree" should be present in the expanded subnav
+    // "Cây Nghề Nghiệp" should be present in the expanded subnav
     const careerTreeLink = await screen.findByRole("link", {
-      name: /Cây Nghề Nghiệp - Career Tree/i,
+      name: /Cây Nghề Nghiệp/i,
     });
     expect(careerTreeLink).toBeInTheDocument();
     expect(careerTreeLink).toHaveAttribute("href", "/chat/career-universe");
