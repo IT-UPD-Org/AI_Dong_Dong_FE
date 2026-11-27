@@ -2,10 +2,14 @@
 
 ## User access
 
-- Open **Thêm… → Kho tri thức** (`/knowledge`) to browse shared documents.
-- Students can browse and download. Teachers and administrators can also upload,
-  edit title/description and delete shared documents. The backend enforces these
-  permissions; hiding buttons is not the security boundary.
+- Teachers and administrators can open **Thêm… → Kho tri thức** (`/knowledge`)
+  to browse, upload, edit and delete shared documents.
+- Students do not see this navigation item. Direct `/knowledge` visits redirect
+  to chat without fetching the catalogue; `LibraryManager` also refuses to list.
+- The backend restricts `GET /library/documents` to teachers/admins. Individual
+  `GET /library/documents/{id}` stays available to users with app access so AI
+  source cards (`LinkKnowledge`) still resolve on demand. Hiding navigation is
+  not the security boundary.
 - Administrators also have **Kho tài liệu** at `/admin?tab=library`, using the
   same library component and API. Personal files under `/documents` are separate.
 - Uploads convert the original document, build its shared RAG index, store its

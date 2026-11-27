@@ -5,6 +5,7 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { LibraryManager, getDocumentIcon, getSafeDownloadUrl } from "../components/library/LibraryManager";
 import { SkillsTab, slugify } from "../pages/admin/SkillsTab";
 import { AppShell } from "../components/layout/AppShell";
+import { KnowledgePage } from "../pages/KnowledgePage";
 import { libraryApi, type LibraryDocument } from "../api/library.api";
 import { skillsApi, type Skill } from "../api/skills.api";
 
@@ -122,7 +123,7 @@ describe("Library and Skills UI", () => {
     });
 
     it("renders disabled indicator instead of executable anchor when file_url has unsafe scheme", async () => {
-      mockAuthUser = { id: "1", display_name: "Sinh viên", email: "student@pduni.edu.vn", role: "student" };
+      mockAuthUser = { id: "2", display_name: "Giảng viên", email: "teacher@pduni.edu.vn", role: "teacher" };
       const unsafeDoc: LibraryDocument = {
         ...sampleDoc,
         file_url: "javascript:alert('malicious')",
@@ -172,31 +173,26 @@ describe("Library and Skills UI", () => {
   });
 
   describe("LibraryManager permissions & visibility", () => {
-    it("renders document list for student but hides upload and edit actions", async () => {
+    it("does not fetch or render the document catalogue for a student", () => {
       mockAuthUser = { id: "1", display_name: "Sinh viên", email: "student@pduni.edu.vn", role: "student" };
-      vi.mocked(libraryApi.getDocuments).mockResolvedValue([sampleDoc]);
+      render(<MemoryRouter><LibraryManager /></MemoryRouter>);
+      expect(libraryApi.getDocuments).not.toHaveBeenCalled();
+      expect(screen.queryByText(sampleDoc.title)).not.toBeInTheDocument();
+      expect(screen.queryByRole("table")).not.toBeInTheDocument();
+    });
 
+    it("redirects a student's direct knowledge URL without fetching the catalogue", async () => {
+      mockAuthUser = { id: "1", display_name: "Sinh viên", email: "student@pduni.edu.vn", role: "student" };
       render(
-        <MemoryRouter>
-          <LibraryManager />
+        <MemoryRouter initialEntries={["/knowledge"]}>
+          <Routes>
+            <Route path="/knowledge" element={<KnowledgePage />} />
+            <Route path="/chat" element={<div>chat destination</div>} />
+          </Routes>
         </MemoryRouter>
       );
-
-      await waitFor(() => {
-        expect(screen.getByText("Quy định học vụ 2026")).toBeInTheDocument();
-      });
-
-      expect(screen.getByText("quy-dinh.pdf")).toBeInTheDocument();
-      expect(screen.getByText("1 MB")).toBeInTheDocument();
-      expect(screen.queryByRole("button", { name: /Tải lên tài liệu/i })).not.toBeInTheDocument();
-      expect(screen.queryByRole("button", { name: "Sửa" })).not.toBeInTheDocument();
-      expect(screen.queryByRole("button", { name: "Xoá" })).not.toBeInTheDocument();
-
-      // Download link has safe attributes
-      const downloadLink = screen.getByRole("link", { name: /Tải xuống/i });
-      expect(downloadLink).toHaveAttribute("href", "https://storage.example.com/library/quy-dinh.pdf");
-      expect(downloadLink).toHaveAttribute("target", "_blank");
-      expect(downloadLink).toHaveAttribute("rel", "noopener noreferrer");
+      expect(await screen.findByText("chat destination")).toBeInTheDocument();
+      expect(libraryApi.getDocuments).not.toHaveBeenCalled();
     });
 
     it("renders upload, edit and delete buttons for teacher", async () => {
@@ -427,7 +423,18 @@ describe("Library and Skills UI", () => {
   });
 
   describe("AppShell discovery of Knowledge route", () => {
-    it("includes Kho tri thức link in More navigation", async () => {
+    it("hides the catalogue in desktop and mobile navigation for students", async () => {
+      const user = userEvent.setup();
+      mockAuthUser = { id: "1", display_name: "Sinh viên", email: "student@pduni.edu.vn", role: "student" };
+      render(<MemoryRouter><AppShell /></MemoryRouter>);
+      const moreButtons = screen.getAllByRole("button", { name: /Thêm.../i });
+      await user.click(moreButtons[0]);
+      expect(screen.queryByRole("link", { name: /Kho tri thức/i })).not.toBeInTheDocument();
+      await user.click(moreButtons[1]);
+      expect(screen.queryByRole("menuitem", { name: /Kho tri thức/i })).not.toBeInTheDocument();
+    });
+
+    it("includes Kho tri thức link in More navigation for teachers", async () => {
       const user = userEvent.setup();
       mockAuthUser = { id: "2", display_name: "Giảng viên", email: "teacher@pduni.edu.vn", role: "teacher" };
 

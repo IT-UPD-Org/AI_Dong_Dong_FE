@@ -185,6 +185,7 @@ export function AppShell() {
   // The shell sits above the routes, so it reads the chat ID from the path itself.
   const currentChatId = useMatch("/c/:id")?.params.id ?? null;
   const { user, isAdmin, logout } = useAuth();
+  const canManageKnowledge = user?.role === "teacher" || user?.role === "admin";
   const [recentChats, setRecentChats] = useState<Conversation[]>([]);
   const [promptSnippets, setPromptSnippets] = useState<Record<string, string>>(
     {},
@@ -386,10 +387,12 @@ export function AppShell() {
           {/* Thêm...: expands the extra items in this same list; a small "Ẩn" at the end folds them back. */}
           {isMoreOpen ? (
             <>
-              <NavLink to="/knowledge" className={sideNavClass}>
-                <BookOpenIcon size={17} />
-                <span>{t("navKnowledge")}</span>
-              </NavLink>
+              {canManageKnowledge && (
+                <NavLink to="/knowledge" className={sideNavClass}>
+                  <BookOpenIcon size={17} />
+                  <span>{t("navKnowledge")}</span>
+                </NavLink>
+              )}
 
               <NavLink
                 to="/chat/career-universe"
@@ -677,17 +680,19 @@ export function AppShell() {
               <MapPinIcon size={16} />
               <span>{t("navMap")}</span>
             </DropdownMenuItem>
-            <DropdownMenuItem
-              render={<NavLink to="/knowledge" />}
-              className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors cursor-pointer ${
-                location.pathname === "/knowledge"
-                  ? "bg-brand-soft font-semibold text-brand-text"
-                  : "text-fg-secondary hover:bg-brand-soft hover:text-brand-text"
-              }`}
-            >
-              <BookOpenIcon size={16} />
-              <span>{t("navKnowledge")}</span>
-            </DropdownMenuItem>
+            {canManageKnowledge && (
+              <DropdownMenuItem
+                render={<NavLink to="/knowledge" />}
+                className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors cursor-pointer ${
+                  location.pathname === "/knowledge"
+                    ? "bg-brand-soft font-semibold text-brand-text"
+                    : "text-fg-secondary hover:bg-brand-soft hover:text-brand-text"
+                }`}
+              >
+                <BookOpenIcon size={16} />
+                <span>{t("navKnowledge")}</span>
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem
               render={<NavLink to="/chat/career-universe" />}
               className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors cursor-pointer ${

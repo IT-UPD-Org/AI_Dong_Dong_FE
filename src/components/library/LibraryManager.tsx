@@ -133,6 +133,11 @@ export function LibraryManager({ hideHeader = false }: LibraryManagerProps) {
 
   const loadDocuments = useCallback(async () => {
     const generation = ++fetchGenerationRef.current;
+    if (!canManage) {
+      setDocuments([]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       const data = await libraryApi.getDocuments(page, pageSize);
@@ -150,10 +155,11 @@ export function LibraryManager({ hideHeader = false }: LibraryManagerProps) {
         setLoading(false);
       }
     }
-  }, [page, pageSize]);
+  }, [page, pageSize, canManage]);
 
   useEffect(() => {
     loadDocuments();
+    return () => { fetchGenerationRef.current++; };
   }, [loadDocuments]);
 
   // Client-side quick filter on currently loaded page
@@ -304,6 +310,8 @@ export function LibraryManager({ hideHeader = false }: LibraryManagerProps) {
       toast.error((err as Error).message || (isEn ? "Failed to delete document." : "Không thể xoá tài liệu."));
     }
   };
+
+  if (!canManage) return null;
 
   return (
     <div className="w-full">

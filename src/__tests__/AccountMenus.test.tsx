@@ -148,7 +148,7 @@ describe("AppShell sidebar account menu", () => {
 
       await user.click(sidebar().getByRole("button", { name: /Thêm\.\.\./ }));
 
-      expect(sidebar().getByRole("link", { name: /Kho tri thức/ })).toHaveAttribute("href", "/knowledge");
+      expect(sidebar().queryByRole("link", { name: /Kho tri thức/ })).not.toBeInTheDocument();
       expect(sidebar().getByRole("link", { name: /Cây Nghề Nghiệp/ })).toHaveAttribute("href", "/chat/career-universe");
       expect(sidebar().getByRole("link", { name: /Người đóng góp/ })).toHaveAttribute("href", "/contributors");
       expect(sidebar().queryByRole("link", { name: /Quản trị/ })).not.toBeInTheDocument();
