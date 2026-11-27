@@ -21,6 +21,8 @@ import remarkGfm from "remark-gfm";
 import type { Components } from "react-markdown";
 import { CodeBlock } from "./CodeBlock";
 import { FileCard } from "./FileCard";
+import { LinkedDocCard } from "./LinkedDocCard";
+import { splitLinkTags } from "../../lib/linkTags";
 import {
   PreviewFile,
   getFileExtension,
@@ -203,24 +205,34 @@ export function SafeMarkdown({ content, className, onPreviewFile }: SafeMarkdown
     },
   };
 
+  // `<LinkFile id=".."/>` / `<LinkKnowledge id=".."/>` become cards; the rest stays safe markdown.
+  const segments = splitLinkTags(content);
+
   return (
     <div className={className}>
-      <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        skipHtml
-        disallowedElements={[
-          "img",
-          "iframe",
-          "object",
-          "embed",
-          "script",
-          "form",
-        ]}
-        components={markdownComponents}
-        urlTransform={safeHref}
-      >
-        {content}
-      </ReactMarkdown>
+      {segments.map((segment, i) =>
+        segment.type === "link" ? (
+          <LinkedDocCard key={`${i}-${segment.kind}-${segment.id}`} kind={segment.kind} id={segment.id} onPreview={onPreviewFile} />
+        ) : (
+          <ReactMarkdown
+            key={i}
+            remarkPlugins={[remarkGfm]}
+            skipHtml
+            disallowedElements={[
+              "img",
+              "iframe",
+              "object",
+              "embed",
+              "script",
+              "form",
+            ]}
+            components={markdownComponents}
+            urlTransform={safeHref}
+          >
+            {segment.text}
+          </ReactMarkdown>
+        ),
+      )}
     </div>
   );
 }
