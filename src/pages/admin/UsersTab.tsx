@@ -1,10 +1,22 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { Link, useSearchParams } from "react-router-dom";
+import { MessagesSquare } from "lucide-react";
 import { toast } from "sonner";
 import { ADMIN_PAGE_SIZE, adminApi } from "../../api/admin.api";
 import type { AdminUserUpdate, User, UserRole, UserState } from "../../api/types";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../components/ui/table";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../../components/ui/dialog";
 import { useAuth } from "../../contexts/AuthContext";
-import { ListState, Pager, formatBytes, usePagedList } from "./shared";
+import {
+  ListState,
+  Pager,
+  adminTabUrl,
+  formatBytes,
+  inputClass,
+  primaryButtonClass,
+  secondaryButtonClass,
+  usePagedList,
+} from "./shared";
 
 const ROLE_LABEL: Record<UserRole, string> = { student: "Sinh viên", teacher: "Giảng viên", admin: "Quản trị" };
 const STATE_LABEL: Record<UserState, string> = {
@@ -21,22 +33,59 @@ const STATE_STYLE: Record<UserState, string> = {
 };
 
 export function UsersTab() {
-  const { user: me } = useAuth();
+  const { user: me, setUser: setMe } = useAuth();
   const load = useCallback((page: number) => adminApi.getUsers(page), []);
   const list = usePagedList(load, ADMIN_PAGE_SIZE);
   const [busyId, setBusyId] = useState<string | null>(null);
 
-  const replace = (updated: User) =>
+  // The opened user lives in the URL so the view can be linked (e.g. from the Chats tab).
+  const [params, setParams] = useSearchParams();
+  const openId = params.get("user_id");
+  const [detail, setDetail] = useState<User | null>(null);
+  const [detailState, setDetailState] = useState<"idle" | "loading" | "missing" | "error">("idle");
+
+  // Fetch the opened user directly: they may not be on the current page of the list.
+  useEffect(() => {
+    setDetail(null);
+    if (!openId) {
+      setDetailState("idle");
+      return;
+    }
+    let current = true;
+    setDetailState("loading");
+    adminApi
+      .getUsers(1, openId)
+      .then((found) => {
+        if (!current) return;
+        setDetail(found[0] ?? null);
+        setDetailState(found[0] ? "idle" : "missing");
+      })
+      .catch(() => current && setDetailState("error"));
+    return () => {
+      current = false;
+    };
+  }, [openId]);
+
+  const openUser = (id: string) => setParams({ tab: "users", user_id: id }, { replace: true });
+  const closeUser = () => setParams({ tab: "users" }, { replace: true });
+
+  const replace = (updated: User) => {
     list.setItems((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
+    setDetail((prev) => (prev?.id === updated.id ? updated : prev));
+    // Editing yourself: keep the signed-in account (sidebar, header) in step with the server answer.
+    if (updated.id === me?.id) setMe(updated);
+  };
 
   /** Send only what changed; the backend applies the given fields and returns the user. */
-  async function update(user: User, changes: AdminUserUpdate, done: string) {
+  async function update(user: User, changes: AdminUserUpdate, done: string): Promise<boolean> {
     setBusyId(user.id);
     try {
       replace(await adminApi.updateUser(user.id, changes));
       toast.success(done);
+      return true;
     } catch (err) {
       toast.error((err as Error).message);
+      return false;
     } finally {
       setBusyId(null);
     }
@@ -48,7 +97,7 @@ export function UsersTab() {
       toast.error("Credits phải là số nguyên không âm.");
       return;
     }
-    if (credits !== user.credits) void update(user, { credits }, `Đã đổi credits của ${user.name}.`);
+    if (credits !== user.credits) void update(user, { credits }, `Đã đổi credits của ${user.display_name}.`);
   }
 
   return (
@@ -76,7 +125,13 @@ export function UsersTab() {
                 return (
                   <TableRow key={user.id}>
                     <TableCell className="font-medium text-foreground">
-                      {user.name}
+                      <button
+                        type="button"
+                        onClick={() => openUser(user.id)}
+                        className="cursor-pointer rounded text-left font-medium text-foreground underline-offset-2 hover:text-brand-text hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        {user.display_name}
+                      </button>
                       {isMe && <span className="ml-1.5 text-xs font-normal text-muted-foreground">(bạn)</span>}
                     </TableCell>
                     <TableCell className="text-muted-foreground">{user.email}</TableCell>
@@ -86,7 +141,7 @@ export function UsersTab() {
                         disabled={busy}
                         onChange={(e) => {
                           const role = e.target.value as UserRole;
-                          if (role !== user.role) void update(user, { role }, `Đã đổi vai trò của ${user.name}.`);
+                          if (role !== user.role) void update(user, { role }, `Đã đổi vai trò của ${user.display_name}.`);
                         }}
                         className="rounded-md border border-border bg-field text-foreground px-2 py-1 text-sm disabled:opacity-60"
                       >
@@ -106,7 +161,7 @@ export function UsersTab() {
                         step={1}
                         defaultValue={user.credits}
                         disabled={busy}
-                        aria-label={`Credits của ${user.name}`}
+                        aria-label={`Credits của ${user.display_name}`}
                         onBlur={(e) => changeCredits(user, e.target.value)}
                         onKeyDown={(e) => {
                           if (e.key === "Enter") e.currentTarget.blur();
@@ -121,7 +176,7 @@ export function UsersTab() {
                         onChange={(e) => {
                           const state = e.target.value as UserState;
                           if (state !== user.state)
-                            void update(user, { state }, `${user.name}: ${STATE_LABEL[state]}.`);
+                            void update(user, { state }, `${user.display_name}: ${STATE_LABEL[state]}.`);
                         }}
                         className={`rounded-full border px-3 py-1 text-xs font-semibold cursor-pointer disabled:opacity-60 ${STATE_STYLE[user.state]}`}
                       >
@@ -140,6 +195,105 @@ export function UsersTab() {
         </div>
       </ListState>
       <Pager page={list.page} hasNext={list.hasNext} onChange={list.setPage} />
+
+      <Dialog open={Boolean(openId)} onOpenChange={(open) => !open && closeUser()}>
+        <DialogContent className="sm:max-w-md">
+          {detail ? (
+            <UserDetails
+              key={detail.id}
+              user={detail}
+              busy={busyId === detail.id}
+              onSave={(display_name) => update(detail, { display_name }, "Đã lưu tên hiển thị.")}
+            />
+          ) : (
+            <DialogHeader>
+              <DialogTitle>Người dùng</DialogTitle>
+              <DialogDescription>
+                {detailState === "missing"
+                  ? "Không tìm thấy người dùng này."
+                  : detailState === "error"
+                    ? "Không thể tải người dùng. Vui lòng thử lại."
+                    : "Đang tải..."}
+              </DialogDescription>
+            </DialogHeader>
+          )}
+        </DialogContent>
+      </Dialog>
     </section>
+  );
+}
+
+function UserDetails({
+  user,
+  busy,
+  onSave,
+}: {
+  user: User;
+  busy: boolean;
+  onSave: (displayName: string | null) => Promise<boolean>;
+}) {
+  const [value, setValue] = useState(user.display_name);
+  // Follow the server's answer (e.g. a cleared name falls back to the account name) without touching normal typing.
+  useEffect(() => {
+    setValue(user.display_name);
+  }, [user.display_name]);
+
+  function submit(e: FormEvent) {
+    e.preventDefault();
+    void onSave(value.trim() || null);
+  }
+
+  return (
+    <>
+      <DialogHeader>
+        <DialogTitle className="text-lg">{user.display_name}</DialogTitle>
+        <DialogDescription>{user.email}</DialogDescription>
+      </DialogHeader>
+
+      <dl className="grid grid-cols-2 gap-3 text-sm">
+        <div className="rounded-xl border border-border bg-surface p-3">
+          <dt className="text-xs text-muted-foreground">Vai trò</dt>
+          <dd className="mt-1 font-semibold text-foreground">{ROLE_LABEL[user.role]}</dd>
+        </div>
+        <div className="rounded-xl border border-border bg-surface p-3">
+          <dt className="text-xs text-muted-foreground">Trạng thái</dt>
+          <dd className="mt-1 font-semibold text-foreground">{STATE_LABEL[user.state]}</dd>
+        </div>
+        <div className="rounded-xl border border-border bg-surface p-3">
+          <dt className="text-xs text-muted-foreground">Credits</dt>
+          <dd className="mt-1 font-semibold text-foreground">{user.credits}</dd>
+        </div>
+        <div className="rounded-xl border border-border bg-surface p-3">
+          <dt className="text-xs text-muted-foreground">Dung lượng</dt>
+          <dd className="mt-1 font-semibold text-foreground">
+            {formatBytes(user.storage_used)} / {formatBytes(user.storage_limit)}
+          </dd>
+        </div>
+      </dl>
+
+      <form onSubmit={submit} className="space-y-2">
+        <label htmlFor="admin-display-name" className="block text-xs font-medium text-muted-foreground">
+          Tên hiển thị
+        </label>
+        <div className="flex gap-2">
+          <input
+            id="admin-display-name"
+            className={inputClass}
+            value={value}
+            maxLength={100}
+            disabled={busy}
+            onChange={(e) => setValue(e.target.value)}
+          />
+          <button type="submit" disabled={busy} className={primaryButtonClass}>
+            Lưu
+          </button>
+        </div>
+      </form>
+
+      <Link to={adminTabUrl("chats", user.id)} className={`${secondaryButtonClass} justify-center`}>
+        <MessagesSquare size={15} />
+        Xem cuộc trò chuyện của người dùng này
+      </Link>
+    </>
   );
 }

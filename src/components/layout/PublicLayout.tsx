@@ -26,7 +26,7 @@ export function PublicLayout() {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
   const { t } = useLanguage();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const accountName = user?.name || user?.email || "Tài khoản";
+  const accountName = user?.display_name || user?.email || "Tài khoản";
 
   const handleLogout = async () => {
     await logout();
@@ -92,7 +92,7 @@ export function PublicLayout() {
                 <DropdownMenuContent align="end" sideOffset={8} className="w-56 rounded-xl p-1.5">
                   <div className="px-2 pb-2 pt-1.5">
                     <p className="truncate text-sm font-semibold text-foreground">{accountName}</p>
-                    {user?.name && user.email && (
+                    {user?.display_name && user.email && (
                       <p className="truncate text-xs text-muted-foreground">{user.email}</p>
                     )}
                   </div>

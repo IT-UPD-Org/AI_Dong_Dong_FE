@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
@@ -27,7 +27,7 @@ vi.mock("../components/layout/DocumentProcessingNotifications", () => ({
 const student = {
   id: "1",
   email: "524100098@pduni.edu.vn",
-  name: "Nguyễn Dương",
+  display_name: "Nguyễn Dương",
   role: "student",
 };
 
@@ -131,5 +131,45 @@ describe("AppShell sidebar account menu", () => {
     await user.click(screen.getByRole("menuitem", { name: /Đăng xuất/i }));
     await waitFor(() => expect(mockLogout).toHaveBeenCalledTimes(1));
     expect(await screen.findByText("login screen")).toBeInTheDocument();
+  });
+
+  describe("More navigation", () => {
+    const openShell = (admin = false) => {
+      mockAuth = { ...mockAuth, isAdmin: admin };
+      renderShell();
+      return userEvent.setup();
+    };
+    // Desktop sidebar only; the mobile bottom bar keeps its own menu.
+    const sidebar = () => within(screen.getByRole("complementary"));
+
+    it("expands the extra items in the same list and hides the trigger while open", async () => {
+      const user = openShell();
+      expect(sidebar().queryByRole("link", { name: /Kho tri thức/ })).not.toBeInTheDocument();
+
+      await user.click(sidebar().getByRole("button", { name: /Thêm\.\.\./ }));
+
+      expect(sidebar().getByRole("link", { name: /Kho tri thức/ })).toHaveAttribute("href", "/knowledge");
+      expect(sidebar().getByRole("link", { name: /Career Tree/ })).toHaveAttribute("href", "/chat/career-universe");
+      expect(sidebar().getByRole("link", { name: /Người đóng góp/ })).toHaveAttribute("href", "/contributors");
+      expect(sidebar().queryByRole("link", { name: /Quản trị/ })).not.toBeInTheDocument();
+      // The "More" trigger is gone; a small "Ẩn" sits at the end of the list instead.
+      expect(sidebar().queryByRole("button", { name: /Thêm\.\.\./ })).not.toBeInTheDocument();
+      expect(sidebar().getByRole("button", { name: "Ẩn" })).toBeInTheDocument();
+    });
+
+    it("collapses again with the Ẩn button", async () => {
+      const user = openShell();
+      await user.click(sidebar().getByRole("button", { name: /Thêm\.\.\./ }));
+      await user.click(sidebar().getByRole("button", { name: "Ẩn" }));
+
+      expect(sidebar().queryByRole("link", { name: /Kho tri thức/ })).not.toBeInTheDocument();
+      expect(sidebar().getByRole("button", { name: /Thêm\.\.\./ })).toBeInTheDocument();
+    });
+
+    it("shows the Admin link only to admins", async () => {
+      const user = openShell(true);
+      await user.click(sidebar().getByRole("button", { name: /Thêm\.\.\./ }));
+      expect(sidebar().getByRole("link", { name: /Quản trị/ })).toHaveAttribute("href", "/admin");
+    });
   });
 });

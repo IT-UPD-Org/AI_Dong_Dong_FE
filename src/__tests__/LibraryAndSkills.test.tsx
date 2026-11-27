@@ -8,7 +8,7 @@ import { AppShell } from "../components/layout/AppShell";
 import { libraryApi, type LibraryDocument } from "../api/library.api";
 import { skillsApi, type Skill } from "../api/skills.api";
 
-let mockAuthUser: { id: string; name: string; email: string; role: string } | null = null;
+let mockAuthUser: { id: string; display_name: string; email: string; role: string } | null = null;
 const mockLogout = vi.fn();
 
 vi.mock("../contexts/AuthContext", () => ({
@@ -41,6 +41,7 @@ vi.mock("../contexts/LanguageContext", () => ({
         navContributors: "Người đóng góp",
         navAdmin: "Quản trị",
         navMore: "Thêm...",
+        navLess: "Ẩn",
         navHistory: "Lịch sử",
         navDocuments: "Tài liệu",
         newChat: "Cuộc trò chuyện mới",
@@ -121,7 +122,7 @@ describe("Library and Skills UI", () => {
     });
 
     it("renders disabled indicator instead of executable anchor when file_url has unsafe scheme", async () => {
-      mockAuthUser = { id: "1", name: "Sinh viên", email: "student@pduni.edu.vn", role: "student" };
+      mockAuthUser = { id: "1", display_name: "Sinh viên", email: "student@pduni.edu.vn", role: "student" };
       const unsafeDoc: LibraryDocument = {
         ...sampleDoc,
         file_url: "javascript:alert('malicious')",
@@ -172,7 +173,7 @@ describe("Library and Skills UI", () => {
 
   describe("LibraryManager permissions & visibility", () => {
     it("renders document list for student but hides upload and edit actions", async () => {
-      mockAuthUser = { id: "1", name: "Sinh viên", email: "student@pduni.edu.vn", role: "student" };
+      mockAuthUser = { id: "1", display_name: "Sinh viên", email: "student@pduni.edu.vn", role: "student" };
       vi.mocked(libraryApi.getDocuments).mockResolvedValue([sampleDoc]);
 
       render(
@@ -199,7 +200,7 @@ describe("Library and Skills UI", () => {
     });
 
     it("renders upload, edit and delete buttons for teacher", async () => {
-      mockAuthUser = { id: "2", name: "Giảng viên", email: "teacher@pduni.edu.vn", role: "teacher" };
+      mockAuthUser = { id: "2", display_name: "Giảng viên", email: "teacher@pduni.edu.vn", role: "teacher" };
       vi.mocked(libraryApi.getDocuments).mockResolvedValue([sampleDoc]);
 
       render(
@@ -219,7 +220,7 @@ describe("Library and Skills UI", () => {
 
     it("opens upload modal, submits document, and explicitly closes modal on success", async () => {
       const user = userEvent.setup();
-      mockAuthUser = { id: "2", name: "Giảng viên", email: "teacher@pduni.edu.vn", role: "teacher" };
+      mockAuthUser = { id: "2", display_name: "Giảng viên", email: "teacher@pduni.edu.vn", role: "teacher" };
       vi.mocked(libraryApi.getDocuments).mockResolvedValue([]);
       vi.mocked(libraryApi.uploadDocument).mockResolvedValue(sampleDoc);
 
@@ -263,7 +264,7 @@ describe("Library and Skills UI", () => {
 
     it("opens edit modal, updates metadata, and explicitly closes modal on success", async () => {
       const user = userEvent.setup();
-      mockAuthUser = { id: "2", name: "Giảng viên", email: "teacher@pduni.edu.vn", role: "teacher" };
+      mockAuthUser = { id: "2", display_name: "Giảng viên", email: "teacher@pduni.edu.vn", role: "teacher" };
       vi.mocked(libraryApi.getDocuments).mockResolvedValue([sampleDoc]);
       vi.mocked(libraryApi.updateDocument).mockResolvedValue({
         ...sampleDoc,
@@ -428,7 +429,7 @@ describe("Library and Skills UI", () => {
   describe("AppShell discovery of Knowledge route", () => {
     it("includes Kho tri thức link in More navigation", async () => {
       const user = userEvent.setup();
-      mockAuthUser = { id: "2", name: "Giảng viên", email: "teacher@pduni.edu.vn", role: "teacher" };
+      mockAuthUser = { id: "2", display_name: "Giảng viên", email: "teacher@pduni.edu.vn", role: "teacher" };
 
       render(
         <MemoryRouter initialEntries={["/chat"]}>

@@ -139,6 +139,12 @@ const ChevronDownIcon = ({ size = 14, ...props }: IconProps) => (
   </BaseIcon>
 );
 
+const ChevronUpIcon = ({ size = 14, ...props }: IconProps) => (
+  <BaseIcon size={size} {...props}>
+    <path d="m18 15-6-6-6 6" />
+  </BaseIcon>
+);
+
 const MoreHorizontalIcon = ({ size = 16, ...props }: IconProps) => (
   <BaseIcon size={size} {...props}>
     <circle cx="12" cy="12" r="1.5" />
@@ -146,6 +152,14 @@ const MoreHorizontalIcon = ({ size = 16, ...props }: IconProps) => (
     <circle cx="5" cy="12" r="1.5" />
   </BaseIcon>
 );
+
+/** Shared look of the sidebar links, so the expanded "More" items read as part of the same list. */
+const sideNavClass = ({ isActive }: { isActive: boolean }) =>
+  `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${
+    isActive
+      ? "bg-brand-soft font-semibold text-brand-text"
+      : "text-fg-secondary hover:bg-brand-soft hover:text-brand-text"
+  }`;
 
 function isGenericTitle(title?: string): boolean {
   if (!title) return true;
@@ -268,7 +282,7 @@ export function AppShell() {
     (path) => location.pathname === path || location.pathname.startsWith(`${path}/`),
   );
 
-  // Phần A (Thêm...): drop và push down (đẩy Phần B - Gần đây lùi xuống)
+  // "Thêm..." expands the extra nav items in place; it opens by itself on one of their pages.
   const [isMoreOpen, setIsMoreOpen] = useState(() =>
     [
       "/contributors",
@@ -345,94 +359,63 @@ export function AppShell() {
             <span>{t("navDocuments")}</span>
           </NavLink>
 
-          {/* Thêm... (Phần A: drop & push down - Người đóng góp, Quản trị) */}
-          <div className="flex flex-col">
+          {/* Thêm...: expands the extra items in this same list; a small "Ẩn" at the end folds them back. */}
+          {isMoreOpen ? (
+            <>
+              <NavLink to="/knowledge" className={sideNavClass}>
+                <BookOpenIcon size={17} />
+                <span>{t("navKnowledge")}</span>
+              </NavLink>
+
+              <NavLink
+                to="/chat/career-universe"
+                className={sideNavClass}
+                title="Khám phá tiềm năng nghề nghiệp của bạn"
+              >
+                <OrbitIcon size={17} />
+                <span>{t("navCareerUniverse")}</span>
+              </NavLink>
+
+              <NavLink to="/contributors" className={sideNavClass}>
+                <UsersIcon size={17} />
+                <span>{t("navContributors")}</span>
+              </NavLink>
+
+              {isAdmin && (
+                <NavLink to="/admin" className={sideNavClass}>
+                  <ShieldCheckIcon size={17} />
+                  <span>{t("navAdmin")}</span>
+                </NavLink>
+              )}
+
+              <button
+                type="button"
+                onClick={() => setIsMoreOpen(false)}
+                aria-expanded="true"
+                className="ml-auto flex items-center gap-1 rounded-md px-2 py-1 text-[11px] text-muted-foreground transition-colors hover:text-brand-text focus-visible:ring-2 focus-visible:ring-ring cursor-pointer outline-none"
+              >
+                <ChevronUpIcon size={12} />
+                <span>{t("navLess")}</span>
+              </button>
+            </>
+          ) : (
             <button
               type="button"
-              onClick={() => setIsMoreOpen((prev) => !prev)}
-              aria-expanded={isMoreOpen}
-              className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-sm transition-colors cursor-pointer outline-none ${
-                isMoreActive && !isMoreOpen
+              onClick={() => setIsMoreOpen(true)}
+              aria-expanded="false"
+              className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-sm transition-colors cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                isMoreActive
                   ? "bg-brand-soft font-semibold text-brand-text"
                   : "text-fg-secondary hover:bg-brand-soft hover:text-brand-text"
               }`}
             >
-              <div className="flex items-center gap-3 min-w-0">
+              <div className="flex min-w-0 items-center gap-3">
                 <MoreHorizontalIcon size={17} />
                 <span className="truncate">{t("navMore")}</span>
               </div>
-              <ChevronDownIcon
-                size={14}
-                className={`opacity-60 transition-transform duration-200 ${
-                  isMoreOpen ? "rotate-180" : ""
-                }`}
-              />
+              <ChevronDownIcon size={14} className="opacity-60" />
             </button>
-
-            {/* Khi mở ra: Phần A nằm trong flow DOM sẽ tự động đẩy Phần B (Gần đây) lùi xuống */}
-            {isMoreOpen && (
-              <div className="mt-1 flex flex-col gap-1 pl-4 animate-in slide-in-from-top-1 duration-150">
-                <NavLink
-                  to="/knowledge"
-                  className={({ isActive }) =>
-                    `flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs transition-colors ${
-                      isActive
-                        ? "bg-brand-soft font-semibold text-brand-text"
-                        : "text-fg-secondary hover:bg-brand-soft hover:text-brand-text"
-                    }`
-                  }
-                >
-                  <BookOpenIcon size={15} />
-                  <span>{t("navKnowledge")}</span>
-                </NavLink>
-
-                <NavLink
-                  to="/chat/career-universe"
-                  className={({ isActive }) =>
-                    `flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs transition-colors ${
-                      isActive
-                        ? "bg-brand-soft font-semibold text-brand-text"
-                        : "text-fg-secondary hover:bg-brand-soft hover:text-brand-text"
-                    }`
-                  }
-                  title="Khám phá tiềm năng nghề nghiệp của bạn"
-                >
-                  <OrbitIcon size={15} />
-                  <span>{t("navCareerUniverse")}</span>
-                </NavLink>
-
-                <NavLink
-                  to="/contributors"
-                  className={({ isActive }) =>
-                    `flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs transition-colors ${
-                      isActive
-                        ? "bg-brand-soft font-semibold text-brand-text"
-                        : "text-fg-secondary hover:bg-brand-soft hover:text-brand-text"
-                    }`
-                  }
-                >
-                  <UsersIcon size={15} />
-                  <span>{t("navContributors")}</span>
-                </NavLink>
-
-                {isAdmin && (
-                  <NavLink
-                    to="/admin"
-                    className={({ isActive }) =>
-                      `flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs transition-colors ${
-                        isActive
-                          ? "bg-brand-soft font-semibold text-brand-text"
-                          : "text-fg-secondary hover:bg-brand-soft hover:text-brand-text"
-                      }`
-                    }
-                  >
-                    <ShieldCheckIcon size={15} />
-                    <span>{t("navAdmin")}</span>
-                  </NavLink>
-                )}
-              </div>
-            )}
-          </div>
+          )}
         </nav>
 
         {/* Section: GẦN ĐÂY (Recent) */}
@@ -514,7 +497,7 @@ export function AppShell() {
           {user && (
             <DropdownMenu>
               <DropdownMenuTrigger
-                aria-label={`Menu tài khoản ${user.name || user.email}`}
+                aria-label={`Menu tài khoản ${user.display_name || user.email}`}
                 className="flex w-full items-center gap-2.5 rounded-xl bg-muted px-2 py-1.5 text-left outline-none transition-colors hover:bg-brand-soft focus-visible:ring-2 focus-visible:ring-ring data-popup-open:bg-brand-soft cursor-pointer"
               >
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-soft text-brand-text font-bold text-xs">
@@ -522,7 +505,7 @@ export function AppShell() {
                 </div>
                 <div className="flex min-w-0 flex-1 flex-col">
                   <span className="truncate text-xs font-semibold text-foreground">
-                    {user.name || user.email}
+                    {user.display_name || user.email}
                   </span>
                   <span className="truncate text-[10px] text-muted-foreground">
                     {user.role === "teacher"

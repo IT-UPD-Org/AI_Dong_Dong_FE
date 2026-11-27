@@ -55,12 +55,15 @@ function reviewBody(approve: boolean, note?: string): RequestInit {
 
 export const adminApi = {
   // ---- Users ----------------------------------------------------------------
-  async getUsers(page = 1): Promise<User[]> {
-    const users = await apiClient<BEUser[]>(`/api/admin/users?p=${page}`);
+  /** One page of users; `userId` narrows the list to that exact user (0 or 1 result). */
+  async getUsers(page = 1, userId?: string | null): Promise<User[]> {
+    const query = new URLSearchParams({ p: String(page) });
+    if (userId) query.set('user_id', userId);
+    const users = await apiClient<BEUser[]>(`/api/admin/users?${query}`);
     return users.map(toUser);
   },
 
-  /** Edit any user (an admin cannot change their own role or state). Only the given fields change. */
+  /** Edit any user (an admin cannot change their own role or state). Only the given fields change; a blank `display_name` clears it. */
   async updateUser(userId: string, changes: AdminUserUpdate): Promise<User> {
     return toUser(
       await apiClient<BEUser>(`/api/admin/users/${userId}`, {
@@ -142,8 +145,14 @@ export const adminApi = {
 
   // ---- Chats ----------------------------------------------------------------
   /** Every user's conversations, newest first, 10 per page, with their owner. */
-  async getAllChats(page = 1): Promise<AdminConversation[]> {
-    const chats = await apiClient<AdminConversationSummary[]>(`/api/admin/chats?p=${page}`);
-    return chats.map((c) => ({ ...toConversation(c), userId: String(c.user_id) }));
+  async getAllChats(page = 1, userId?: string | null): Promise<AdminConversation[]> {
+    const query = new URLSearchParams({ p: String(page) });
+    if (userId) query.set('user_id', userId);
+    const chats = await apiClient<AdminConversationSummary[]>(`/api/admin/chats?${query}`);
+    return chats.map((c) => ({
+      ...toConversation(c),
+      userId: String(c.user_id),
+      userName: c.user_name ?? null,
+    }));
   },
 };

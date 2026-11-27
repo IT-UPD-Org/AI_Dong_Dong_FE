@@ -13,7 +13,10 @@ export type UserState = 'inactive' | 'pending' | 'active' | 'disable';
 export interface BEUser {
   id: string;
   role: UserRole;
-  name: string;
+  /** The name to show everywhere (the person's own choice, else their account name). */
+  display_name?: string;
+  /** Older backends still send `name`; only read as a fallback in `toUser`. */
+  name?: string;
   email: string;
   first_use: string | null;
   state: UserState;
@@ -27,7 +30,8 @@ export interface BEUser {
 export interface User {
   id: string;
   email: string;
-  name: string;
+  /** The name shown across the app. */
+  display_name: string;
   role: UserRole;
   credits: number;
   storage_used: number;
@@ -38,7 +42,8 @@ export interface User {
 
 /** `PATCH /api/admin/users/{id}`: only the sent fields change. */
 export interface AdminUserUpdate {
-  name?: string;
+  /** Blank or null clears the custom display name. */
+  display_name?: string | null;
   email?: string;
   role?: UserRole;
   state?: UserState;
@@ -148,6 +153,8 @@ export interface ConversationSummary {
 /** `AdminChatConversationListResponse` from `GET /api/admin/chats`. */
 export interface AdminConversationSummary extends ConversationSummary {
   user_id: string;
+  /** Owner's display name; null when the user was deleted. */
+  user_name: string | null;
 }
 
 /** `ChatConversationResponse` from `GET /api/chats/{id}`. */
@@ -206,6 +213,8 @@ export interface Conversation {
 /** Conversation in the admin list, with its owner. */
 export interface AdminConversation extends Conversation {
   userId: string;
+  /** Owner's display name; null when the user was deleted. */
+  userName: string | null;
 }
 
 // ---------------------------------------------------------------------------

@@ -36,7 +36,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    Sentry.setUser({ id: user.id, username: user.name, email: user.email });
+    Sentry.setUser({ id: user.id, username: user.display_name, email: user.email });
 
     if (trackedUserId.current !== user.id) {
       trackedUserId.current = user.id;
