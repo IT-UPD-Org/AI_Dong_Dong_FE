@@ -35,7 +35,7 @@ function signIn(state: UserState) {
   auth.value.user = {
     id: "1",
     email: "a@pduni.edu.vn",
-    name: "An",
+    display_name: "An",
     role: "student",
     credits: 1000,
     storage_used: 0,

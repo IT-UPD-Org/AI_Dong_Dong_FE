@@ -28,7 +28,7 @@ export interface CareerNode {
   occupationId?: string;
   icon?: string;
   description: string;
-  
+
   // Coordinates in radial graph
   x: number;
   y: number;

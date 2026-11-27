@@ -1,31 +1,47 @@
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 
 /**
  * Load one page of an admin list. The backend has no total count, so a page
  * shorter than `pageSize` is treated as the last page.
  */
-export function usePagedList<T>(load: (page: number) => Promise<T[]>, pageSize: number) {
+export function usePagedList<T>(load: (page: number) => Promise<T[]>, pageSize: number, resetKey?: string | null) {
   const [page, setPage] = useState(1);
+  // A new filter starts again from page 1 (adjusted while rendering, so no request is made for the old page).
+  const [seenKey, setSeenKey] = useState(resetKey);
+  if (seenKey !== resetKey) {
+    setSeenKey(resetKey);
+    setPage(1);
+  }
   const [items, setItems] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // Only the newest request may write results, so a slow older response can't overwrite a newer one.
+  const latest = useRef(0);
+
   const reload = useCallback(async () => {
+    const request = ++latest.current;
     setLoading(true);
     try {
-      setItems(await load(page));
+      const result = await load(page);
+      if (request !== latest.current) return;
+      setItems(result);
       setError("");
     } catch (err) {
+      if (request !== latest.current) return;
       setError((err as Error).message);
       setItems([]);
     } finally {
-      setLoading(false);
+      if (request === latest.current) setLoading(false);
     }
   }, [load, page]);
 
   useEffect(() => {
     reload();
+    return () => {
+      latest.current++;
+    };
   }, [reload]);
 
   return {
@@ -38,6 +54,13 @@ export function usePagedList<T>(load: (page: number) => Promise<T[]>, pageSize: 
     reload,
     hasNext: items.length >= pageSize,
   };
+}
+
+/** Link to an admin tab, optionally about one user (`user_id` means "this user" on the users and chats tabs). */
+export function adminTabUrl(tab: string, userId?: string | null): string {
+  const query = new URLSearchParams({ tab });
+  if (userId) query.set("user_id", userId);
+  return `/admin?${query}`;
 }
 
 export function Pager({

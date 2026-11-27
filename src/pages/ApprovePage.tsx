@@ -402,7 +402,7 @@ function BugReportPanel() {
           title: title.trim(),
           description: description.trim(),
           affectedPage: affectedPage.trim(),
-          name: user?.name,
+          name: user?.display_name,
           email: user?.email,
         }));
       setTitle("");

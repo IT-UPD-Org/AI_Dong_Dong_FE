@@ -12,7 +12,8 @@ export function toUser(user: BEUser): User {
   return {
     id: String(user.id),
     email: user.email,
-    name: user.name || user.email.split('@')[0],
+    // `name` is only a fallback for backends that haven't switched to display_name yet.
+    display_name: user.display_name?.trim() || user.name?.trim() || user.email.split('@')[0],
     role: user.role,
     credits: user.credits,
     storage_used: user.storage_used,
@@ -84,7 +85,8 @@ export const authApi = {
     return toUser(await apiClient<BEUser>('/api/users/@me'));
   },
 
-  async updateProfile(changes: { name?: string; email?: string }): Promise<User> {
+  /** Blank or null `display_name` clears the custom name. */
+  async updateProfile(changes: { display_name?: string | null; email?: string }): Promise<User> {
     return toUser(
       await apiClient<BEUser>('/api/users/@me', {
         method: 'PATCH',

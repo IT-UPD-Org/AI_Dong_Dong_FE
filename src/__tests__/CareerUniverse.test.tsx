@@ -52,7 +52,7 @@ vi.mock("../components/layout/DocumentProcessingNotifications", () => ({
 const student = {
   id: "1",
   email: "student@pduni.edu.vn",
-  name: "Sinh Viên IT",
+  display_name: "Sinh Viên IT",
   role: "student",
 };
 

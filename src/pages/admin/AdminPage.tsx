@@ -1,15 +1,19 @@
-import { Bot, FolderOpen, Inbox, MessagesSquare, Server, Users } from "lucide-react";
+import { BookOpen, Bot, FolderOpen, Inbox, MessagesSquare, Server, Sparkles, Users } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import { ChatsTab } from "./ChatsTab";
 import { FilesTab } from "./FilesTab";
+import { LibraryTab } from "./LibraryTab";
 import { ModelsTab } from "./ModelsTab";
 import { ProvidersTab } from "./ProvidersTab";
 import { RequestsTab } from "./RequestsTab";
+import { SkillsTab } from "./SkillsTab";
 import { UsersTab } from "./UsersTab";
 
 const TABS = [
   { id: "users", label: "Người dùng", Icon: Users, Component: UsersTab },
   { id: "requests", label: "Yêu cầu", Icon: Inbox, Component: RequestsTab },
+  { id: "library", label: "Kho tài liệu", Icon: BookOpen, Component: LibraryTab },
+  { id: "skills", label: "Skills hệ thống", Icon: Sparkles, Component: SkillsTab },
   { id: "files", label: "Tệp", Icon: FolderOpen, Component: FilesTab },
   { id: "chats", label: "Trò chuyện", Icon: MessagesSquare, Component: ChatsTab },
   { id: "models", label: "Models", Icon: Bot, Component: ModelsTab },
