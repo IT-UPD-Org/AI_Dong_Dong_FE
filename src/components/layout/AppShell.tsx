@@ -153,6 +153,13 @@ const MoreHorizontalIcon = ({ size = 16, ...props }: IconProps) => (
   </BaseIcon>
 );
 
+const MapPinIcon = ({ size, ...props }: IconProps) => (
+  <BaseIcon size={size} {...props}>
+    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+    <circle cx="12" cy="10" r="3" />
+  </BaseIcon>
+);
+
 /** Shared look of the sidebar links, so the expanded "More" items read as part of the same list. */
 const sideNavClass = ({ isActive }: { isActive: boolean }) =>
   `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${
@@ -273,6 +280,7 @@ export function AppShell() {
     });
 
   const location = useLocation();
+  const isMapRoute = location.pathname === "/map";
   const isMoreActive = [
     "/contributors",
     "/admin",
@@ -281,6 +289,7 @@ export function AppShell() {
   ].some(
     (path) => location.pathname === path || location.pathname.startsWith(`${path}/`),
   );
+  const isMobileMoreActive = isMoreActive || isMapRoute;
 
   // "Thêm..." expands the extra nav items in place; it opens by itself on one of their pages.
   const [isMoreOpen, setIsMoreOpen] = useState(() =>
@@ -329,6 +338,21 @@ export function AppShell() {
         </button>
 
         <nav className="flex shrink-0 flex-col gap-1">
+          {/* Bản đồ trường */}
+          <NavLink
+            to="/map"
+            className={({ isActive }) =>
+              `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${
+                isActive
+                  ? "bg-brand-soft font-semibold text-brand-text"
+                  : "text-fg-secondary hover:bg-brand-soft hover:text-brand-text"
+              }`
+            }
+          >
+            <MapPinIcon size={17} />
+            <span>{t("navMap")}</span>
+          </NavLink>
+
           {/* Lịch sử */}
           <NavLink
             to="/history"
@@ -576,7 +600,13 @@ export function AppShell() {
       <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
         {/* Main content — pb-16 on mobile to clear the bottom nav */}
         <main className="flex-1 min-h-0 overflow-y-auto pb-16 md:pb-0">
-          <Outlet />
+          {isMapRoute ? (
+            <div className="h-full p-3 md:p-4">
+              <Outlet />
+            </div>
+          ) : (
+            <Outlet />
+          )}
         </main>
       </div>
 
@@ -622,7 +652,7 @@ export function AppShell() {
         <DropdownMenu>
           <DropdownMenuTrigger
             className={`flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] transition-colors cursor-pointer outline-none ${
-              isMoreActive
+              isMobileMoreActive
                 ? "text-brand-text font-semibold"
                 : "text-muted-foreground hover:text-brand-text"
             }`}
@@ -636,6 +666,17 @@ export function AppShell() {
             sideOffset={8}
             className="w-48 rounded-xl border border-border bg-elevated p-1.5 shadow-xl text-foreground z-50 animate-in fade-in-0 zoom-in-95"
           >
+            <DropdownMenuItem
+              render={<NavLink to="/map" />}
+              className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors cursor-pointer ${
+                isMapRoute
+                  ? "bg-brand-soft font-semibold text-brand-text"
+                  : "text-fg-secondary hover:bg-brand-soft hover:text-brand-text"
+              }`}
+            >
+              <MapPinIcon size={16} />
+              <span>{t("navMap")}</span>
+            </DropdownMenuItem>
             <DropdownMenuItem
               render={<NavLink to="/knowledge" />}
               className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors cursor-pointer ${

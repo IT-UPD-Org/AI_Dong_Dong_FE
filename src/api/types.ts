@@ -162,6 +162,53 @@ export interface ConversationDetail extends ConversationSummary {
   messages: BEMessage[];
 }
 
+export type WayfindingStatus = 'ok' | 'ambiguous' | 'not_found' | 'no_path' | 'not_wayfinding';
+export type WayfindingStepKind = 'start' | 'corridor' | 'stair' | 'transfer' | 'arrive';
+
+export interface WayfindingNodeRef {
+  id: string;
+  code: string | null;
+  name: string;
+  area_id: string;
+  area_name: string;
+  floor_level: number;
+  floor_name: string;
+}
+
+export interface WayfindingStep {
+  step_index: number;
+  kind: WayfindingStepKind;
+  area_id: string;
+  area_name: string;
+  floor_level: number;
+  floor_name: string;
+  node_id: string;
+  label: string;
+  instruction: string;
+}
+
+export interface WayfindingCandidate {
+  id: string;
+  code: string | null;
+  name: string;
+  area_id: string;
+  area_name: string;
+  floor_level: number;
+  floor_name: string;
+}
+
+export interface WayfindingRoutePayload {
+  status: WayfindingStatus;
+  answer: string;
+  start_assumed: boolean;
+  start: WayfindingNodeRef | null;
+  destination: WayfindingNodeRef | null;
+  steps: WayfindingStep[];
+  candidates: WayfindingCandidate[];
+  error_code: string | null;
+  error_message: string | null;
+}
+
 export interface ChatMessage {
   id: string;
   role: MessageRole;
@@ -175,6 +222,8 @@ export interface ChatMessage {
   hidden?: boolean;
   /** A streamed reply's steps (text, then that round's tool calls), kept while it is shown live. */
   steps?: ReplyStep[];
+  /** Structured campus wayfinding route attached by BE deterministic pathfinding. */
+  wayfinding?: WayfindingRoutePayload | null;
 }
 
 export interface SendMessagePayload {

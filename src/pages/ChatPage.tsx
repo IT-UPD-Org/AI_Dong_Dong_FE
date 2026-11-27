@@ -20,7 +20,8 @@ import { PreviewFile, getFileExtension } from "../lib/filePreviewUtils";
 import { buildApiUrl } from "../api/client";
 import { documentApi } from "../api/document.api";
 import { chatApi } from "../api/chat.api";
-import type { ChatMessage, ChatStreamChunk, Document } from "../api/types";
+import { wayfindingApi } from "../api/wayfinding.api";
+import type { ChatMessage, ChatStreamChunk, Document, WayfindingCandidate } from "../api/types";
 import { useLanguage } from "../contexts/LanguageContext";
 
 type Reaction = "like" | "dislike";
@@ -397,6 +398,51 @@ export function ChatPage() {
     }
   }
 
+  async function runUserQuery(
+    payload: {
+      message: string;
+      conversationId?: string;
+      attachmentIds?: string[];
+      mentionedDocumentIds?: string[];
+      userMsgId?: string;
+    },
+    assistantMsgId: string,
+  ) {
+    const hasFiles = Boolean(payload.attachmentIds?.length || payload.mentionedDocumentIds?.length);
+    if (!hasFiles && payload.message.trim()) {
+      setLoading(true);
+      setError("");
+      try {
+        const wayfinding = await wayfindingApi.query({
+          content: payload.message,
+          modelLevel: level,
+        });
+        if (wayfinding.status !== "not_wayfinding") {
+          setMsgs((prev) =>
+            prev.map((msg) =>
+              msg.id === assistantMsgId
+                ? {
+                    ...msg,
+                    content: wayfinding.answer,
+                    status: "completed",
+                    wayfinding,
+                  }
+                : msg,
+            ),
+          );
+          setLoading(false);
+          markNearBottom();
+          return;
+        }
+      } catch {
+        // Fallback seamlessly to the standard chat stream if wayfinding is unavailable.
+      }
+      setLoading(false);
+    }
+
+    await processStream(payload, assistantMsgId);
+  }
+
   async function submit(e?: FormEvent) {
     e?.preventDefault();
     if (
@@ -429,12 +475,35 @@ export function ChatPage() {
       { id: assistantMsgId, role: "assistant", content: "", status: "idle" },
     ]);
 
-    await processStream(
+    await runUserQuery(
       {
         message: text,
         conversationId: conversationIdRef.current,
         attachmentIds: currentAttachments,
         mentionedDocumentIds: currentMentions,
+        userMsgId,
+      },
+      assistantMsgId,
+    );
+  }
+
+  async function handleSelectWayfindingCandidate(candidate: WayfindingCandidate) {
+    if (loading || streamControllerRef.current) return;
+    const label = candidate.code || candidate.name;
+    const clarifiedQuery = `Đường đi tới ${label} (${candidate.floor_name}, ${candidate.area_name})`;
+    const assistantMsgId = crypto.randomUUID();
+    const userMsgId = crypto.randomUUID();
+
+    setMsgs((m) => [
+      ...m,
+      { id: userMsgId, role: "user", content: clarifiedQuery },
+      { id: assistantMsgId, role: "assistant", content: "", status: "idle" },
+    ]);
+
+    await runUserQuery(
+      {
+        message: clarifiedQuery,
+        conversationId: conversationIdRef.current,
         userMsgId,
       },
       assistantMsgId,
@@ -568,7 +637,7 @@ export function ChatPage() {
       { id: assistantMsgId, role: "assistant", content: "", status: "idle" },
     ]);
 
-    await processStream(
+    await runUserQuery(
       {
         message: newContent,
         conversationId: conversationIdRef.current,
@@ -591,7 +660,7 @@ export function ChatPage() {
       { id: assistantMsgId, role: "assistant", content: "", status: "idle" },
     ]);
 
-    await processStream(
+    await runUserQuery(
       {
         message: prevUserMsg.content,
         conversationId: conversationIdRef.current,
@@ -701,6 +770,7 @@ export function ChatPage() {
                       regenerateDisabled={loading}
                       onPreviewFile={(f) => setPreviewFile(f)}
                       attachedFiles={getAttachedFilesForMessage(message)}
+                      onSelectWayfindingCandidate={handleSelectWayfindingCandidate}
                     />
 
                     {/* Feedback panel: opens under a reply after like/dislike or report */}

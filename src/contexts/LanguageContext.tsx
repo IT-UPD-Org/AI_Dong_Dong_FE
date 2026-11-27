@@ -17,6 +17,7 @@ const translations: Record<Language, Translations> = {
     // Nav & Shell
     appName: "IT UPD GenAI",
     navChat: "Trò chuyện",
+    navMap: "Bản đồ trường",
     navHistory: "Lịch sử",
     navKnowledge: "Kho tri thức",
     navDocuments: "Tài liệu",
@@ -121,6 +122,7 @@ const translations: Record<Language, Translations> = {
     // Nav & Shell
     appName: "IT UPD GenAI",
     navChat: "Chat",
+    navMap: "Campus Map",
     navHistory: "History",
     navKnowledge: "Knowledge Base",
     navDocuments: "Documents",

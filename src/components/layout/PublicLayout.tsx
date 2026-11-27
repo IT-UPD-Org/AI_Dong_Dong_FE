@@ -35,6 +35,7 @@ export function PublicLayout() {
 
   const navLinks = [
     { to: "/", label: t("home") },
+    { to: "/map", label: t("navMap") },
     { to: "/donate", label: t("donate") },
     { to: "/approve", label: t("approveAccount") },
   ];

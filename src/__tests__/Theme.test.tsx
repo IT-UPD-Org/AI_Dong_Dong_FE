@@ -68,7 +68,7 @@ describe('global theme controls', () => {
   it('uses one class-based persisted provider with system preference enabled', () => {
     render(<ThemeProvider><div>child</div></ThemeProvider>);
     const props = JSON.parse(screen.getByTestId('theme-provider').getAttribute('data-props') || '{}');
-    expect(props).toMatchObject({ attribute: 'class', storageKey: 'itupd-theme', defaultTheme: 'system', enableSystem: true });
+    expect(props).toMatchObject({ attribute: 'class', storageKey: 'itupd-theme', defaultTheme: 'light', enableSystem: true });
     expect(screen.getByText('child')).toBeInTheDocument();
   });
 });

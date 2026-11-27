@@ -21,6 +21,18 @@ import { ProjectTeamPage } from "../pages/ProjectTeamPage";
 import { CreateAccountPage } from "../pages/CreateAccountPage";
 import { ApprovePage } from "../pages/ApprovePage";
 import { CareerUniversePage } from "../pages/CareerUniversePage";
+import { MapPage } from "../pages/MapPage";
+import { useAuth } from "../contexts/AuthContext";
+
+function MapShellSwitch() {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated ? <AppShell /> : <PublicLayout />;
+}
+
+function MapRoutePage() {
+  const { isAuthenticated } = useAuth();
+  return <MapPage embedded={isAuthenticated} />;
+}
 
 /**
  * Shared element for `/chat` (new chat) and `/c/:id` (existing chat).
@@ -70,6 +82,11 @@ export function AppRouter() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
         </Route>
+      </Route>
+
+      {/* BẢN ĐỒ CAMPUS: mở được cả khi chưa đăng nhập và khi đã vào AppShell */}
+      <Route element={<MapShellSwitch />}>
+        <Route path="/map" element={<MapRoutePage />} />
       </Route>
 
       {/* PROTECTED ROUTES: CHỈ TRUY CẬP ĐƯỢC SAU KHI ĐƯỢC CẤP QUYỀN (PERMISSION) */}

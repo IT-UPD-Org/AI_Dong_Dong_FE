@@ -1,4 +1,7 @@
-import { ThemeProvider as NextThemesProvider, type ThemeProviderProps } from "next-themes";
+import {
+  ThemeProvider as NextThemesProvider,
+  type ThemeProviderProps,
+} from "next-themes";
 
 /** localStorage key shared with the pre-paint script in index.html. */
 export const THEME_STORAGE_KEY = "itupd-theme";
@@ -13,7 +16,7 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
     <NextThemesProvider
       attribute="class"
       storageKey={THEME_STORAGE_KEY}
-      defaultTheme="system"
+      defaultTheme="light"
       enableSystem
       {...props}
     >
