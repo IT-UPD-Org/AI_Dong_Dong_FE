@@ -91,7 +91,7 @@ export const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
       return (
         <div
           ref={ref}
-          className="ml-auto w-full max-w-[85%] sm:max-w-[78%] rounded-2xl rounded-br-sm bg-muted p-3.5 transition-colors"
+          className="ml-auto w-full min-w-0 max-w-full sm:max-w-[78%] rounded-2xl rounded-br-sm bg-muted p-3.5 transition-colors"
         >
           <textarea
             ref={textareaRef}
@@ -99,25 +99,27 @@ export const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
             onChange={(e) => {
               setEditContent(e.target.value);
               e.target.style.height = "auto";
-              e.target.style.height = `${e.target.scrollHeight}px`;
+              e.target.style.height = `${Math.min(e.target.scrollHeight, 192)}px`;
             }}
-            className="w-full resize-none bg-transparent text-[14px] sm:text-[14.5px] leading-relaxed text-foreground outline-none"
+            className="max-h-48 w-full resize-none overflow-y-auto bg-transparent text-base sm:text-[14.5px] leading-relaxed text-foreground outline-none"
             rows={1}
           />
-          <div className="mt-2.5 flex justify-end gap-2">
+          <div className="mt-2.5 flex flex-wrap justify-end gap-2">
             <button
+              type="button"
               onClick={() => {
                 setIsEditing(false);
                 setEditContent(message.content);
               }}
-              className="rounded-lg bg-surface border border-border px-3 py-1.5 text-xs font-semibold text-fg-secondary hover:bg-hover hover:text-foreground cursor-pointer"
+              className="min-h-[38px] rounded-lg bg-surface border border-border px-3.5 py-1.5 text-xs font-semibold text-fg-secondary hover:bg-hover hover:text-foreground cursor-pointer"
             >
               {t("cancel")}
             </button>
             <button
+              type="button"
               onClick={handleSaveEdit}
               disabled={!editContent.trim()}
-              className="rounded-lg bg-brand px-3.5 py-1.5 text-xs font-semibold text-brand-foreground hover:bg-brand-hover disabled:opacity-50 cursor-pointer"
+              className="min-h-[38px] rounded-lg bg-brand px-4 py-1.5 text-xs font-semibold text-brand-foreground hover:bg-brand-hover disabled:opacity-50 cursor-pointer"
             >
               {t("saveAndResend")}
             </button>
@@ -127,33 +129,34 @@ export const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
     }
 
     return (
-      <div className={`group flex ${isUser ? "justify-end" : "justify-start"}`}>
+      <div className={`group flex w-full min-w-0 ${isUser ? "justify-end" : "justify-start"}`}>
         <div
           ref={ref}
           onClick={isUser ? () => setExpanded((v) => !v) : undefined}
-          className={`relative transition-colors ${
+          className={`relative min-w-0 transition-colors ${
             isUser
-              ? `max-w-[85%] sm:max-w-[78%] cursor-pointer select-none rounded-2xl rounded-br-sm bg-muted px-4.5 py-3.5 text-[14px] sm:text-[14.5px] leading-relaxed text-foreground`
-              : `max-w-[95%] sm:max-w-[90%] py-1 text-[14.5px] sm:text-[15px] leading-[1.65] text-foreground`
+              ? `max-w-[88%] sm:max-w-[78%] cursor-pointer select-none rounded-2xl rounded-br-sm bg-muted px-3.5 sm:px-4.5 py-2.5 sm:py-3.5 text-[14px] sm:text-[14.5px] leading-relaxed text-foreground`
+              : `w-full max-w-full sm:max-w-[92%] py-1 text-[14.5px] sm:text-[15px] leading-[1.65] text-foreground`
           }`}
         >
           {isUser && onEdit && !regenerateDisabled && (
             <button
+              type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 setIsEditing(true);
               }}
-              className="absolute -left-9 top-2.5 hidden rounded-full p-1.5 text-muted-foreground hover:bg-hover hover:text-foreground group-hover:flex cursor-pointer"
+              className="absolute -left-10 top-2 hidden size-9 items-center justify-center rounded-full text-muted-foreground opacity-0 transition-opacity hover:bg-hover hover:text-foreground focus-visible:opacity-100 sm:flex sm:group-hover:opacity-100 cursor-pointer"
               title={t("editMessage")}
               aria-label={t("editMessage")}
             >
-              <Edit2 size={13} />
+              <Edit2 size={14} />
             </button>
           )}
 
           {/* Attached Files (User message or Assistant message) */}
           {attachedFiles.length > 0 && (
-            <div className={`mb-2.5 flex flex-col gap-2 ${isUser ? "max-w-full" : "max-w-md"}`}>
+            <div className={`mb-2.5 flex w-full min-w-0 flex-col gap-2 ${isUser ? "max-w-full" : "max-w-full sm:max-w-md"}`}>
               {attachedFiles.map((file, idx) => (
                 <FileCard
                   key={file.id || idx}
@@ -167,22 +170,39 @@ export const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
 
           {/* User messages: plain text with whitespace preserved */}
           {isUser ? (
-            <div
-              className={`whitespace-pre-wrap [overflow-wrap:anywhere] ${
-                !expanded ? "line-clamp-4" : ""
-              }`}
-            >
-              {message.content}
-            </div>
+            <>
+              <div
+                className={`whitespace-pre-wrap [overflow-wrap:anywhere] ${
+                  !expanded ? "line-clamp-4" : ""
+                }`}
+              >
+                {message.content}
+              </div>
+              {onEdit && !regenerateDisabled && expanded && (
+                <div className="mt-2 flex justify-end sm:hidden">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsEditing(true);
+                    }}
+                    className="inline-flex min-h-[34px] items-center gap-1 rounded-lg bg-surface/80 px-2.5 py-1 text-[11px] font-medium text-fg-secondary hover:bg-hover hover:text-foreground cursor-pointer"
+                  >
+                    <Edit2 size={12} />
+                    <span>{t("editMessage")}</span>
+                  </button>
+                </div>
+              )}
+            </>
           ) : /* AI replies: each step's text (SafeMarkdown), then the tools it called */
           replySteps.some((step) => step.content || step.toolCalls.length) ? (
-            <div className="flex flex-col gap-1.5">
+            <div className="flex w-full min-w-0 flex-col gap-1.5">
               {replySteps.map((step, i) => (
-                <div key={step.id}>
+                <div key={step.id} className="w-full min-w-0">
                   {step.content && (
                     <SafeMarkdown
                       content={step.content}
-                      className="min-w-0 [overflow-wrap:anywhere]"
+                      className="min-w-0 max-w-full [overflow-wrap:anywhere]"
                       onPreviewFile={onPreviewFile}
                     />
                   )}
@@ -221,18 +241,18 @@ export const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
             (!message.status ||
               message.status === "completed" ||
               message.status === "error") && (
-              <div className="mt-2.5 flex items-center gap-1 text-muted-foreground">
+              <div className="mt-2.5 flex flex-wrap items-center gap-1 text-muted-foreground">
                 {fullText && (
                   <button
                     type="button"
                     title={copiedMessage ? t("copySuccess") : "Sao chép câu trả lời"}
                     aria-label="Sao chép câu trả lời"
                     onClick={handleCopyMessage}
-                    className={`rounded-md p-1.5 transition-colors hover:bg-hover hover:text-foreground cursor-pointer ${
+                    className={`flex size-9 sm:size-8 items-center justify-center rounded-lg transition-colors hover:bg-hover hover:text-foreground cursor-pointer ${
                       copiedMessage ? "bg-active text-brand-text" : ""
                     }`}
                   >
-                    {copiedMessage ? <Check size={14} className="text-brand-text" /> : <Copy size={14} />}
+                    {copiedMessage ? <Check size={15} className="text-brand-text" /> : <Copy size={15} />}
                   </button>
                 )}
 
@@ -242,11 +262,11 @@ export const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
                     title={t("like")}
                     aria-label={t("like")}
                     onClick={onLike}
-                    className={`rounded-md p-1.5 transition-colors hover:bg-hover hover:text-foreground cursor-pointer ${
+                    className={`flex size-9 sm:size-8 items-center justify-center rounded-lg transition-colors hover:bg-hover hover:text-foreground cursor-pointer ${
                       reaction === "like" ? "bg-active text-brand-text" : ""
                     }`}
                   >
-                    <ThumbsUp size={14} />
+                    <ThumbsUp size={15} />
                   </button>
                 )}
 
@@ -256,11 +276,11 @@ export const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
                     title={t("dislike")}
                     aria-label={t("dislike")}
                     onClick={onDislike}
-                    className={`rounded-md p-1.5 transition-colors hover:bg-hover hover:text-foreground cursor-pointer ${
+                    className={`flex size-9 sm:size-8 items-center justify-center rounded-lg transition-colors hover:bg-hover hover:text-foreground cursor-pointer ${
                       reaction === "dislike" ? "bg-active text-destructive" : ""
                     }`}
                   >
-                    <ThumbsDown size={14} />
+                    <ThumbsDown size={15} />
                   </button>
                 )}
 
@@ -271,9 +291,9 @@ export const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
                     aria-label={t("regenerate")}
                     onClick={onRegenerate}
                     disabled={regenerateDisabled}
-                    className="rounded-md p-1.5 transition-colors hover:bg-hover hover:text-foreground disabled:opacity-30 cursor-pointer"
+                    className="flex size-9 sm:size-8 items-center justify-center rounded-lg transition-colors hover:bg-hover hover:text-foreground disabled:opacity-30 cursor-pointer"
                   >
-                    <RotateCcw size={14} />
+                    <RotateCcw size={15} />
                   </button>
                 )}
                 {onReport && (
@@ -282,9 +302,9 @@ export const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
                     title={t("report")}
                     aria-label={t("report")}
                     onClick={onReport}
-                    className="rounded-md p-1.5 transition-colors hover:bg-hover hover:text-foreground cursor-pointer"
+                    className="flex size-9 sm:size-8 items-center justify-center rounded-lg transition-colors hover:bg-hover hover:text-foreground cursor-pointer"
                   >
-                    <Flag size={14} />
+                    <Flag size={15} />
                   </button>
                 )}
               </div>

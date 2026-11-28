@@ -101,21 +101,21 @@ export function UsersTab() {
   }
 
   return (
-    <section>
+    <section className="min-w-0">
       <p className="mb-4 text-sm text-muted-foreground">
         Quản lý mọi tài khoản: vai trò, trạng thái và credits. Duyệt yêu cầu cấp quyền ở thẻ Yêu cầu.
       </p>
       <ListState loading={list.loading} error={list.error} empty={list.items.length === 0} emptyText="Chưa có người dùng.">
-        <div className="rounded-2xl border border-border bg-card">
-          <Table>
+        <div className="overflow-x-auto rounded-2xl border border-border bg-card">
+          <Table className="min-w-[760px]">
             <TableHeader>
               <TableRow>
-                <TableHead>Tên</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Vai trò</TableHead>
-                <TableHead>Dung lượng</TableHead>
-                <TableHead>Credits</TableHead>
-                <TableHead className="text-right">Trạng thái</TableHead>
+                <TableHead className="px-3 sm:px-4">Tên</TableHead>
+                <TableHead className="px-3">Email</TableHead>
+                <TableHead className="px-3">Vai trò</TableHead>
+                <TableHead className="px-3">Dung lượng</TableHead>
+                <TableHead className="px-3">Credits</TableHead>
+                <TableHead className="px-3 sm:px-4 text-right">Trạng thái</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -124,18 +124,18 @@ export function UsersTab() {
                 const isMe = me?.id === user.id;
                 return (
                   <TableRow key={user.id}>
-                    <TableCell className="font-medium text-foreground">
+                    <TableCell className="px-3 sm:px-4 font-medium text-foreground">
                       <button
                         type="button"
                         onClick={() => openUser(user.id)}
-                        className="cursor-pointer rounded text-left font-medium text-foreground underline-offset-2 hover:text-brand-text hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+                        className="cursor-pointer rounded py-1 text-left font-medium text-foreground underline-offset-2 hover:text-brand-text hover:underline focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         {user.display_name}
                       </button>
                       {isMe && <span className="ml-1.5 text-xs font-normal text-muted-foreground">(bạn)</span>}
                     </TableCell>
-                    <TableCell className="text-muted-foreground">{user.email}</TableCell>
-                    <TableCell>
+                    <TableCell className="px-3 text-muted-foreground">{user.email}</TableCell>
+                    <TableCell className="px-3">
                       <select
                         value={user.role}
                         disabled={busy}
@@ -143,7 +143,7 @@ export function UsersTab() {
                           const role = e.target.value as UserRole;
                           if (role !== user.role) void update(user, { role }, `Đã đổi vai trò của ${user.display_name}.`);
                         }}
-                        className="rounded-md border border-border bg-field text-foreground px-2 py-1 text-sm disabled:opacity-60"
+                        className="min-h-9 rounded-md border border-border bg-field text-foreground px-2.5 py-1 text-sm disabled:opacity-60"
                       >
                         {(Object.keys(ROLE_LABEL) as UserRole[]).map((role) => (
                           <option key={role} value={role} className="bg-field text-foreground">
@@ -152,8 +152,8 @@ export function UsersTab() {
                         ))}
                       </select>
                     </TableCell>
-                    <TableCell className="text-foreground">{formatBytes(user.storage_used)}</TableCell>
-                    <TableCell>
+                    <TableCell className="px-3 text-foreground">{formatBytes(user.storage_used)}</TableCell>
+                    <TableCell className="px-3">
                       <input
                         key={`${user.id}-${user.credits}`}
                         type="number"
@@ -166,10 +166,10 @@ export function UsersTab() {
                         onKeyDown={(e) => {
                           if (e.key === "Enter") e.currentTarget.blur();
                         }}
-                        className="w-24 rounded-md border border-border bg-field text-foreground px-2 py-1 text-sm outline-none focus:border-brand-bright"
+                        className="min-h-9 w-24 rounded-md border border-border bg-field text-foreground px-2 py-1 text-sm outline-none focus:border-brand-bright"
                       />
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="px-3 sm:px-4 text-right">
                       <select
                         value={user.state}
                         disabled={busy}
@@ -178,7 +178,7 @@ export function UsersTab() {
                           if (state !== user.state)
                             void update(user, { state }, `${user.display_name}: ${STATE_LABEL[state]}.`);
                         }}
-                        className={`rounded-full border px-3 py-1 text-xs font-semibold cursor-pointer disabled:opacity-60 ${STATE_STYLE[user.state]}`}
+                        className={`min-h-9 rounded-full border px-3 py-1 text-xs font-semibold cursor-pointer disabled:opacity-60 ${STATE_STYLE[user.state]}`}
                       >
                         {(Object.keys(STATE_LABEL) as UserState[]).map((state) => (
                           <option key={state} value={state} className="bg-field text-foreground">
@@ -197,7 +197,7 @@ export function UsersTab() {
       <Pager page={list.page} hasNext={list.hasNext} onChange={list.setPage} />
 
       <Dialog open={Boolean(openId)} onOpenChange={(open) => !open && closeUser()}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md max-h-[90dvh] overflow-y-auto">
           {detail ? (
             <UserDetails
               key={detail.id}
@@ -246,26 +246,26 @@ function UserDetails({
   return (
     <>
       <DialogHeader>
-        <DialogTitle className="text-lg">{user.display_name}</DialogTitle>
-        <DialogDescription>{user.email}</DialogDescription>
+        <DialogTitle className="break-words text-lg">{user.display_name}</DialogTitle>
+        <DialogDescription className="break-all">{user.email}</DialogDescription>
       </DialogHeader>
 
-      <dl className="grid grid-cols-2 gap-3 text-sm">
-        <div className="rounded-xl border border-border bg-surface p-3">
+      <dl className="grid grid-cols-2 gap-2.5 sm:gap-3 text-sm">
+        <div className="min-w-0 rounded-xl border border-border bg-surface p-3">
           <dt className="text-xs text-muted-foreground">Vai trò</dt>
-          <dd className="mt-1 font-semibold text-foreground">{ROLE_LABEL[user.role]}</dd>
+          <dd className="mt-1 truncate font-semibold text-foreground">{ROLE_LABEL[user.role]}</dd>
         </div>
-        <div className="rounded-xl border border-border bg-surface p-3">
+        <div className="min-w-0 rounded-xl border border-border bg-surface p-3">
           <dt className="text-xs text-muted-foreground">Trạng thái</dt>
-          <dd className="mt-1 font-semibold text-foreground">{STATE_LABEL[user.state]}</dd>
+          <dd className="mt-1 truncate font-semibold text-foreground">{STATE_LABEL[user.state]}</dd>
         </div>
-        <div className="rounded-xl border border-border bg-surface p-3">
+        <div className="min-w-0 rounded-xl border border-border bg-surface p-3">
           <dt className="text-xs text-muted-foreground">Credits</dt>
-          <dd className="mt-1 font-semibold text-foreground">{user.credits}</dd>
+          <dd className="mt-1 truncate font-semibold text-foreground">{user.credits}</dd>
         </div>
-        <div className="rounded-xl border border-border bg-surface p-3">
+        <div className="min-w-0 rounded-xl border border-border bg-surface p-3">
           <dt className="text-xs text-muted-foreground">Dung lượng</dt>
-          <dd className="mt-1 font-semibold text-foreground">
+          <dd className="mt-1 break-words font-semibold text-foreground">
             {formatBytes(user.storage_used)} / {formatBytes(user.storage_limit)}
           </dd>
         </div>
@@ -275,24 +275,24 @@ function UserDetails({
         <label htmlFor="admin-display-name" className="block text-xs font-medium text-muted-foreground">
           Tên hiển thị
         </label>
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row">
           <input
             id="admin-display-name"
-            className={inputClass}
+            className={`${inputClass} min-h-10`}
             value={value}
             maxLength={100}
             disabled={busy}
             onChange={(e) => setValue(e.target.value)}
           />
-          <button type="submit" disabled={busy} className={primaryButtonClass}>
+          <button type="submit" disabled={busy} className={`${primaryButtonClass} w-full sm:w-auto`}>
             Lưu
           </button>
         </div>
       </form>
 
-      <Link to={adminTabUrl("chats", user.id)} className={`${secondaryButtonClass} justify-center`}>
-        <MessagesSquare size={15} />
-        Xem cuộc trò chuyện của người dùng này
+      <Link to={adminTabUrl("chats", user.id)} className={`${secondaryButtonClass} w-full whitespace-normal text-center`}>
+        <MessagesSquare size={15} className="shrink-0" />
+        <span>Xem cuộc trò chuyện của người dùng này</span>
       </Link>
     </>
   );

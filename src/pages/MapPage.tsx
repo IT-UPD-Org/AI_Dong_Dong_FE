@@ -47,6 +47,7 @@ export function MapPage({ embedded = false }: { embedded?: boolean }) {
   const [projection, setProjection] = useState<ProjectionMode>('iso');
   const [showReference, setShowReference] = useState(false);
   const [showRoute, setShowRoute] = useState(true);
+  const [mobileSheetExpanded, setMobileSheetExpanded] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [focusReq, setFocusReq] = useState(0);
   const canvas = useRef<MapCanvasHandle>(null);
@@ -236,33 +237,33 @@ export function MapPage({ embedded = false }: { embedded?: boolean }) {
 
   return (
     <div
-      className={`flex flex-col overflow-hidden bg-white ${
+      className={`flex w-full min-w-0 flex-col overflow-hidden bg-white ${
         embedded
-          ? 'h-full min-h-[600px] rounded-2xl border border-slate-200 shadow-sm'
-          : 'h-[calc(100vh-5rem)]'
+          ? 'h-full min-h-0 rounded-xl sm:rounded-2xl border border-slate-200 shadow-sm'
+          : 'h-[calc(100dvh-3.5rem)] sm:h-[calc(100dvh-4rem)] min-h-0'
       }`}
     >
       {/* Thanh công cụ trên cùng */}
-      <header className="z-20 flex flex-wrap items-center gap-2.5 border-b border-slate-200 bg-white px-4 py-2.5">
+      <header className="relative z-20 flex shrink-0 flex-nowrap items-center gap-1.5 border-b border-slate-200 bg-white px-2 py-1.5 md:flex-wrap md:gap-2.5 md:px-4 md:py-2.5">
         {view === 'building' && (
           <button
             type="button"
             onClick={goCampus}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-[#04714a]"
+            className="inline-flex h-9 shrink-0 items-center gap-1 rounded-xl bg-slate-900 px-2.5 text-xs font-semibold text-white transition hover:bg-[#04714a] md:h-8 md:gap-1.5 md:px-3 cursor-pointer"
           >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            Tổng mặt bằng
+            <ArrowLeft className="h-3.5 w-3.5 shrink-0" />
+            <span className="whitespace-nowrap">Tổng mặt bằng</span>
           </button>
         )}
 
-        <nav className="flex items-center gap-1.5 text-xs text-slate-500 sm:text-sm" aria-label="Vị trí hiện tại">
-          <span className={view === 'campus' ? 'font-semibold text-slate-900' : 'text-slate-500'}>
+        <nav className="hidden min-w-0 flex-wrap items-center gap-1.5 text-xs text-slate-500 md:flex md:text-sm" aria-label="Vị trí hiện tại">
+          <span className={`truncate ${view === 'campus' ? 'font-semibold text-slate-900' : 'text-slate-500'}`}>
             {campus.name}
           </span>
           {detailBuilding && (
             <>
               <span className="text-slate-300">/</span>
-              <span className={mode === 'whole' ? 'font-semibold text-slate-900' : 'text-slate-500'}>
+              <span className={`truncate ${mode === 'whole' ? 'font-semibold text-slate-900' : 'text-slate-500'}`}>
                 {detailBuilding.name}
               </span>
             </>
@@ -270,15 +271,15 @@ export function MapPage({ embedded = false }: { embedded?: boolean }) {
           {detailBuilding && mode !== 'whole' && activeFloor && (
             <>
               <span className="text-slate-300">/</span>
-              <span className="font-semibold text-[#04714a]">{activeFloor.name}</span>
+              <span className="truncate font-semibold text-[#04714a]">{activeFloor.name}</span>
             </>
           )}
         </nav>
 
-        <div className="flex-1" />
+        <div className="hidden flex-1 md:block" />
 
         {/* Chuyển nhanh Sơ đồ tổng mặt bằng (2D) <-> Phối cảnh tổng thể (2.5D) */}
-        <div className="hidden items-center rounded-xl border border-slate-200 bg-slate-100 p-0.5 sm:inline-flex">
+        <div className="hidden items-center rounded-xl border border-slate-200 bg-slate-100 p-0.5 md:inline-flex">
           <button
             type="button"
             onClick={() => setProjection('top')}
@@ -322,7 +323,7 @@ export function MapPage({ embedded = false }: { embedded?: boolean }) {
       </header>
 
       {/* Khung bản đồ chính */}
-      <div className="campus-map-stage relative flex min-h-0 flex-1 flex-col overflow-hidden">
+      <div className="campus-map-stage relative z-10 flex min-h-0 flex-1 flex-col overflow-hidden">
         <MapCanvas
           ref={canvas}
           viewBox={viewBox}
@@ -359,21 +360,19 @@ export function MapPage({ embedded = false }: { embedded?: boolean }) {
 
         {/* Thanh tầng khi xem chi tiết tòa */}
         {detailBuilding && (
-          <div className="p-2 md:p-0">
-            <FloorBar
-              building={detailBuilding}
-              mode={mode}
-              activeLevel={level}
-              projection={projection}
-              onLevel={pickLevel}
-              onWhole={() => {
-                setMode('whole');
-                selectRoom(null);
-              }}
-              onToggleExplode={() => setMode((m) => (m === 'exploded' ? 'floor' : 'exploded'))}
-              onToggleProjection={() => setProjection((p) => (p === 'iso' ? 'top' : 'iso'))}
-            />
-          </div>
+          <FloorBar
+            building={detailBuilding}
+            mode={mode}
+            activeLevel={level}
+            projection={projection}
+            onLevel={pickLevel}
+            onWhole={() => {
+              setMode('whole');
+              selectRoom(null);
+            }}
+            onToggleExplode={() => setMode((m) => (m === 'exploded' ? 'floor' : 'exploded'))}
+            onToggleProjection={() => setProjection((p) => (p === 'iso' ? 'top' : 'iso'))}
+          />
         )}
 
         <InfoPanel
@@ -388,6 +387,7 @@ export function MapPage({ embedded = false }: { embedded?: boolean }) {
           onCloseBuilding={() => setBuildingId(null)}
           onOpenBuilding={openBuilding}
           onPickQuickRoom={pickSearch}
+          onMobileExpandedChange={setMobileSheetExpanded}
         />
 
         {view === 'campus' ? <CampusLegend /> : <Legend types={legendTypes} />}
@@ -395,6 +395,7 @@ export function MapPage({ embedded = false }: { embedded?: boolean }) {
         <ViewControls
           projection={projection}
           phi={phiTarget}
+          hiddenOnMobile={mobileSheetExpanded}
           onToggleProjection={() => setProjection((p) => (p === 'iso' ? 'top' : 'iso'))}
           onZoomIn={() => canvas.current?.zoomBy(1.35)}
           onZoomOut={() => canvas.current?.zoomBy(1 / 1.35)}
@@ -408,7 +409,9 @@ export function MapPage({ embedded = false }: { embedded?: boolean }) {
 
         {toast && (
           <div
-            className="pointer-events-none absolute left-1/2 top-4 z-30 -translate-x-1/2 rounded-full bg-slate-900/90 px-4 py-2 text-xs font-medium text-white shadow-lg"
+            className={`pointer-events-none absolute left-1/2 z-20 max-w-[calc(100%-1.5rem)] -translate-x-1/2 rounded-full bg-slate-900/90 px-4 py-2 text-center text-xs font-medium text-white shadow-lg ${
+              detailBuilding ? 'top-14 md:top-4' : 'top-3 md:top-4'
+            }`}
             role="status"
           >
             {toast}
@@ -417,8 +420,8 @@ export function MapPage({ embedded = false }: { embedded?: boolean }) {
       </div>
 
       {/* Ghi chú mô phỏng */}
-      <footer className="flex items-center gap-2 border-t border-amber-200/80 bg-amber-50/90 px-4 py-1.5 text-xs text-amber-900">
-        <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-600" />
+      <footer className="flex shrink-0 items-center gap-1.5 border-t border-amber-200/80 bg-amber-50/90 px-2.5 py-1 pb-[max(0.25rem,env(safe-area-inset-bottom))] text-[10px] leading-tight text-amber-900 md:gap-2 md:px-4 md:py-1.5 md:text-xs">
+        <AlertTriangle className="h-3 w-3 shrink-0 text-amber-600 md:h-3.5 md:w-3.5" />
         <span className="truncate">{campus.disclaimer}</span>
       </footer>
     </div>

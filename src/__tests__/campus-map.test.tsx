@@ -79,4 +79,87 @@ describe('MapPage UI', () => {
     expect(screen.getByRole('heading', { name: /A201/i })).toBeInTheDocument();
     expect(screen.getByText(/Lộ trình nội bộ/i)).toBeInTheDocument();
   });
+
+  it('supports mobile collapsible overview sheet and room sheet minimize toggle', () => {
+    render(
+      <MemoryRouter initialEntries={['/map']}>
+        <Routes>
+          <Route path="/map" element={<MapPage />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    // Mobile overview trigger opens bottom sheet and closes with Escape
+    const openSheetBtn = screen.getByRole('button', { name: 'Mở danh sách khu vực và lối tắt' });
+    fireEvent.click(openSheetBtn);
+    expect(screen.getByLabelText('Danh sách khu vực trên bản đồ')).toBeInTheDocument();
+
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(screen.queryByLabelText('Danh sách khu vực trên bản đồ')).not.toBeInTheDocument();
+  });
+
+  it('starts FloorBar collapsed on mobile pill and collapses after picking a floor', () => {
+    render(
+      <MemoryRouter initialEntries={['/map']}>
+        <Routes>
+          <Route path="/map" element={<MapPage />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /Tòa A\s*6 tầng/i }));
+
+    // Collapsed by default as a 1-line pill showing building + active floor
+    const togglePill = screen.getByRole('button', { name: 'Mở chọn tầng' });
+    expect(togglePill).toHaveAttribute('aria-expanded', 'false');
+    expect(togglePill).toHaveTextContent(/Tòa A\s*·\s*Tầng 1/i);
+    const panel = document.getElementById('floorbar-panel');
+    expect(panel).toHaveAttribute('data-mobile-open', 'false');
+
+    // Expand pill, pick Tầng 2, and verify pill updates & collapses cleanly
+    fireEvent.click(togglePill);
+    expect(screen.getByRole('button', { name: 'Thu gọn chọn tầng' })).toHaveAttribute('aria-expanded', 'true');
+    expect(panel).toHaveAttribute('data-mobile-open', 'true');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Tầng 2' }));
+    const collapsedPill = screen.getByRole('button', { name: 'Mở chọn tầng' });
+    expect(collapsedPill).toHaveAttribute('aria-expanded', 'false');
+    expect(collapsedPill).toHaveTextContent(/Tòa A\s*·\s*Tầng 2/i);
+    expect(panel).toHaveAttribute('data-mobile-open', 'false');
+  });
+
+  it('starts room InfoPanel minimized on mobile peek bar and hides ViewControls only when expanded', () => {
+    render(
+      <MemoryRouter initialEntries={['/map?room=A203']}>
+        <Routes>
+          <Route path="/map" element={<MapPage />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    const panel = screen.getByLabelText('Thông tin phòng');
+    const viewControls = screen.getByRole('toolbar', { name: 'Điều khiển góc nhìn' });
+
+    // Minimized peek bar by default on mobile; ViewControls remains visible
+    expect(panel).toHaveAttribute('data-mobile-state', 'minimized');
+    expect(viewControls).toHaveAttribute('data-hidden-mobile', 'false');
+
+    const expandBtn = screen.getByRole('button', { name: 'Mở rộng thông tin phòng' });
+    expect(expandBtn).toHaveAttribute('aria-expanded', 'false');
+    expect(expandBtn).toHaveTextContent('Chi tiết / Lộ trình');
+
+    // Expanding InfoPanel hides ViewControls on mobile to prevent overlap
+    fireEvent.click(expandBtn);
+    expect(panel).toHaveAttribute('data-mobile-state', 'expanded');
+    expect(viewControls).toHaveAttribute('data-hidden-mobile', 'true');
+
+    const collapseBtn = screen.getByRole('button', { name: 'Thu gọn thông tin phòng' });
+    expect(collapseBtn).toHaveAttribute('aria-expanded', 'true');
+    expect(collapseBtn).toHaveTextContent('Thu gọn');
+
+    // Collapsing restores ViewControls on mobile
+    fireEvent.click(collapseBtn);
+    expect(panel).toHaveAttribute('data-mobile-state', 'minimized');
+    expect(viewControls).toHaveAttribute('data-hidden-mobile', 'false');
+  });
 });

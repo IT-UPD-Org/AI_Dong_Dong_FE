@@ -55,7 +55,7 @@ export function IssueImagePicker({ file, onChange }: IssueImagePickerProps) {
   }
 
   return (
-    <div>
+    <div className="w-full min-w-0">
       <input
         ref={inputRef}
         type="file"
@@ -65,13 +65,13 @@ export function IssueImagePicker({ file, onChange }: IssueImagePickerProps) {
         className="hidden"
       />
 
-      <div className="h-[108px] overflow-hidden rounded-xl border border-dashed border-border bg-field">
+      <div className="h-[108px] w-full overflow-hidden rounded-xl border border-dashed border-border bg-field">
         {file && previewUrl ? (
-          <div className="flex h-full items-center gap-3 p-2.5">
+          <div className="flex h-full min-w-0 items-center gap-2.5 sm:gap-3 p-2.5">
             <img
               src={previewUrl}
               alt="Ảnh lỗi đã chọn"
-              className="size-[72px] shrink-0 rounded-lg border border-border-subtle object-cover"
+              className="size-16 sm:size-[72px] shrink-0 rounded-lg border border-border-subtle object-cover"
             />
             <div className="min-w-0 flex-1">
               <p className="truncate text-xs font-medium text-foreground">
@@ -83,7 +83,7 @@ export function IssueImagePicker({ file, onChange }: IssueImagePickerProps) {
               <button
                 type="button"
                 onClick={openImagePicker}
-                className="mt-2 inline-flex text-[11px] font-medium text-brand-text hover:underline"
+                className="mt-1.5 inline-flex min-h-[28px] items-center text-[11px] font-medium text-brand-text hover:underline cursor-pointer"
               >
                 Chọn ảnh khác
               </button>
@@ -92,7 +92,7 @@ export function IssueImagePicker({ file, onChange }: IssueImagePickerProps) {
               type="button"
               onClick={removeImage}
               aria-label="Xóa ảnh lỗi đã chọn"
-              className="flex size-8 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+              className="flex size-10 sm:size-8 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive cursor-pointer"
             >
               <X size={15} />
             </button>
@@ -101,7 +101,7 @@ export function IssueImagePicker({ file, onChange }: IssueImagePickerProps) {
           <button
             type="button"
             onClick={openImagePicker}
-            className="flex h-full w-full flex-col items-center justify-center gap-2 px-4 text-xs font-medium text-muted-foreground transition-colors hover:bg-brand-soft hover:text-brand-text"
+            className="flex h-full w-full flex-col items-center justify-center gap-2 px-4 text-xs font-medium text-muted-foreground transition-colors hover:bg-brand-soft hover:text-brand-text cursor-pointer"
           >
             <ImagePlus size={18} />
             Đính kèm ảnh lỗi

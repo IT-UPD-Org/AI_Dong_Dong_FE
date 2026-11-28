@@ -14,8 +14,28 @@ import {
 import { CAREER_UNIVERSE_CATALOG } from "../data/careerUniverseData";
 
 export function CareerUniversePage() {
-  // Right Panel Collapse State (expanded by default on desktop)
-  const [isRightPanelOpen, setIsRightPanelOpen] = useState(true);
+  // Desktop breakpoint (lg = 1024px): docked right panel on desktop, overlay drawer (closed by default) on mobile/tablet
+  const [isDesktop, setIsDesktop] = useState<boolean>(() =>
+    typeof window === "undefined" ? true : window.innerWidth >= 1024
+  );
+  const [isRightPanelOpen, setIsRightPanelOpen] = useState<boolean>(() =>
+    typeof window === "undefined" ? true : window.innerWidth >= 1024
+  );
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const handleResize = () => {
+      const nextDesktop = window.innerWidth >= 1024;
+      setIsDesktop((prev) => {
+        if (prev !== nextDesktop) {
+          setIsRightPanelOpen(nextDesktop);
+        }
+        return nextDesktop;
+      });
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Selected Career Hierarchy State
   const [selectedState, setSelectedState] = useState<SelectedCareerState>({
@@ -121,11 +141,12 @@ export function CareerUniversePage() {
       setSelectedNodeId(node.id);
 
       if (node.type === "domain") {
-        setSelectedState({
+        setSelectedState((prev) => ({
+          ...prev,
           domainId: node.domainId || node.id,
           occupationId: null,
           specializationId: null,
-        });
+        }));
       } else if (node.type === "occupation") {
         setSelectedState((prev) => ({
           ...prev,
@@ -156,10 +177,23 @@ export function CareerUniversePage() {
     // Note: Do NOT reset camera or selectedNodeId, allow user to keep exploring
   }, []);
 
+  // Handler: Full Career Tree reset (returns to skeleton overview while preserving faculty/major/transcript)
+  const handleResetTree = useCallback(() => {
+    setSelectedState((prev) => ({
+      ...prev,
+      domainId: null,
+      occupationId: null,
+      specializationId: null,
+    }));
+    setSelectedNodeId(null);
+    setIsModalOpen(false);
+    setModalNode(null);
+  }, []);
+
   return (
-    <div className="relative flex h-full w-full min-w-0 overflow-hidden bg-background">
+    <div className="relative flex h-full w-full min-h-0 min-w-0 overflow-hidden bg-background">
       {/* 1. Main Canvas Area */}
-      <div className="relative flex-1 min-w-0 h-full overflow-hidden">
+      <div className="relative flex-1 min-h-0 min-w-0 h-full overflow-hidden">
         <RadialCanvas
           nodes={nodes}
           edges={edges}
@@ -167,14 +201,17 @@ export function CareerUniversePage() {
           selectedNodeId={selectedNodeId}
           onSelectNode={handleSelectNodeFromCanvas}
           onNodeCenteredAndOpenModal={handleNodeCenteredAndOpenModal}
+          onReset={handleResetTree}
           isSkeleton={isSkeleton}
         />
       </div>
 
-      {/* 2. Right Collapsible Sub-Sidebar */}
+      {/* 2. Right Collapsible Sub-Sidebar (docked on lg+, overlay slide-over drawer on mobile/tablet) */}
       <CareerRightPanel
         isOpen={isRightPanelOpen}
+        isDesktop={isDesktop}
         onToggleOpen={() => setIsRightPanelOpen((prev) => !prev)}
+        onClose={() => setIsRightPanelOpen(false)}
         selectedState={selectedState}
         onSelectFaculty={handleSelectFaculty}
         onSelectMajor={handleSelectMajor}

@@ -47,12 +47,12 @@ export function ProvidersTab() {
   const typeName = (id: string) => types.find((t) => t.provider_id === id)?.provider_name ?? id;
 
   return (
-    <section>
-      <div className="mb-4 flex items-center justify-between gap-4">
+    <section className="min-w-0">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-muted-foreground">Kết nối tới các dịch vụ AI. Mỗi model thuộc về một provider.</p>
         <button
           type="button"
-          className={primaryButtonClass}
+          className={`${primaryButtonClass} w-full sm:w-auto`}
           disabled={types.length === 0}
           onClick={() => setForm({ mode: "create" })}
         >
@@ -61,37 +61,39 @@ export function ProvidersTab() {
       </div>
 
       <ListState loading={list.loading} error={list.error} empty={list.items.length === 0} emptyText="Chưa có provider.">
-        <div className="rounded-2xl border border-border bg-card">
-          <Table>
+        <div className="overflow-x-auto rounded-2xl border border-border bg-card">
+          <Table className="min-w-[600px]">
             <TableHeader>
               <TableRow>
-                <TableHead>Tên</TableHead>
-                <TableHead>Loại</TableHead>
-                <TableHead>ID</TableHead>
-                <TableHead className="text-right">Thao tác</TableHead>
+                <TableHead className="px-3 sm:px-4">Tên</TableHead>
+                <TableHead className="px-3">Loại</TableHead>
+                <TableHead className="px-3">ID</TableHead>
+                <TableHead className="px-3 sm:px-4 text-right">Thao tác</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {list.items.map((provider) => (
                 <TableRow key={provider.id}>
-                  <TableCell className="font-medium text-foreground">{provider.provider_name}</TableCell>
-                  <TableCell className="text-foreground">{typeName(provider.provider_type)}</TableCell>
-                  <TableCell className="font-mono text-xs text-muted-foreground">{provider.id}</TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="px-3 sm:px-4 font-medium text-foreground">{provider.provider_name}</TableCell>
+                  <TableCell className="px-3 text-foreground">{typeName(provider.provider_type)}</TableCell>
+                  <TableCell className="px-3 font-mono text-xs text-muted-foreground">{provider.id}</TableCell>
+                  <TableCell className="px-3 sm:px-4 text-right">
                     <div className="flex justify-end gap-1">
                       <button
                         type="button"
                         title="Sửa"
+                        aria-label="Sửa"
                         onClick={() => setForm({ mode: "edit", provider })}
-                        className="rounded-lg p-2 text-muted-foreground hover:bg-hover hover:text-foreground cursor-pointer"
+                        className="inline-flex h-10 w-10 sm:h-9 sm:w-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-hover hover:text-foreground cursor-pointer"
                       >
                         <Pencil size={15} />
                       </button>
                       <button
                         type="button"
                         title="Xoá"
+                        aria-label="Xoá"
                         onClick={() => remove(provider)}
-                        className="rounded-lg p-2 text-muted-foreground hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 dark:hover:text-rose-400 cursor-pointer"
+                        className="inline-flex h-10 w-10 sm:h-9 sm:w-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 dark:hover:text-rose-400 cursor-pointer"
                       >
                         <Trash2 size={15} />
                       </button>
@@ -106,7 +108,7 @@ export function ProvidersTab() {
       <Pager page={list.page} hasNext={list.hasNext} onChange={list.setPage} />
 
       <Dialog open={form !== null} onOpenChange={(open) => !open && setForm(null)}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-lg max-h-[90dvh] overflow-y-auto">
           {form && (
             <ProviderForm
               key={form.mode === "edit" ? form.provider.id : "create"}
@@ -223,11 +225,11 @@ function ProviderForm({
         </label>
       ))}
 
-      <div className="mt-2 flex justify-end gap-2">
-        <button type="button" className={secondaryButtonClass} onClick={onDone}>
+      <div className="mt-2 flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
+        <button type="button" className={`${secondaryButtonClass} w-full sm:w-auto`} onClick={onDone}>
           Huỷ
         </button>
-        <button type="submit" className={primaryButtonClass} disabled={saving}>
+        <button type="submit" className={`${primaryButtonClass} w-full sm:w-auto`} disabled={saving}>
           {saving ? "Đang lưu..." : "Lưu"}
         </button>
       </div>

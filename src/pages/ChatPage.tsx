@@ -688,37 +688,46 @@ export function ChatPage() {
   }
 
   return (
-    <div className="relative flex h-full min-w-0 flex-row overflow-hidden bg-background text-foreground transition-colors">
+    <div className="relative flex h-full min-h-0 w-full min-w-0 flex-row overflow-hidden bg-background text-foreground transition-colors">
       {/* Chat Column */}
       <div
-        className={`relative flex h-full min-w-0 flex-col overflow-hidden transition-all duration-200 ${
+        className={`relative flex h-full min-h-0 min-w-0 flex-col overflow-hidden transition-all duration-200 ${
           previewFile
             ? isPreviewExpanded
-              ? "hidden md:flex md:w-[35%] lg:w-[35%] shrink-0 border-r border-border"
-              : "hidden md:flex md:w-[58%] lg:w-[60%] shrink-0 border-r border-border"
+              ? "w-full lg:w-[35%] lg:shrink-0 lg:border-r lg:border-border"
+              : "w-full lg:w-[58%] xl:w-[60%] lg:shrink-0 lg:border-r lg:border-border"
             : "w-full"
         }`}
       >
-        {/* Scrollable message area — pb ensures content clears the fixed input */}
-        <div className="relative min-h-0 flex-1">
+        {/* Scrollable message area — flex-1 above the shrink-0 bottom prompt dock */}
+        <div className="relative min-h-0 flex-1 overflow-hidden">
           <div
             ref={scrollRef}
             onScroll={handleScroll}
-            className="h-full overflow-y-auto pt-8 pb-40 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="h-full w-full overflow-y-auto overflow-x-hidden scroll-smooth pt-4 sm:pt-6 md:pt-8 pb-16 sm:pb-14 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
             <div
-              className={`mx-auto w-full px-2 md:pr-8 transition-all ${
-                previewFile ? "max-w-2xl" : "max-w-4xl"
+              className={`mx-auto w-full min-w-0 px-3 sm:px-4 md:px-6 md:pr-10 transition-all ${
+                previewFile ? "max-w-2xl" : "max-w-3xl lg:max-w-4xl"
               }`}
             >
-              <div className="flex flex-col gap-5">
+              <div className="flex min-w-0 flex-col gap-4 sm:gap-5">
+                {loading && msgs.length === 0 && conversationId && (
+                  <div className="flex justify-center py-12">
+                    <div className="flex items-center gap-2 rounded-full border border-border bg-card/90 px-4 py-2 text-xs font-medium text-muted-foreground shadow-xs backdrop-blur-xs">
+                      <Loader2 className="size-3.5 animate-spin text-brand-text" />
+                      <span>{t("loadingConversation")}</span>
+                    </div>
+                  </div>
+                )}
+
                 {/* Hero Greeting when conversation is empty */}
                 {isEmpty && !loading && (
-                  <div className="flex min-h-[42vh] flex-col items-center justify-center px-4 py-8 text-center select-none animate-in fade-in duration-500">
+                  <div className="flex min-h-[32dvh] sm:min-h-[40dvh] flex-col items-center justify-center px-3 sm:px-4 py-6 sm:py-8 text-center select-none animate-in fade-in duration-500">
                     <div className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-brand-soft text-brand-text shadow-xs">
                       <Sparkles size={28} />
                     </div>
-                    <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+                    <h2 className="text-xl sm:text-3xl font-bold tracking-tight text-foreground">
                       {t("askAnythingTitle")}
                     </h2>
                     <p className="mt-2 text-xs sm:text-sm text-muted-foreground max-w-md leading-relaxed">
@@ -776,7 +785,7 @@ export function ChatPage() {
                     {/* Feedback panel: opens under a reply after like/dislike or report */}
                     {feedbackFor?.id === message.id && (
                       <MessageFeedbackPanel
-                        key={`-`}
+                        key={`${message.id}-${feedbackFor.mode}`}
                         initialMode={feedbackFor.mode}
                         onClose={() => setFeedbackFor(null)}
                       />
@@ -784,7 +793,7 @@ export function ChatPage() {
                   </Fragment>
                   );
                 })}
-                <div ref={bottomRef} />
+                <div ref={bottomRef} className="h-1 shrink-0" />
               </div>
             </div>
           </div>
@@ -803,83 +812,63 @@ export function ChatPage() {
           )}
         </div>
 
-        {loading && msgs.length === 0 && conversationId && (
-          <div className="flex justify-center py-12">
-            <div className="flex items-center gap-2 rounded-full border border-border bg-card/80 px-4 py-2 text-xs font-medium text-muted-foreground shadow-xs backdrop-blur-xs">
-              <Loader2 className="size-3.5 animate-spin text-brand-text" />
-              <span>{t("loadingConversation")}</span>
-            </div>
-          </div>
-        )}
-
-        {/* Fixed Glassmorphism Chat Input — always anchored to bottom */}
+        {/* Bottom AI Prompt Input Dock — anchored cleanly at bottom of flex column */}
         <div
-          className="absolute bottom-0 inset-x-0 z-20 pointer-events-none pb-2 sm:pb-3 md:pb-4 pt-10 bg-gradient-to-t from-background via-background/85 to-transparent"
+          className="relative z-20 shrink-0 border-t border-border-subtle/70 bg-background/95 pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-md"
         >
           {/* Status banners above the input */}
           {error && (
-            <p role="alert" className="pointer-events-auto px-4 pb-2 text-sm text-destructive text-center font-medium">
+            <p role="alert" className="mx-auto max-w-3xl lg:max-w-4xl px-3 sm:px-4 pb-2 text-xs sm:text-sm text-destructive text-center font-medium [overflow-wrap:anywhere]">
               {error}
             </p>
           )}
 
           {runningElsewhere && (
-            <div className="pointer-events-auto mx-auto mb-2 flex w-full max-w-4xl items-center justify-between gap-3 rounded-2xl border border-border bg-card/90 px-4 py-2 text-sm shadow-sm backdrop-blur-md">
-              <span className="text-fg-secondary">{t("replyRunningElsewhere")}</span>
-              <button
-                type="button"
-                onClick={followRunningReply}
-                className="rounded-full border border-border bg-elevated px-3 py-1 font-medium text-brand-text hover:bg-brand-soft cursor-pointer"
-              >
-                {t("followReply")}
-              </button>
-            </div>
-          )}
-
-          {streaming && (
-            <div className="pointer-events-auto mx-auto mb-2 flex w-full max-w-4xl justify-center px-4">
-              <button
-                type="button"
-                onClick={stopReply}
-                className="flex items-center gap-1.5 rounded-full border border-border bg-elevated/90 px-3.5 py-1.5 text-xs font-semibold text-fg-secondary shadow-sm backdrop-blur-md hover:bg-elevated hover:text-foreground cursor-pointer"
-              >
-                <span className="size-2 rounded-xs bg-current" aria-hidden />
-                {t("stopReply")}
-              </button>
+            <div className="mx-auto mb-2 w-full max-w-3xl lg:max-w-4xl px-3 sm:px-4">
+              <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-border bg-card/95 px-3.5 py-2 text-xs sm:text-sm shadow-sm backdrop-blur-md">
+                <span className="min-w-0 flex-1 text-fg-secondary">{t("replyRunningElsewhere")}</span>
+                <button
+                  type="button"
+                  onClick={followRunningReply}
+                  className="min-h-[40px] sm:min-h-[34px] shrink-0 rounded-full border border-border bg-elevated px-3.5 py-1.5 text-xs font-medium text-brand-text hover:bg-brand-soft cursor-pointer"
+                >
+                  {t("followReply")}
+                </button>
+              </div>
             </div>
           )}
 
           {/* Yêu cầu 1: Đưa phần "Hãy hỏi bất cứ điều gì" lên TRÊN input prompt, sau khi chat câu đầu tiên thì biến mất */}
           {isEmpty && !loading && (
-            <div className="pointer-events-auto">
+            <div>
               <EmptyStatePrompt />
             </div>
           )}
 
-          <div className="pointer-events-auto">
-            <ModifiedPromptInput
-              key={composerKey}
-              value={input}
-              onChange={setInput}
-              onSubmit={submit}
-              loading={loading}
-              level={level}
-              onLevelChange={setLevel}
-              attachmentIds={attachmentIds}
-              onAttachmentChange={setAttachmentIds}
-              mentionedDocumentIds={mentionedDocumentIds}
-              onMentionChange={setMentionedDocumentIds}
-              onUploadError={setError}
-            />
-          </div>
+          <ModifiedPromptInput
+            key={composerKey}
+            value={input}
+            onChange={setInput}
+            onSubmit={submit}
+            loading={loading}
+            streaming={streaming}
+            onStop={stopReply}
+            level={level}
+            onLevelChange={setLevel}
+            attachmentIds={attachmentIds}
+            onAttachmentChange={setAttachmentIds}
+            mentionedDocumentIds={mentionedDocumentIds}
+            onMentionChange={setMentionedDocumentIds}
+            onUploadError={setError}
+          />
         </div>
       </div>
 
-      {/* File Preview Workspace Column */}
+      {/* File Preview Workspace — full-viewport overlay sheet on < lg, split-pane on lg+ */}
       {previewFile && (
         <div
-          className={`fixed inset-0 z-50 bg-surface md:static md:z-auto md:flex md:h-full md:min-w-0 transition-all duration-200 ${
-            isPreviewExpanded ? "md:w-[65%] lg:w-[65%]" : "md:flex-1"
+          className={`fixed inset-0 z-50 flex h-[100dvh] w-full flex-col bg-surface lg:static lg:z-auto lg:h-full lg:min-w-0 transition-all duration-200 ${
+            isPreviewExpanded ? "lg:w-[65%]" : "lg:flex-1"
           }`}
         >
           <FilePreviewPanel

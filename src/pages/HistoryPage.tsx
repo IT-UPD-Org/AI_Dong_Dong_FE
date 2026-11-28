@@ -87,7 +87,7 @@ export function HistoryPage() {
                 type="button"
                 onClick={() => setSearchTerm("")}
                 aria-label={t("close")}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground hover:text-foreground hover:bg-hover transition-colors cursor-pointer"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-hover transition-colors cursor-pointer"
               >
                 <X size={16} />
               </button>
@@ -152,27 +152,35 @@ export function HistoryPage() {
                 <Link
                   key={c.id}
                   to={`/c/${c.id}`}
-                  className="group flex items-center justify-between rounded-2xl border border-border bg-card p-5 transition-all hover:border-brand/40 hover:bg-hover hover:shadow-xs"
+                  className="group flex items-center justify-between gap-3 rounded-2xl border border-border bg-card p-4 sm:p-5 transition-all hover:border-brand/40 hover:bg-hover hover:shadow-xs"
                 >
-                  <div className="flex items-center gap-3.5 min-w-0">
+                  <div className="flex items-center gap-3 sm:gap-3.5 min-w-0 flex-1">
                     <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-brand/10 text-brand-text transition-colors group-hover:bg-brand group-hover:text-brand-foreground">
                       <MessageSquare size={18} />
                     </div>
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <span className="truncate font-semibold text-foreground group-hover:text-brand-text block text-sm">
                         {displayTitle}
                       </span>
-                      {c.disabled && (
-                        <span className="text-xs text-destructive mt-0.5 block">
-                          {language === "vi" ? "Đã bị khoá" : "Disabled"}
-                        </span>
-                      )}
+                      <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                        {formatSnowflakeDate(c.id) && (
+                          <span className="flex items-center gap-1 text-xs text-muted-foreground sm:hidden">
+                            <Clock size={12} />
+                            {formatSnowflakeDate(c.id)}
+                          </span>
+                        )}
+                        {c.disabled && (
+                          <span className="text-xs text-destructive">
+                            {language === "vi" ? "Đã bị khoá" : "Disabled"}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2 text-xs text-muted-foreground group-hover:text-brand-text shrink-0">
                     {formatSnowflakeDate(c.id) && (
-                      <span className="flex items-center gap-1">
+                      <span className="hidden sm:flex items-center gap-1">
                         <Clock size={12} />
                         {formatSnowflakeDate(c.id)}
                       </span>
@@ -186,7 +194,7 @@ export function HistoryPage() {
                         event.stopPropagation();
                         handleDelete(c.id, displayTitle);
                       }}
-                      className="rounded-lg p-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors cursor-pointer"
+                      className="flex h-11 w-11 items-center justify-center rounded-xl text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors cursor-pointer"
                     >
                       <Trash2 size={16} />
                     </button>

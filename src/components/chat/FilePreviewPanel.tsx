@@ -220,13 +220,23 @@ export function FilePreviewPanel({
     return filteredRows.slice(start, start + pageSize);
   }, [filteredRows, page, pageSize]);
 
+  // Close on Escape key (helpful for mobile full-viewport overlay & desktop)
+  useEffect(() => {
+    if (!file) return;
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [file, onClose]);
+
   if (!file) return null;
 
   return (
-    <div className="flex h-full w-full flex-col bg-card">
+    <div className="flex h-full min-h-0 w-full min-w-0 flex-col bg-card">
       {/* Panel Toolbar */}
-      <div className="flex h-14 shrink-0 items-center justify-between border-b border-border px-4 bg-surface">
-        <div className="flex min-w-0 flex-1 items-center gap-2.5 mr-2">
+      <div className="flex min-h-14 shrink-0 items-center justify-between gap-2 border-b border-border bg-surface px-3 sm:px-4 pt-[env(safe-area-inset-top)]">
+        <div className="flex min-w-0 flex-1 items-center gap-2.5">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
             {category === "pdf" ? (
               <FileText size={16} className="text-red-600 dark:text-red-400" />
@@ -263,9 +273,9 @@ export function FilePreviewPanel({
             disabled={downloading}
             aria-label={isEn ? "Download file" : "Tải file xuống"}
             title={isEn ? "Download file" : "Tải file xuống"}
-            className="flex items-center gap-1 rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs font-medium text-fg-secondary hover:bg-hover hover:text-foreground cursor-pointer disabled:opacity-50"
+            className="flex min-h-[40px] min-w-[40px] sm:min-h-[34px] sm:min-w-0 items-center justify-center gap-1 rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs font-medium text-fg-secondary hover:bg-hover hover:text-foreground cursor-pointer disabled:opacity-50"
           >
-            {downloading ? <Loader2 size={13} className="animate-spin" /> : <Download size={13} />}
+            {downloading ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
             <span className="hidden sm:inline">
               {downloading
                 ? isEn ? "Downloading..." : "Đang tải..."
@@ -279,7 +289,7 @@ export function FilePreviewPanel({
               onClick={onToggleExpand}
               aria-label={isExpanded ? (isEn ? "Collapse" : "Thu nhỏ xem trước") : (isEn ? "Expand" : "Phóng to xem trước")}
               title={isExpanded ? (isEn ? "Collapse" : "Thu nhỏ xem trước") : (isEn ? "Expand" : "Phóng to xem trước")}
-              className="hidden md:flex items-center justify-center rounded-lg p-2 text-muted-foreground hover:bg-hover hover:text-foreground cursor-pointer"
+              className="hidden lg:flex size-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-hover hover:text-foreground cursor-pointer"
             >
               {isExpanded ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
             </button>
@@ -290,7 +300,7 @@ export function FilePreviewPanel({
             onClick={onClose}
             aria-label={isEn ? "Close preview" : "Đóng xem trước file"}
             title={isEn ? "Close preview" : "Đóng xem trước"}
-            className="flex items-center justify-center rounded-lg p-2 text-muted-foreground hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-400 cursor-pointer"
+            className="flex size-10 sm:size-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-400 cursor-pointer"
           >
             <X size={18} />
           </button>
@@ -367,10 +377,10 @@ export function FilePreviewPanel({
 
         {/* Word .docx Viewer */}
         {!loading && !error && ext === "docx" && docxHtml && (
-          <div className="p-4 sm:p-8 flex justify-center">
-            <div className="w-full max-w-3xl rounded-xl border border-border bg-card p-6 sm:p-10 shadow-xs">
+          <div className="p-3 sm:p-6 lg:p-8 flex justify-center pb-[max(1rem,env(safe-area-inset-bottom))]">
+            <div className="w-full min-w-0 max-w-3xl overflow-x-auto rounded-xl border border-border bg-card p-4 sm:p-8 lg:p-10 shadow-xs">
               <div
-                className="docx-content text-foreground text-[14.5px] leading-relaxed [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mt-6 [&_h1]:mb-3 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:mt-5 [&_h2]:mb-2 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-2 [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-3 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-3 [&_table]:w-full [&_table]:border-collapse [&_table]:my-4 [&_table]:border [&_table]:border-border [&_th]:border [&_th]:border-border [&_th]:bg-muted [&_th]:p-2 [&_td]:border [&_td]:border-border [&_td]:p-2"
+                className="docx-content min-w-0 [overflow-wrap:anywhere] text-foreground text-[14.5px] leading-relaxed [&_h1]:text-xl sm:[&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mt-6 [&_h1]:mb-3 [&_h2]:text-lg sm:[&_h2]:text-xl [&_h2]:font-semibold [&_h2]:mt-5 [&_h2]:mb-2 [&_h3]:text-base sm:[&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-2 [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-3 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-3 [&_table]:w-full [&_table]:border-collapse [&_table]:my-4 [&_table]:border [&_table]:border-border [&_th]:border [&_th]:border-border [&_th]:bg-muted [&_th]:p-2 [&_td]:border [&_td]:border-border [&_td]:p-2"
                 dangerouslySetInnerHTML={{ __html: docxHtml }}
               />
             </div>
@@ -379,7 +389,7 @@ export function FilePreviewPanel({
 
         {/* CSV & Excel Table Viewer */}
         {!loading && !error && currentTableData && (
-          <div className="flex h-full flex-col">
+          <div className="flex h-full min-h-0 flex-col">
             {/* Excel Sheet selector tabs */}
             {(ext === "xlsx" || ext === "xls") && excelData && excelData.sheetNames.length > 1 && (
               <div className="flex shrink-0 items-center gap-1 overflow-x-auto border-b border-border bg-card px-3 py-1.5">
@@ -394,7 +404,7 @@ export function FilePreviewPanel({
                       setActiveSheet(sheetName);
                       setPage(1);
                     }}
-                    className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-colors shrink-0 cursor-pointer ${
+                    className={`min-h-[34px] rounded-lg px-2.5 py-1 text-xs font-medium transition-colors shrink-0 cursor-pointer ${
                       activeSheet === sheetName
                         ? "bg-brand text-brand-foreground"
                         : "bg-muted text-fg-secondary hover:bg-hover"
@@ -407,8 +417,8 @@ export function FilePreviewPanel({
             )}
 
             {/* Table Search & Metrics Bar */}
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-card px-4 py-2">
-              <div className="relative min-w-[180px] max-w-xs flex-1">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-card px-3 sm:px-4 py-2">
+              <div className="relative min-w-0 w-full sm:min-w-[180px] sm:max-w-xs sm:flex-1">
                 <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <input
                   type="text"
@@ -418,11 +428,11 @@ export function FilePreviewPanel({
                     setPage(1);
                   }}
                   placeholder={isEn ? "Search in table..." : "Tìm kiếm trong bảng..."}
-                  className="w-full rounded-lg border border-border bg-field py-1 pl-8 pr-3 text-xs text-foreground outline-none placeholder:text-muted-foreground focus:border-brand-bright focus:bg-field"
+                  className="min-h-[36px] w-full rounded-lg border border-border bg-field py-1.5 pl-8 pr-3 text-xs text-foreground outline-none placeholder:text-muted-foreground focus:border-brand-bright focus:bg-field"
                 />
               </div>
 
-              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs text-muted-foreground">
                 <span>
                   {isEn ? "Showing " : "Hiển thị "}
                   <strong className="text-foreground font-semibold">{filteredRows.length}</strong> /{" "}
@@ -437,7 +447,7 @@ export function FilePreviewPanel({
             </div>
 
             {/* Table Body with horizontal & vertical scroll */}
-            <div className="min-h-0 flex-1 overflow-auto bg-card">
+            <div className="min-h-0 flex-1 overflow-auto bg-card [-webkit-overflow-scrolling:touch]">
               {filteredRows.length === 0 ? (
                 <div className="flex h-40 flex-col items-center justify-center p-4 text-center text-xs text-muted-foreground">
                   <p>{isEn ? "No rows matching search query" : "Không tìm thấy dòng nào khớp với từ khóa tìm kiếm"}</p>
@@ -492,7 +502,7 @@ export function FilePreviewPanel({
 
             {/* Table Pagination Bar */}
             {totalPages > 1 && (
-              <div className="flex shrink-0 items-center justify-between border-t border-border bg-card px-4 py-2 text-xs">
+              <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-t border-border bg-card px-3 sm:px-4 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] text-xs">
                 <div className="flex items-center gap-1.5">
                   <span className="text-muted-foreground">{isEn ? "Per page:" : "Mỗi trang:"}</span>
                   <select
@@ -501,7 +511,7 @@ export function FilePreviewPanel({
                       setPageSize(Number(e.target.value));
                       setPage(1);
                     }}
-                    className="rounded border border-border bg-field px-1.5 py-0.5 text-xs text-foreground outline-none"
+                    className="min-h-[34px] rounded border border-border bg-field px-1.5 py-1 text-xs text-foreground outline-none"
                   >
                     <option value={25}>25</option>
                     <option value={50}>50</option>
@@ -519,7 +529,7 @@ export function FilePreviewPanel({
                       disabled={page <= 1}
                       onClick={() => setPage((p) => Math.max(1, p - 1))}
                       aria-label={isEn ? "Previous page" : "Trang trước"}
-                      className="rounded p-1 text-fg-secondary hover:bg-hover disabled:opacity-30 cursor-pointer"
+                      className="flex size-9 sm:size-8 items-center justify-center rounded-lg text-fg-secondary hover:bg-hover disabled:opacity-30 cursor-pointer"
                     >
                       <ChevronLeft size={16} />
                     </button>
@@ -528,7 +538,7 @@ export function FilePreviewPanel({
                       disabled={page >= totalPages}
                       onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                       aria-label={isEn ? "Next page" : "Trang sau"}
-                      className="rounded p-1 text-fg-secondary hover:bg-hover disabled:opacity-30 cursor-pointer"
+                      className="flex size-9 sm:size-8 items-center justify-center rounded-lg text-fg-secondary hover:bg-hover disabled:opacity-30 cursor-pointer"
                     >
                       <ChevronRight size={16} />
                     </button>

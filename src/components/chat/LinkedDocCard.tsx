@@ -108,14 +108,14 @@ export function LinkedDocCard({
     };
   }, [kind, id, attempt]);
 
-  const wrapper = "my-1.5 block w-full max-w-md not-prose";
+  const wrapper = "my-1.5 block w-full min-w-0 max-w-full sm:max-w-md not-prose";
 
   if (state.phase === "loading") {
     return (
       <div className={wrapper} role="status" aria-label={isEn ? "Loading document" : "Đang tải tài liệu"}>
         <span className="my-2 flex animate-pulse items-center gap-3 rounded-xl border border-border bg-card p-3">
           <span className="size-10 shrink-0 rounded-lg bg-muted" />
-          <span className="flex-1 space-y-2">
+          <span className="min-w-0 flex-1 space-y-2">
             <span className="block h-3 w-2/3 rounded bg-muted" />
             <span className="block h-2.5 w-1/3 rounded bg-muted" />
           </span>
@@ -127,12 +127,12 @@ export function LinkedDocCard({
   if (state.phase === "error") {
     return (
       <div className={wrapper}>
-        <span className="my-2 flex items-center justify-between gap-3 rounded-xl border border-dashed border-border bg-muted/40 p-3 text-xs text-muted-foreground">
-          <span>{isEn ? "Could not load this document." : "Không tải được tài liệu."}</span>
+        <span className="my-2 flex flex-wrap sm:flex-nowrap items-center justify-between gap-2.5 rounded-xl border border-dashed border-border bg-muted/40 p-3 text-xs text-muted-foreground">
+          <span className="min-w-0 [overflow-wrap:anywhere]">{isEn ? "Could not load this document." : "Không tải được tài liệu."}</span>
           <button
             type="button"
             onClick={() => setAttempt((n) => n + 1)}
-            className="inline-flex shrink-0 cursor-pointer items-center gap-1 rounded-lg border border-border px-2.5 py-1.5 font-medium text-fg-secondary hover:bg-hover"
+            className="inline-flex min-h-[38px] shrink-0 cursor-pointer items-center gap-1 rounded-lg border border-border px-3 py-1.5 font-medium text-fg-secondary hover:bg-hover"
           >
             <RefreshCw size={12} aria-hidden="true" />
             {isEn ? "Retry" : "Thử lại"}
@@ -149,7 +149,7 @@ export function LinkedDocCard({
           <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted">
             <FileX2 size={18} aria-hidden="true" />
           </span>
-          <span>{isEn ? "Document unavailable" : "Tài liệu không khả dụng"}</span>
+          <span className="min-w-0 [overflow-wrap:anywhere]">{isEn ? "Document unavailable" : "Tài liệu không khả dụng"}</span>
         </span>
       </div>
     );

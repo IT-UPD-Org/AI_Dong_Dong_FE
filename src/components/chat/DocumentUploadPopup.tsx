@@ -47,9 +47,11 @@ export function DocumentUploadPopup({ onClose, onUploadFiles }: DocumentUploadPo
   return (
     <div
       ref={popupRef}
-      className="absolute bottom-full left-0 z-50 mb-2 w-80 max-w-full rounded-2xl border border-border bg-elevated p-4 shadow-xl text-foreground animate-in fade-in slide-in-from-bottom-2 duration-200"
+      role="dialog"
+      aria-label={isEn ? "Upload documents" : "Tải tài liệu lên"}
+      className="absolute bottom-full inset-x-3 sm:inset-x-auto sm:left-4 z-50 mb-2 sm:w-80 max-h-[70dvh] overflow-y-auto rounded-2xl border border-border bg-elevated p-4 shadow-xl text-foreground animate-in fade-in slide-in-from-bottom-2 duration-200"
     >
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between gap-2 mb-3">
         <h3 className="text-sm font-semibold text-foreground">
           {isEn ? "Upload documents" : "Tải tài liệu lên"}
         </h3>
@@ -57,7 +59,7 @@ export function DocumentUploadPopup({ onClose, onUploadFiles }: DocumentUploadPo
           type="button"
           onClick={onClose}
           aria-label={isEn ? "Close upload" : "Đóng tải tài liệu"}
-          className="rounded-full p-1 text-muted-foreground hover:bg-hover hover:text-foreground cursor-pointer"
+          className="flex size-10 sm:size-8 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-hover hover:text-foreground cursor-pointer"
         >
           <X size={16} />
         </button>
@@ -65,7 +67,7 @@ export function DocumentUploadPopup({ onClose, onUploadFiles }: DocumentUploadPo
 
       <button
         type="button"
-        className={`flex w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-6 text-center transition-colors ${
+        className={`flex w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-5 sm:p-6 text-center transition-colors ${
           isDragging
             ? "border-brand bg-brand-soft"
             : "border-border hover:border-brand/40 bg-surface"
@@ -83,7 +85,7 @@ export function DocumentUploadPopup({ onClose, onUploadFiles }: DocumentUploadPo
         <p className="text-sm font-medium text-foreground">
           {isEn ? "Drag & drop or click to select files" : "Kéo thả hoặc nhấn để chọn file"}
         </p>
-        <p className="mt-1 text-xs text-muted-foreground">.doc, .docx, .xls, .xlsx, .pdf, .ppt, .pptx</p>
+        <p className="mt-1 text-xs text-muted-foreground [overflow-wrap:anywhere]">.doc, .docx, .xls, .xlsx, .pdf, .ppt, .pptx</p>
       </button>
 
       <div className="mt-4 flex items-start gap-2 rounded-lg bg-amber-500/10 p-3 text-xs text-amber-800 dark:text-amber-200 border border-amber-500/20">

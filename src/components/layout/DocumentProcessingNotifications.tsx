@@ -40,11 +40,15 @@ export function DocumentProcessingNotifications() {
   if (docs.length === 0) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
+    <div
+      role="status"
+      aria-live="polite"
+      className="pointer-events-none fixed inset-x-3 top-[calc(var(--shell-topbar-height)+0.75rem+env(safe-area-inset-top,0px))] z-[60] flex flex-col gap-2 md:inset-x-auto md:top-auto md:bottom-4 md:right-4 md:w-80"
+    >
       {docs.map((doc) => (
         <div
           key={doc.document_id}
-          className="flex items-center gap-3 w-80 rounded-xl border border-border bg-elevated p-4 shadow-lg text-foreground animate-in slide-in-from-right-2 fade-in duration-300"
+          className="pointer-events-auto flex w-full items-center gap-3 rounded-xl border border-border bg-elevated/95 p-3.5 sm:p-4 shadow-lg backdrop-blur-md text-foreground animate-in slide-in-from-top-2 md:slide-in-from-right-2 fade-in duration-300"
         >
           <div className="shrink-0">
             {doc.status === "ready" && (
@@ -70,7 +74,7 @@ export function DocumentProcessingNotifications() {
               <span className="truncate">{doc.title}</span>
             </p>
             <p
-              className={`text-xs ${
+              className={`truncate text-xs ${
                 doc.status === "error"
                   ? "text-red-600 dark:text-red-400"
                   : "text-muted-foreground"

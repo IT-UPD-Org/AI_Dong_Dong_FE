@@ -41,8 +41,8 @@ export function AuthVerifyPage() {
   }, [microsoftLogin, nav]);
 
   return (
-    <main className="grid min-h-[calc(100vh-80px)] place-items-center px-6 py-6">
-      <div className="w-full max-w-md rounded-3xl border border-border bg-card p-8 text-center shadow-sm">
+    <main className="grid min-h-[calc(100dvh-56px)] sm:min-h-[calc(100dvh-64px)] place-items-center px-4 py-6 sm:px-6">
+      <div className="w-full max-w-md rounded-2xl sm:rounded-3xl border border-border bg-card p-6 sm:p-8 text-center shadow-sm">
         {status === "verifying" && (
           <>
             <Loader2 className="mx-auto animate-spin text-brand-text" size={36} />
@@ -63,11 +63,11 @@ export function AuthVerifyPage() {
           <>
             <AlertCircle className="mx-auto text-rose-600 dark:text-rose-400" size={40} />
             <h1 className="mt-5 text-xl font-bold text-foreground">Không thể đăng nhập</h1>
-            <p className="mt-2 text-sm text-rose-600 dark:text-rose-400">{errorMessage}</p>
+            <p className="mt-2 break-words text-sm text-rose-600 dark:text-rose-400">{errorMessage}</p>
             <Link
               to="/login"
               replace
-              className="mt-6 inline-flex items-center gap-2 rounded-xl bg-foreground px-4 py-2.5 text-sm font-semibold text-background hover:bg-brand hover:text-brand-foreground transition-colors"
+              className="mt-6 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-foreground px-5 py-2.5 text-sm font-semibold text-background hover:bg-brand hover:text-brand-foreground transition-colors"
             >
               Thử lại <ArrowRight size={16} />
             </Link>

@@ -174,13 +174,13 @@ export function LoginPage() {
   }
 
   return (
-    <main className="grid min-h-[calc(100vh-80px)] place-items-center px-4 py-8 sm:px-6">
+    <main className="grid min-h-[calc(100dvh-56px)] sm:min-h-[calc(100dvh-64px)] place-items-center px-4 py-6 sm:px-6 sm:py-8">
       <div className="w-full max-w-lg">
         {/* Navigation link */}
-        <div className="mb-6">
+        <div className="mb-4 sm:mb-6">
           <Link
             to="/"
-            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="inline-flex min-h-11 items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft size={16} />
             Trở về trang chủ
@@ -203,10 +203,10 @@ export function LoginPage() {
         {error && (
           <div
             role="alert"
-            className="mt-6 rounded-xl border border-rose-200 bg-rose-50 dark:border-rose-800 dark:bg-rose-950/40 p-3 text-xs font-medium text-rose-700 dark:text-rose-300 flex items-start gap-2 animate-in fade-in duration-200"
+            className="mt-5 sm:mt-6 rounded-xl border border-rose-200 bg-rose-50 dark:border-rose-800 dark:bg-rose-950/40 p-3 text-xs font-medium text-rose-700 dark:text-rose-300 flex items-start gap-2 animate-in fade-in duration-200"
           >
             <AlertCircle size={16} className="shrink-0 mt-0.5 text-rose-600 dark:text-rose-400" />
-            <span>{error}</span>
+            <span className="break-words">{error}</span>
           </div>
         )}
 
@@ -219,7 +219,7 @@ export function LoginPage() {
             type="button"
             onClick={handleMicrosoftLogin}
             disabled={isSubmitting}
-            className="mt-6 flex w-full items-center justify-center gap-3 rounded-xl bg-foreground px-4 py-3 font-semibold text-background transition-all hover:bg-brand hover:text-brand-foreground hover:shadow-md disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed text-sm sm:text-base"
+            className="mt-6 flex min-h-12 w-full items-center justify-center gap-3 rounded-xl bg-foreground px-4 py-3 font-semibold text-background transition-all hover:bg-brand hover:text-brand-foreground hover:shadow-md disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed text-sm sm:text-base"
           >
             {isSubmitting ? (
               <RefreshCw className="animate-spin" size={16} />
@@ -237,7 +237,7 @@ export function LoginPage() {
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-border" />
             </div>
-            <div className="relative flex justify-center text-xs uppercase">
+            <div className="relative flex justify-center text-center text-xs uppercase">
               <span className="bg-background px-3 text-muted-foreground font-medium">
                 Hoặc đăng nhập bằng email & mật khẩu
               </span>
@@ -333,7 +333,7 @@ export function LoginPage() {
                     onClick={() => setShowPassword((prev) => !prev)}
                     tabIndex={-1}
                     aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
-                    className="absolute right-3.5 top-3 text-muted-foreground hover:text-foreground transition-colors p-0.5 cursor-pointer"
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
@@ -344,7 +344,7 @@ export function LoginPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 py-3 font-semibold text-brand-foreground transition-all hover:bg-brand-hover disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed shadow-sm text-sm sm:text-base"
+                className="mt-2 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 py-3 font-semibold text-brand-foreground transition-all hover:bg-brand-hover disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed shadow-sm text-sm sm:text-base"
               >
                 {isSubmitting ? (
                   <>

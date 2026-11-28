@@ -96,11 +96,11 @@ export function TemporaryLogin({ redirectTo = "/chat", onSwitchToOfficial }: Tem
   }
 
   return (
-    <main className="grid min-h-[calc(100vh-80px)] place-items-center px-4 py-8 sm:px-6">
+    <main className="grid min-h-[calc(100dvh-56px)] sm:min-h-[calc(100dvh-64px)] place-items-center px-4 py-6 sm:px-6 sm:py-8">
       <div className="w-full max-w-xl">
         <Link
           to="/"
-          className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          className="mb-4 sm:mb-6 inline-flex min-h-11 items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           <ArrowLeft size={16} />
           Trở về trang chủ
@@ -171,7 +171,7 @@ export function TemporaryLogin({ redirectTo = "/chat", onSwitchToOfficial }: Tem
                         {account.roleCode}
                       </span>
                     </div>
-                    <p className="mt-0.5 text-xs text-fg-secondary truncate">
+                    <p className="mt-0.5 text-xs text-fg-secondary break-all sm:truncate">
                       {account.email} · {account.name}
                     </p>
                     <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
@@ -180,8 +180,8 @@ export function TemporaryLogin({ redirectTo = "/chat", onSwitchToOfficial }: Tem
                   </div>
                 </div>
 
-                <div className="flex shrink-0 items-center justify-end sm:self-center">
-                  <span className="inline-flex items-center gap-1.5 rounded-xl bg-foreground px-3.5 py-2 text-xs font-semibold text-background transition-colors group-hover:bg-brand group-hover:text-brand-foreground">
+                <div className="flex w-full sm:w-auto shrink-0 items-center justify-end sm:self-center">
+                  <span className="inline-flex min-h-10 w-full sm:w-auto items-center justify-center gap-1.5 rounded-xl bg-foreground px-3.5 py-2 text-xs font-semibold text-background transition-colors group-hover:bg-brand group-hover:text-brand-foreground">
                     {isLoggingIn ? (
                       <>
                         <RefreshCw size={13} className="animate-spin" />

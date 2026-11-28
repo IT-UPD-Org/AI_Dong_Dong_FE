@@ -43,18 +43,18 @@ export function SearchBox({ onPick }: Props) {
 
   return (
     <div
-      className="relative w-full sm:w-80 md:w-96"
+      className="relative min-w-0 flex-1 md:w-80 md:flex-none lg:w-96"
       role="combobox"
       aria-expanded={open && q.length > 0}
       aria-haspopup="listbox"
     >
-      <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+      <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400 md:left-3 md:h-4 md:w-4" />
       <input
         ref={inputRef}
         value={q}
         placeholder="Tìm phòng: A103, X01, 601, thư viện… (/)"
         aria-label="Tìm phòng"
-        className="h-9 w-full rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-8 text-sm text-slate-900 outline-none transition focus:border-[#04714a] focus:bg-white focus:ring-2 focus:ring-[#04714a]/20"
+        className="h-9 w-full rounded-xl border border-slate-200 bg-slate-50 pl-8 pr-8 text-xs text-slate-900 outline-none transition focus:border-[#04714a] focus:bg-white focus:ring-2 focus:ring-[#04714a]/20 md:pl-9 md:text-sm"
         onChange={(e) => {
           setQ(e.target.value);
           setOpen(true);
@@ -79,7 +79,7 @@ export function SearchBox({ onPick }: Props) {
       {q && (
         <button
           type="button"
-          className="absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-md text-slate-400 hover:bg-slate-200/60 hover:text-slate-700"
+          className="absolute right-1 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-200/60 hover:text-slate-700 md:right-1.5 md:h-6 md:w-6 md:rounded-md cursor-pointer"
           aria-label="Xoá tìm kiếm"
           onMouseDown={(e) => e.preventDefault()}
           onClick={() => setQ('')}
@@ -89,7 +89,7 @@ export function SearchBox({ onPick }: Props) {
       )}
       {open && q.trim().length > 0 && (
         <ul
-          className="absolute left-0 right-0 top-11 z-40 max-h-80 overflow-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg"
+          className="absolute right-0 top-10 z-30 max-h-[50dvh] w-[min(22rem,calc(100vw-2rem))] overflow-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl md:left-0 md:top-11 md:max-h-80 md:w-auto"
           role="listbox"
         >
           {hits.length === 0 && (
@@ -100,7 +100,7 @@ export function SearchBox({ onPick }: Props) {
               key={h.ref.room.room_id}
               role="option"
               aria-selected={i === active}
-              className={`flex cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm transition-colors ${
+              className={`flex min-h-11 sm:min-h-0 cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm transition-colors ${
                 i === active ? 'bg-[#e8f7ef] text-[#013422]' : 'hover:bg-slate-50'
               }`}
               onMouseEnter={() => setActive(i)}

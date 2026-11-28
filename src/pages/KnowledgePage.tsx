@@ -8,7 +8,7 @@ export function KnowledgePage() {
     return <Navigate to="/chat" replace />;
   }
   return (
-    <main className="px-4 py-6 sm:px-6 sm:py-8 text-foreground">
+    <main className="mx-auto w-full min-w-0 max-w-6xl px-4 py-6 sm:px-6 sm:py-8 text-foreground">
       <LibraryManager hideHeader={false} />
     </main>
   );

@@ -25,26 +25,26 @@ export function ToolCallList({ toolCalls, running = false }: { toolCalls: BETool
 
   const Chevron = open ? ChevronDown : ChevronRight;
   return (
-    <div className="my-1.5">
+    <div className="my-1.5 min-w-0 max-w-full">
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
         aria-expanded={open}
-        className="group inline-flex max-w-full items-center gap-1.5 rounded-lg px-1 py-0.5 text-left text-[13px] text-muted-foreground transition-colors hover:text-foreground cursor-pointer"
+        className="group inline-flex min-h-[36px] max-w-full items-center gap-1.5 rounded-lg px-1.5 py-1 text-left text-[13px] text-muted-foreground transition-colors hover:bg-hover hover:text-foreground cursor-pointer"
       >
         {running && <LoaderCircle size={13} className="shrink-0 animate-spin text-brand-text" aria-hidden />}
-        <span className="truncate">
+        <span className="min-w-0 truncate">
           {running ? "Đang dùng" : "Đã dùng"} {summary(toolCalls)}
         </span>
         <Chevron size={14} className="shrink-0 opacity-70 group-hover:opacity-100" aria-hidden />
       </button>
 
       {open && (
-        <ul className="mt-1.5 overflow-hidden rounded-xl border border-border bg-surface text-[13px] text-fg-secondary animate-in fade-in duration-150">
+        <ul className="mt-1.5 max-w-full overflow-hidden rounded-xl border border-border bg-surface text-[13px] text-fg-secondary animate-in fade-in duration-150">
           {toolCalls.map((call) => (
-            <li key={call.id} className="flex items-center gap-2 border-b border-border-subtle px-3.5 py-2.5 last:border-b-0">
+            <li key={call.id} className="flex min-w-0 items-center gap-2 border-b border-border-subtle px-3.5 py-2.5 last:border-b-0">
               <Wrench size={13} className="shrink-0 text-muted-foreground" aria-hidden />
-              <span className="truncate">{toolName(call)}</span>
+              <span className="min-w-0 flex-1 truncate">{toolName(call)}</span>
             </li>
           ))}
         </ul>

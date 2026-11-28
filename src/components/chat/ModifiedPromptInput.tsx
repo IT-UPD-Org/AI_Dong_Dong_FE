@@ -1,5 +1,5 @@
 import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
-import { Paperclip, X, FileText } from "lucide-react";
+import { Paperclip, X, FileText, Loader2, Square } from "lucide-react";
 import {
   AgentLevel,
   AGENT_LEVEL_CONFIGS,
@@ -16,6 +16,8 @@ interface ModifiedPromptInputProps {
   onChange: (value: string) => void;
   onSubmit: (e?: FormEvent) => void;
   loading?: boolean;
+  streaming?: boolean;
+  onStop?: () => void;
   level: AgentLevel;
   onLevelChange: (level: AgentLevel) => void;
   placeholder?: string;
@@ -32,6 +34,8 @@ export function ModifiedPromptInput({
   onChange,
   onSubmit,
   loading = false,
+  streaming = false,
+  onStop,
   level,
   onLevelChange,
   placeholder = "Hãy hỏi bất cứ điều gì...",
@@ -221,7 +225,7 @@ export function ModifiedPromptInput({
     const el = textareaRef.current;
     if (!el) return;
     el.style.height = "auto";
-    el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
+    el.style.height = `${Math.min(el.scrollHeight, 132)}px`;
   }, [value]);
 
   const currentConfig = AGENT_LEVEL_CONFIGS[level];
@@ -234,40 +238,40 @@ export function ModifiedPromptInput({
   const effectivePlaceholder = placeholder || t("inputPlaceholder");
 
   return (
-    <div className="relative">
-      {/* Upload Popup */}
-      {isUploadOpen && (
-        <DocumentUploadPopup
-          onClose={() => setIsUploadOpen(false)}
-          onUploadFiles={uploadFiles}
-        />
-      )}
-
-      {/* Mention Dropdown */}
-      {showMentions && mentionFilteredDocs.length > 0 && (
-        <div className="absolute bottom-full left-4 mb-2 max-h-60 w-80 max-w-[calc(100%_-_2rem)] overflow-y-auto rounded-xl border border-border bg-elevated p-2 shadow-lg z-50 animate-in fade-in slide-in-from-bottom-2 duration-150">
-          <p className="px-2 py-1 text-xs font-semibold text-muted-foreground uppercase">
-            {t("suggestDocs")}
-          </p>
-          {mentionFilteredDocs.map((doc) => (
-            <button
-              key={doc.document_id}
-              type="button"
-              className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm hover:bg-hover text-foreground transition-colors cursor-pointer"
-              onClick={() => insertMention(doc)}
-            >
-              <Paperclip size={14} className="text-muted-foreground shrink-0" />
-              <span className="truncate flex-1">{doc.filename}</span>
-            </button>
-          ))}
-        </div>
-      )}
-
+    <div className="relative w-full">
       <form
         onSubmit={handleSubmit}
         className="w-full"
       >
-        <div className="mx-auto flex w-full max-w-4xl flex-col px-3 sm:px-4">
+        <div className="relative mx-auto flex w-full max-w-3xl lg:max-w-4xl flex-col px-3 sm:px-4">
+          {/* Upload Popup — scoped to composer container so it stays centered on desktop and inset on mobile */}
+          {isUploadOpen && (
+            <DocumentUploadPopup
+              onClose={() => setIsUploadOpen(false)}
+              onUploadFiles={uploadFiles}
+            />
+          )}
+
+          {/* Mention Dropdown */}
+          {showMentions && mentionFilteredDocs.length > 0 && (
+            <div className="absolute bottom-full inset-x-3 sm:inset-x-auto sm:left-4 mb-2 max-h-56 sm:w-80 overflow-y-auto rounded-xl border border-border bg-elevated p-2 shadow-lg z-50 animate-in fade-in slide-in-from-bottom-2 duration-150">
+              <p className="px-2 py-1 text-xs font-semibold text-muted-foreground uppercase">
+                {t("suggestDocs")}
+              </p>
+              {mentionFilteredDocs.map((doc) => (
+                <button
+                  key={doc.document_id}
+                  type="button"
+                  className="flex min-h-[44px] sm:min-h-[36px] w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm hover:bg-hover text-foreground transition-colors cursor-pointer"
+                  onClick={() => insertMention(doc)}
+                >
+                  <Paperclip size={14} className="text-muted-foreground shrink-0" />
+                  <span className="truncate flex-1">{doc.filename}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
           {(uploading || processing) && (
             <p role="status" className="pb-1 text-center text-xs text-muted-foreground">
               {t("processingDocs")}
@@ -284,18 +288,18 @@ export function ModifiedPromptInput({
             </p>
           )}
 
-          {/* Ô nhập chính — Glassmorphism với bo góc lớn, shadow nhẹ và viền mảnh */}
-          <div className="flex flex-col rounded-[24px] sm:rounded-[26px] border border-border bg-field/90 backdrop-blur-xl p-1.5 shadow-md transition-all focus-within:border-brand-bright/50 focus-within:bg-field focus-within:ring-2 focus-within:ring-brand/15">
+          {/* Ô nhập chính — 2-row mobile-first composer card: full-width textarea + accessible bottom action bar */}
+          <div className="flex flex-col rounded-[22px] sm:rounded-[26px] border border-border bg-field/95 backdrop-blur-xl px-2 py-1.5 sm:p-2 shadow-md transition-all focus-within:border-brand-bright/50 focus-within:bg-field focus-within:ring-2 focus-within:ring-brand/15">
             {/* Danh sách file đính kèm hiển thị gọn gàng bên trong card */}
             {attachedDocs.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 px-2 pt-1 pb-1.5">
+              <div className="flex flex-wrap gap-1.5 px-1.5 pt-1 pb-1.5">
                 {attachedDocs.map((doc) => (
                   <div
                     key={doc.document_id}
-                    className="flex items-center gap-1.5 rounded-lg border border-brand/20 bg-brand-soft px-2.5 py-1 text-xs text-brand-text shadow-2xs backdrop-blur-xs"
+                    className="flex max-w-full items-center gap-1.5 rounded-lg border border-brand/20 bg-brand-soft pl-2.5 pr-1 py-1 text-xs text-brand-text shadow-2xs backdrop-blur-xs"
                   >
                     <FileText size={13} className="text-brand-text shrink-0" />
-                    <span className="max-w-[180px] truncate font-medium text-[11px]">
+                    <span className="max-w-[calc(100vw-8.5rem)] sm:max-w-[200px] truncate font-medium text-[11px]">
                       {doc.filename}
                     </span>
                     <button
@@ -311,7 +315,8 @@ export function ModifiedPromptInput({
                           );
                         }
                       }}
-                      className="ml-0.5 rounded-full p-0.5 text-muted-foreground hover:bg-hover hover:text-foreground transition-colors cursor-pointer"
+                      className="flex size-7 sm:size-5 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-hover hover:text-foreground transition-colors cursor-pointer"
+                      aria-label={t("removeAttachment")}
                       title={t("removeAttachment")}
                     >
                       <X size={12} />
@@ -321,84 +326,116 @@ export function ModifiedPromptInput({
               </div>
             )}
 
-            {/* Hàng điều khiển: Nút (+), Nút Standard, Textarea, Mic, Send */}
-            <div className="flex items-end gap-1 sm:gap-1.5">
-              <button
-                type="button"
-                onClick={() => setIsUploadOpen(!isUploadOpen)}
-                disabled={loading || uploading}
-                className="flex size-9 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-hover hover:text-foreground transition-colors cursor-pointer focus:outline-none disabled:opacity-40"
-                title={t("uploadDoc")}
-              >
-                <PlusIcon />
-              </button>
-
-              {/* Nút Effort / Chế độ AI (Standard) */}
-              <button
-                type="button"
-                onClick={() => setIsModalOpen(true)}
-                title={`${t("configEffort")} (${currentConfig.label})`}
-                className="flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-brand-soft px-3 text-xs font-semibold text-brand-text transition-colors hover:opacity-85 cursor-pointer focus:outline-none"
-              >
-                <SlidersIcon />
-                <span>{currentConfig.label}</span>
-              </button>
-
-              {/* Input Textarea tự động mở rộng theo nội dung */}
-              <textarea
-                ref={textareaRef}
-                aria-label={t("inputPlaceholder")}
-                rows={1}
-                value={value}
-                placeholder={effectivePlaceholder}
-                onChange={(e) => handleTextChange(e.target.value)}
-                onKeyDown={handleKeyDown}
-                onPaste={(event) => {
-                  const files = Array.from(event.clipboardData.files);
-                  if (files.length > 0) {
-                    event.preventDefault();
-                    void uploadFiles(files);
-                  }
-                }}
-                disabled={loading}
-                style={{ outline: "none", boxShadow: "none" }}
-                className="max-h-[140px] min-w-0 flex-1 resize-none bg-transparent py-2 text-sm text-foreground border-0 outline-none ring-0 focus:border-0 focus:outline-none focus:ring-0 focus:shadow-none focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground px-2"
-              />
-
-              {/* Nút Giọng nói */}
-              <button
-                type="button"
-                onClick={toggle}
-                disabled={!supported || loading}
-                title={
-                  supported
-                    ? listening
-                      ? t("voiceStop")
-                      : t("voiceInput")
-                    : t("voiceUnsupported")
+            {/* Full-width auto-growing textarea (16px on mobile avoids iOS Safari focus zoom) */}
+            <textarea
+              ref={textareaRef}
+              aria-label={t("inputPlaceholder")}
+              rows={1}
+              value={value}
+              placeholder={effectivePlaceholder}
+              onChange={(e) => handleTextChange(e.target.value)}
+              onKeyDown={handleKeyDown}
+              onPaste={(event) => {
+                const files = Array.from(event.clipboardData.files);
+                if (files.length > 0) {
+                  event.preventDefault();
+                  void uploadFiles(files);
                 }
-                className={`flex size-9 shrink-0 items-center justify-center rounded-full transition-colors disabled:opacity-30 cursor-pointer focus:outline-none ${
-                  listening
-                    ? "bg-destructive text-destructive-foreground animate-pulse"
-                    : "text-muted-foreground hover:bg-hover hover:text-foreground"
-                }`}
-              >
-                <MicIcon />
-              </button>
+              }}
+              disabled={loading}
+              style={{ outline: "none", boxShadow: "none" }}
+              className="max-h-[132px] min-h-[40px] w-full min-w-0 resize-none overflow-y-auto bg-transparent px-2 sm:px-2.5 pt-1.5 pb-1 text-base sm:text-sm leading-6 text-foreground border-0 outline-none ring-0 focus:border-0 focus:outline-none focus:ring-0 focus:shadow-none focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground disabled:opacity-60"
+            />
 
-              {/* Nút Gửi với màu xanh thương hiệu Đông Đông */}
-              <button
-                type="submit"
-                disabled={submitDisabled}
-                title={t("send")}
-                className="flex size-9 shrink-0 items-center justify-center rounded-full bg-brand text-brand-foreground transition-all shadow-xs disabled:opacity-30 disabled:cursor-not-allowed hover:bg-brand-hover cursor-pointer focus:outline-none"
-              >
-                <SendIcon />
-              </button>
+            {/* Hàng điều khiển: Left (+, Effort), Right (Mic, Send/Stop) with >= 44x44px mobile touch targets */}
+            <div className="flex items-center justify-between gap-2 pt-0.5">
+              <div className="flex min-w-0 items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => setIsUploadOpen(!isUploadOpen)}
+                  disabled={loading || uploading}
+                  aria-label={t("uploadDoc")}
+                  className="flex size-11 sm:size-9 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-hover hover:text-foreground transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-brand disabled:opacity-40"
+                  title={t("uploadDoc")}
+                >
+                  <PlusIcon />
+                </button>
+
+                {/* Nút Effort / Chế độ AI (Standard) */}
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(true)}
+                  disabled={loading}
+                  aria-label={`${t("configEffort")} (${currentConfig.label})`}
+                  title={`${t("configEffort")} (${currentConfig.label})`}
+                  className="flex h-11 sm:h-9 min-w-0 shrink-0 items-center gap-1.5 rounded-full bg-brand-soft px-3 text-xs font-semibold text-brand-text transition-colors hover:opacity-85 cursor-pointer focus-visible:outline-2 focus-visible:outline-brand disabled:opacity-50"
+                >
+                  <SlidersIcon />
+                  <span className="truncate">{currentConfig.label}</span>
+                </button>
+              </div>
+
+              <div className="flex shrink-0 items-center gap-1">
+                {/* Nút Giọng nói */}
+                <button
+                  type="button"
+                  onClick={toggle}
+                  disabled={!supported || loading}
+                  aria-label={
+                    supported
+                      ? listening
+                        ? t("voiceStop")
+                        : t("voiceInput")
+                      : t("voiceUnsupported")
+                  }
+                  title={
+                    supported
+                      ? listening
+                        ? t("voiceStop")
+                        : t("voiceInput")
+                      : t("voiceUnsupported")
+                  }
+                  className={`flex size-11 sm:size-9 shrink-0 items-center justify-center rounded-full transition-colors disabled:opacity-30 cursor-pointer focus-visible:outline-2 focus-visible:outline-brand ${
+                    listening
+                      ? "bg-destructive text-destructive-foreground animate-pulse"
+                      : "text-muted-foreground hover:bg-hover hover:text-foreground"
+                  }`}
+                >
+                  <MicIcon />
+                </button>
+
+                {/* Nút Dừng (khi đang stream) hoặc Nút Gửi */}
+                {streaming && onStop ? (
+                  <button
+                    type="button"
+                    onClick={onStop}
+                    aria-label={t("stopReply")}
+                    title={t("stopReply")}
+                    className="flex size-11 sm:h-9 sm:w-auto sm:px-3.5 shrink-0 items-center justify-center gap-1.5 rounded-full bg-foreground text-background transition-all shadow-xs hover:opacity-90 cursor-pointer focus-visible:outline-2 focus-visible:outline-brand"
+                  >
+                    <Square size={14} className="fill-current shrink-0" aria-hidden />
+                    <span className="hidden sm:inline text-xs font-semibold">{t("stopReply")}</span>
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    disabled={submitDisabled}
+                    aria-label={t("send")}
+                    title={t("send")}
+                    className="flex size-11 sm:size-9 shrink-0 items-center justify-center rounded-full bg-brand text-brand-foreground transition-all shadow-xs disabled:opacity-35 disabled:cursor-not-allowed hover:bg-brand-hover cursor-pointer focus-visible:outline-2 focus-visible:outline-brand"
+                  >
+                    {loading || uploading ? (
+                      <Loader2 size={16} className="animate-spin" aria-hidden />
+                    ) : (
+                      <SendIcon />
+                    )}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 
-          <p className="mt-1.5 text-center text-[11px] text-muted-foreground select-none tracking-tight">
+          <p className="mt-1.5 px-2 text-center text-[11px] leading-snug text-muted-foreground select-none tracking-tight">
             {t("disclaimer")}
           </p>
         </div>

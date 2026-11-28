@@ -55,7 +55,7 @@ const inputClass =
 const labelClass = "mb-2 block text-xs font-semibold uppercase tracking-wider text-fg-secondary";
 
 function Card({ children }: { children: React.ReactNode }) {
-  return <div className="rounded-3xl border border-border bg-card p-6 shadow-sm sm:p-8">{children}</div>;
+  return <div className="rounded-2xl sm:rounded-3xl border border-border bg-card p-4 shadow-sm sm:p-6 md:p-8">{children}</div>;
 }
 
 function Notice({ tone, children }: { tone: "error" | "success" | "info"; children: React.ReactNode }) {
@@ -94,7 +94,7 @@ function SignInPrompt() {
       <button
         type="button"
         onClick={() => navigate("/login", { state: { from: "/approve" } })}
-        className="mt-5 inline-flex items-center gap-2 rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-brand-foreground hover:bg-brand-hover cursor-pointer"
+        className="mt-5 inline-flex min-h-11 w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-brand-foreground hover:bg-brand-hover cursor-pointer"
       >
         <LogIn size={16} /> Đăng nhập bằng Microsoft
       </button>
@@ -239,7 +239,7 @@ function SubmitButton({ sending, label }: { sending: boolean; label: string }) {
     <button
       type="submit"
       disabled={sending}
-      className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-brand-foreground hover:bg-brand-hover disabled:opacity-60 cursor-pointer sm:w-auto"
+      className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-brand-foreground hover:bg-brand-hover disabled:opacity-60 cursor-pointer sm:w-auto"
     >
       {sending ? <RefreshCw size={16} className="animate-spin" /> : <Send size={16} />}
       {sending ? "Đang gửi..." : label}
@@ -458,7 +458,7 @@ function ActiveRequests() {
 
   return (
     <Card>
-      <div className="mb-6 grid grid-cols-2 gap-2 rounded-2xl bg-muted p-1.5">
+      <div className="mb-6 grid grid-cols-1 gap-2 rounded-2xl bg-muted p-1.5 sm:grid-cols-2">
         {(
           [
             ["storage", "Tăng dung lượng lưu trữ", HardDrive],
@@ -469,11 +469,11 @@ function ActiveRequests() {
             key={key}
             type="button"
             onClick={() => select(key)}
-            className={`flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold cursor-pointer ${
+            className={`flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold cursor-pointer ${
               tab === key ? "bg-card text-brand-text shadow-sm" : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            <Icon size={16} /> {label}
+            <Icon size={16} className="shrink-0" /> <span>{label}</span>
           </button>
         ))}
       </div>
@@ -539,24 +539,24 @@ export function ApprovePage() {
   }
 
   return (
-    <div className="min-h-screen bg-surface text-foreground">
-      <section className="border-b border-border bg-card px-4 py-8 sm:px-6 md:px-12">
+    <div className="min-h-[100dvh] bg-surface text-foreground">
+      <section className="border-b border-border bg-card px-4 py-6 sm:px-6 sm:py-8 md:px-12">
         <div className="mx-auto max-w-3xl">
-          <nav aria-label="Đường dẫn trang" className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+          <nav aria-label="Đường dẫn trang" className="flex flex-wrap items-center gap-1.5 text-xs font-medium text-muted-foreground">
             <Link to="/" className="hover:text-brand-text">Trang chủ</Link>
             <ChevronRight size={14} className="opacity-40" />
             <span className="font-semibold text-brand-text">Cấp phép tài khoản</span>
           </nav>
-          <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-brand/20 bg-brand-soft px-3 py-1 text-xs font-semibold text-brand-text">
-            <ShieldCheck size={14} /> CỔNG TIẾP NHẬN YÊU CẦU UAI
+          <div className="mt-4 sm:mt-5 inline-flex max-w-full flex-wrap items-center gap-2 rounded-full border border-brand/20 bg-brand-soft px-3 py-1 text-xs font-semibold text-brand-text">
+            <ShieldCheck size={14} className="shrink-0" /> CỔNG TIẾP NHẬN YÊU CẦU UAI
           </div>
-          <h1 className="mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl text-foreground">Cấp phép tài khoản UAI</h1>
-          <p className="mt-3 max-w-2xl text-sm text-fg-secondary sm:text-base">
+          <h1 className="mt-3 text-2xl font-extrabold tracking-tight sm:text-4xl text-foreground">Cấp phép tài khoản UAI</h1>
+          <p className="mt-2.5 sm:mt-3 max-w-2xl text-sm text-fg-secondary sm:text-base">
             Yêu cầu cấp quyền truy cập, tăng dung lượng lưu trữ hoặc báo lỗi khi sử dụng UAI.
           </p>
         </div>
       </section>
-      <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6">{body}</main>
+      <main className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-8">{body}</main>
       <LandingFooter />
     </div>
   );

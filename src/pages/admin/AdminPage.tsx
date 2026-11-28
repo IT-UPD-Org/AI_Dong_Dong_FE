@@ -30,26 +30,28 @@ export function AdminPage() {
   const { Component } = TABS.find((t) => t.id === active)!;
 
   return (
-    <main className="px-4 py-6 sm:px-6 sm:py-8">
+    <main className="w-full min-w-0 px-4 py-6 sm:px-6 sm:py-8">
       <p className="font-mono text-xs uppercase tracking-[.18em] text-brand-text">Quản trị</p>
-      <h1 className="mt-3 mb-6 text-3xl sm:text-5xl font-bold tracking-[-.07em] text-foreground">Dashboard</h1>
+      <h1 className="mt-2 sm:mt-3 mb-5 sm:mb-6 text-3xl sm:text-5xl font-bold tracking-[-.07em] text-foreground">Dashboard</h1>
 
-      <div className="mb-6 flex flex-wrap gap-1 border-b border-border">
-        {TABS.map(({ id, label, Icon }) => (
-          <button
-            key={id}
-            type="button"
-            onClick={() => setParams({ tab: id }, { replace: true })}
-            className={`-mb-px flex items-center gap-2 border-b-2 px-4 py-2.5 text-sm transition-colors cursor-pointer ${
-              active === id
-                ? "border-brand font-semibold text-brand-text"
-                : "border-transparent text-muted-foreground hover:text-brand-text"
-            }`}
-          >
-            <Icon size={16} />
-            {label}
-          </button>
-        ))}
+      <div className="mb-6 -mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto border-b border-border">
+        <div className="flex w-max min-w-full gap-1">
+          {TABS.map(({ id, label, Icon }) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setParams({ tab: id }, { replace: true })}
+              className={`-mb-px flex min-h-11 shrink-0 items-center gap-2 whitespace-nowrap border-b-2 px-3.5 sm:px-4 py-2.5 text-sm transition-colors cursor-pointer ${
+                active === id
+                  ? "border-brand font-semibold text-brand-text"
+                  : "border-transparent text-muted-foreground hover:text-brand-text"
+              }`}
+            >
+              <Icon size={16} className="shrink-0" />
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Keyed so switching tabs remounts and refetches fresh data. */}

@@ -42,13 +42,13 @@ export function ProductDemoVideo() {
   return (
     <section
       ref={sectionRef}
-      className="border-t border-border px-6 py-16 md:px-12 md:py-24"
+      className="overflow-hidden border-t border-border px-4 py-12 sm:px-6 sm:py-16 md:px-12 md:py-24"
     >
       <div className="mx-auto max-w-6xl">
         {/* HEADER */}
         <div
           className={`
-            mb-8 text-center
+            mb-6 sm:mb-8 text-center
             transition-all
             duration-1000
             ease-out
@@ -56,19 +56,19 @@ export function ProductDemoVideo() {
             ${
               isVisible
                 ? "translate-y-0 opacity-100"
-                : "translate-y-16 opacity-0"
+                : "translate-y-12 opacity-0"
             }
           `}
         >
-          <p className="mono text-xs uppercase tracking-[.18em] text-brand-text">
+          <p className="mono text-xs uppercase tracking-[.16em] sm:tracking-[.18em] text-brand-text">
             EXPERIENCE UAI-01
           </p>
 
-          <h2 className="mt-4 text-3xl font-bold tracking-tight text-brand-text md:text-5xl">
+          <h2 className="mt-3 text-2xl font-bold tracking-tight text-brand-text sm:mt-4 sm:text-3xl md:text-5xl">
             Khám phá Đông Đông AI
           </h2>
 
-          <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-fg-secondary md:text-base">
+          <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-fg-secondary sm:mt-4 sm:leading-7 md:text-base">
             Trải nghiệm cách trí tuệ nhân tạo hỗ trợ học tập, tra cứu thông tin
             và khai thác kho tri thức số.
           </p>
@@ -77,6 +77,7 @@ export function ProductDemoVideo() {
         {/* VIDEO */}
         <div
           className={`
+            w-full
             overflow-hidden
             rounded-[10px]
             border border-border
@@ -89,7 +90,7 @@ export function ProductDemoVideo() {
             ${
               isVisible
                 ? "translate-y-0 scale-100 opacity-100"
-                : "translate-y-32 scale-[0.94] opacity-0"
+                : "translate-y-16 sm:translate-y-24 scale-[0.96] opacity-0"
             }
           `}
         >

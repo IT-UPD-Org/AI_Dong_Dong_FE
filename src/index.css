@@ -98,10 +98,22 @@
   --sidebar-border: var(--border);
   --sidebar-ring: var(--ring);
 
+  /* Shared responsive layout contract */
+  --shell-topbar-height: 3.5rem;
+  --public-header-height: 3.5rem;
+  --sidebar-width: 16rem;
+  --sidebar-collapsed-width: 4.5rem;
+
   font-family: 'Manrope', sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   color-scheme: light;
+}
+
+@media (min-width: 640px) {
+  :root {
+    --public-header-height: 4rem;
+  }
 }
 
 .dark {
@@ -239,11 +251,19 @@
   html {
     background-color: var(--background);
     color: var(--foreground);
+    overflow-x: clip;
+    min-height: 100dvh;
+    -webkit-text-size-adjust: 100%;
   }
   body {
     @apply bg-background text-foreground;
     margin: 0;
     min-width: 320px;
+    min-height: 100dvh;
+    overflow-x: clip;
+  }
+  #root {
+    min-height: 100dvh;
   }
   button, input, textarea { font: inherit; }
   button { cursor: pointer; }
@@ -251,6 +271,20 @@
   ::selection { background: #a7e8c9; color: #11130f; }
   .dark ::selection { background: #04714a; color: #ffffff; }
   :focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+}
+
+@layer utilities {
+  .safe-top {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  .safe-bottom,
+  .safe-area-inset-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .safe-x {
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
 }
 
 .mono { font-family: 'DM Mono', monospace; }

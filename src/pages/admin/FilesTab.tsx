@@ -10,25 +10,25 @@ export function FilesTab() {
   const list = usePagedList(load, FILES_PAGE_SIZE);
 
   return (
-    <section>
+    <section className="min-w-0">
       <p className="mb-4 text-sm text-muted-foreground">Toàn bộ tệp của mọi người dùng.</p>
       <ListState loading={list.loading} error={list.error} empty={list.items.length === 0} emptyText="Chưa có tệp nào.">
-        <div className="rounded-2xl border border-border bg-card">
-          <Table>
+        <div className="overflow-x-auto rounded-2xl border border-border bg-card">
+          <Table className="min-w-[780px]">
             <TableHeader>
               <TableRow>
-                <TableHead>Tiêu đề</TableHead>
-                <TableHead>Tên tệp</TableHead>
-                <TableHead>Loại</TableHead>
-                <TableHead>Kích thước</TableHead>
-                <TableHead>Chủ sở hữu</TableHead>
-                <TableHead>Object key</TableHead>
+                <TableHead className="px-3 sm:px-4">Tiêu đề</TableHead>
+                <TableHead className="px-3">Tên tệp</TableHead>
+                <TableHead className="px-3">Loại</TableHead>
+                <TableHead className="px-3">Kích thước</TableHead>
+                <TableHead className="px-3">Chủ sở hữu</TableHead>
+                <TableHead className="px-3 sm:px-4">Object key</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {list.items.map((file) => (
                 <TableRow key={file.id}>
-                  <TableCell className="max-w-56 truncate font-medium text-foreground">
+                  <TableCell className="max-w-56 truncate px-3 sm:px-4 font-medium text-foreground">
                     {file.file_url ? (
                       <a href={file.file_url} target="_blank" rel="noreferrer" className="hover:text-brand-text hover:underline">
                         {file.title}
@@ -37,11 +37,11 @@ export function FilesTab() {
                       file.title
                     )}
                   </TableCell>
-                  <TableCell className="max-w-48 truncate text-muted-foreground">{file.filename}</TableCell>
-                  <TableCell className="text-foreground">{file.file_type === "image" ? "Hình ảnh" : "Tài liệu"}</TableCell>
-                  <TableCell className="text-foreground">{formatBytes(file.size)}</TableCell>
-                  <TableCell className="font-mono text-xs text-muted-foreground">{file.user_id}</TableCell>
-                  <TableCell className="max-w-64 truncate font-mono text-xs text-muted-foreground" title={file.object_key}>
+                  <TableCell className="max-w-48 truncate px-3 text-muted-foreground">{file.filename}</TableCell>
+                  <TableCell className="px-3 text-foreground">{file.file_type === "image" ? "Hình ảnh" : "Tài liệu"}</TableCell>
+                  <TableCell className="px-3 text-foreground">{formatBytes(file.size)}</TableCell>
+                  <TableCell className="px-3 font-mono text-xs text-muted-foreground">{file.user_id}</TableCell>
+                  <TableCell className="max-w-64 truncate px-3 sm:px-4 font-mono text-xs text-muted-foreground" title={file.object_key}>
                     {file.object_key}
                   </TableCell>
                 </TableRow>

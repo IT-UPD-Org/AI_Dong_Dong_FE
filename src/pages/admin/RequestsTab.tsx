@@ -38,7 +38,7 @@ function AccountDetails({ request }: { request: AdminAccountRequest }) {
         .map(([label, value]) => (
           <div key={label} className="contents">
             <dt className="text-muted-foreground">{label}</dt>
-            <dd className="text-foreground">{value}</dd>
+            <dd className="min-w-0 break-words text-foreground">{value}</dd>
           </div>
         ))}
     </dl>
@@ -80,13 +80,13 @@ function RequestList({ kind, status }: { kind: RequestKind; status: RequestStatu
           {list.items.map((request) => (
             <li key={request.id} className="rounded-2xl border border-border bg-card p-4">
               <div className="flex flex-wrap items-start justify-between gap-2">
-                <div>
-                  <p className="font-semibold text-foreground">{request.user_name}</p>
-                  <p className="text-sm text-muted-foreground">{request.user_email}</p>
+                <div className="min-w-0">
+                  <p className="font-semibold text-foreground break-words">{request.user_name}</p>
+                  <p className="text-sm text-muted-foreground break-all">{request.user_email}</p>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  {new Date(request.created_at).toLocaleString("vi-VN")}
-                  <span className={`rounded-full border px-2.5 py-0.5 font-semibold ${STATUS_STYLE[request.status]}`}>
+                <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                  <span>{new Date(request.created_at).toLocaleString("vi-VN")}</span>
+                  <span className={`rounded-full border px-2.5 py-0.5 font-semibold whitespace-nowrap ${STATUS_STYLE[request.status]}`}>
                     {STATUS_LABEL[request.status]}
                   </span>
                 </div>
@@ -100,37 +100,39 @@ function RequestList({ kind, status }: { kind: RequestKind; status: RequestStatu
                 ) : (
                   <AccountDetails request={request} />
                 )}
-                <p className="whitespace-pre-wrap rounded-xl bg-muted p-3 text-sm text-fg-secondary">{request.reason}</p>
+                <p className="whitespace-pre-wrap break-words rounded-xl bg-muted p-3 text-sm text-fg-secondary">{request.reason}</p>
                 {request.admin_note && request.status !== "pending" && (
-                  <p className="text-xs text-muted-foreground">Ghi chú: {request.admin_note}</p>
+                  <p className="break-words text-xs text-muted-foreground">Ghi chú: {request.admin_note}</p>
                 )}
               </div>
 
               {request.status === "pending" && (
-                <div className="mt-3 flex flex-wrap items-center gap-2">
+                <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
                   <input
                     value={notes[request.id] ?? ""}
                     onChange={(e) => setNotes((prev) => ({ ...prev, [request.id]: e.target.value }))}
                     placeholder="Ghi chú cho người dùng (tuỳ chọn)"
                     maxLength={1000}
-                    className="min-w-0 flex-1 rounded-lg border border-border bg-field text-foreground placeholder:text-muted-foreground px-3 py-1.5 text-sm outline-none focus:border-brand-bright"
+                    className="min-h-10 w-full min-w-0 sm:flex-1 rounded-lg border border-border bg-field text-foreground placeholder:text-muted-foreground px-3 py-1.5 text-sm outline-none focus:border-brand-bright"
                   />
-                  <button
-                    type="button"
-                    disabled={busyId === request.id}
-                    onClick={() => review(request, true)}
-                    className="rounded-lg bg-brand px-3 py-1.5 text-sm font-semibold text-brand-foreground hover:bg-brand-hover disabled:opacity-50 cursor-pointer"
-                  >
-                    Duyệt
-                  </button>
-                  <button
-                    type="button"
-                    disabled={busyId === request.id}
-                    onClick={() => review(request, false)}
-                    className="rounded-lg border border-rose-200 dark:border-rose-800 px-3 py-1.5 text-sm font-semibold text-rose-700 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/40 disabled:opacity-50 cursor-pointer"
-                  >
-                    Từ chối
-                  </button>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      disabled={busyId === request.id}
+                      onClick={() => review(request, true)}
+                      className="min-h-10 flex-1 sm:flex-none rounded-lg bg-brand px-4 py-1.5 text-sm font-semibold text-brand-foreground hover:bg-brand-hover disabled:opacity-50 cursor-pointer"
+                    >
+                      Duyệt
+                    </button>
+                    <button
+                      type="button"
+                      disabled={busyId === request.id}
+                      onClick={() => review(request, false)}
+                      className="min-h-10 flex-1 sm:flex-none rounded-lg border border-rose-200 dark:border-rose-800 px-4 py-1.5 text-sm font-semibold text-rose-700 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/40 disabled:opacity-50 cursor-pointer"
+                    >
+                      Từ chối
+                    </button>
+                  </div>
                 </div>
               )}
             </li>
@@ -147,14 +149,14 @@ export function RequestsTab() {
   const [status, setStatus] = useState<RequestStatus | null>("pending");
 
   return (
-    <section>
+    <section className="min-w-0">
       <div className="mb-4 flex flex-wrap items-center gap-2">
         {(Object.keys(KIND_LABEL) as RequestKind[]).map((k) => (
           <button
             key={k}
             type="button"
             onClick={() => setKind(k)}
-            className={`rounded-full border px-3 py-1 text-sm font-medium cursor-pointer transition-colors ${
+            className={`min-h-10 rounded-full border px-3.5 py-1.5 text-sm font-medium cursor-pointer transition-colors ${
               kind === k
                 ? "border-brand bg-brand-soft text-brand-text font-semibold"
                 : "border-border text-muted-foreground hover:text-foreground"
@@ -166,7 +168,7 @@ export function RequestsTab() {
         <select
           value={status ?? "all"}
           onChange={(e) => setStatus(e.target.value === "all" ? null : (e.target.value as RequestStatus))}
-          className="ml-auto rounded-md border border-border bg-field text-foreground px-2 py-1 text-sm outline-none focus:border-brand-bright cursor-pointer"
+          className="ml-auto min-h-10 rounded-md border border-border bg-field text-foreground px-2.5 py-1 text-sm outline-none focus:border-brand-bright cursor-pointer"
           aria-label="Lọc theo trạng thái"
         >
           <option value="pending" className="bg-field text-foreground">Chờ duyệt</option>

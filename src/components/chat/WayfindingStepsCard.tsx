@@ -70,10 +70,10 @@ export function WayfindingStepsCard({ wayfinding, onSelectCandidate }: Wayfindin
                   key={candidate.id}
                   type="button"
                   onClick={() => onSelectCandidate(candidate)}
-                  className="flex min-w-0 max-w-full flex-col items-start rounded-xl border border-border bg-elevated px-3 py-2 text-left text-xs transition-colors hover:border-brand hover:bg-brand-soft cursor-pointer"
+                  className="flex min-h-[44px] w-full sm:w-auto min-w-0 max-w-full flex-col items-start justify-center rounded-xl border border-border bg-elevated px-3 py-2 text-left text-xs transition-colors hover:border-brand hover:bg-brand-soft cursor-pointer"
                 >
                   <span className="font-semibold text-foreground [overflow-wrap:anywhere]">{label}</span>
-                  <span className="text-[11px] text-muted-foreground">{locationText}</span>
+                  <span className="text-[11px] text-muted-foreground [overflow-wrap:anywhere]">{locationText}</span>
                 </button>
               );
             }
@@ -143,7 +143,7 @@ export function WayfindingStepsCard({ wayfinding, onSelectCandidate }: Wayfindin
         {dest?.id && (
           <Link
             to={`/map?room=${encodeURIComponent(dest.id)}`}
-            className="inline-flex shrink-0 items-center gap-1 rounded-full border border-border bg-background px-2.5 py-1 text-[11px] font-semibold text-brand-text transition-colors hover:bg-brand-soft"
+            className="inline-flex min-h-[36px] shrink-0 items-center gap-1 rounded-full border border-border bg-background px-3 py-1.5 text-[11px] font-semibold text-brand-text transition-colors hover:bg-brand-soft"
           >
             <span>Xem bản đồ</span>
             <ArrowUpRight size={12} aria-hidden />

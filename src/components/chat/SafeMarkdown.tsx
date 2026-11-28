@@ -68,7 +68,7 @@ export function SafeMarkdown({ content, className, onPreviewFile }: SafeMarkdown
       if (isFile && onPreviewFile) {
         const fileName = typeof children === "string" ? children : safe.split("/").pop() || "Tài liệu";
         return (
-          <span className="my-1.5 block w-full max-w-md not-prose">
+          <span className="my-1.5 block w-full min-w-0 max-w-full sm:max-w-md not-prose">
             <FileCard
               file={{
                 name: fileName,
@@ -117,7 +117,7 @@ export function SafeMarkdown({ content, className, onPreviewFile }: SafeMarkdown
     },
 
     p({ children }) {
-      return <p className="mb-[0.7em] last:mb-0 leading-[1.65] text-foreground">{children}</p>;
+      return <p className="mb-[0.7em] last:mb-0 leading-[1.65] text-foreground [overflow-wrap:anywhere]">{children}</p>;
     },
 
     code({ className, children, ...rest }) {
@@ -135,7 +135,7 @@ export function SafeMarkdown({ content, className, onPreviewFile }: SafeMarkdown
       return (
         <code
           {...rest}
-          className="rounded bg-muted px-1 py-0.5 font-mono text-xs text-foreground"
+          className="rounded bg-muted px-1 py-0.5 font-mono text-xs text-foreground [overflow-wrap:anywhere]"
         >
           {children}
         </code>
@@ -148,20 +148,20 @@ export function SafeMarkdown({ content, className, onPreviewFile }: SafeMarkdown
 
     blockquote({ children }) {
       return (
-        <blockquote className="my-2.5 border-l-3 border-brand-bright pl-3.5 italic text-fg-secondary bg-surface py-1 rounded-r leading-[1.6]">
+        <blockquote className="my-2.5 border-l-3 border-brand-bright pl-3.5 italic text-fg-secondary bg-surface py-1 rounded-r leading-[1.6] [overflow-wrap:anywhere]">
           {children}
         </blockquote>
       );
     },
 
     ul({ children }) {
-      return <ul className="mb-2.5 ml-5 list-disc space-y-1 pl-0.5 leading-[1.6] text-foreground">{children}</ul>;
+      return <ul className="mb-2.5 ml-4 sm:ml-5 list-disc space-y-1 pl-0.5 leading-[1.6] text-foreground">{children}</ul>;
     },
     ol({ children }) {
-      return <ol className="mb-2.5 ml-5 list-decimal space-y-1 pl-0.5 leading-[1.6] text-foreground">{children}</ol>;
+      return <ol className="mb-2.5 ml-4 sm:ml-5 list-decimal space-y-1 pl-0.5 leading-[1.6] text-foreground">{children}</ol>;
     },
     li({ children }) {
-      return <li className="leading-[1.6]">{children}</li>;
+      return <li className="leading-[1.6] [overflow-wrap:anywhere]">{children}</li>;
     },
 
     strong({ children }) {
@@ -179,7 +179,7 @@ export function SafeMarkdown({ content, className, onPreviewFile }: SafeMarkdown
 
     table({ children }) {
       return (
-        <div className="my-3 overflow-x-auto rounded-xl border border-border bg-card shadow-2xs">
+        <div className="my-3 w-full max-w-full overflow-x-auto rounded-xl border border-border bg-card shadow-2xs [-webkit-overflow-scrolling:touch]">
           <table className="w-full border-collapse text-xs sm:text-sm">{children}</table>
         </div>
       );
@@ -195,13 +195,13 @@ export function SafeMarkdown({ content, className, onPreviewFile }: SafeMarkdown
     },
     th({ children }) {
       return (
-        <th className="px-3.5 py-2.5 text-left font-semibold text-foreground select-none whitespace-nowrap">
+        <th className="px-3 sm:px-3.5 py-2 sm:py-2.5 text-left font-semibold text-foreground select-none whitespace-nowrap">
           {children}
         </th>
       );
     },
     td({ children }) {
-      return <td className="px-3.5 py-2 text-foreground">{children}</td>;
+      return <td className="px-3 sm:px-3.5 py-2 text-foreground">{children}</td>;
     },
   };
 
@@ -209,7 +209,7 @@ export function SafeMarkdown({ content, className, onPreviewFile }: SafeMarkdown
   const segments = splitLinkTags(content);
 
   return (
-    <div className={className}>
+    <div className={`min-w-0 max-w-full [overflow-wrap:anywhere] ${className ?? ""}`}>
       {segments.map((segment, i) =>
         segment.type === "link" ? (
           <LinkedDocCard key={`${i}-${segment.kind}-${segment.id}`} kind={segment.kind} id={segment.id} onPreview={onPreviewFile} />

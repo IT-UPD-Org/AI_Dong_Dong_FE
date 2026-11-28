@@ -91,11 +91,11 @@ export function CreateAccountPage() {
   }
 
   return (
-    <main className="grid min-h-[calc(100vh-80px)] place-items-center px-6 py-6">
+    <main className="grid min-h-[calc(100dvh-56px)] sm:min-h-[calc(100dvh-64px)] place-items-center px-4 py-6 sm:px-6">
       <div className="w-full max-w-lg">
         <Link
           to="/login"
-          className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          className="mb-4 sm:mb-6 inline-flex min-h-11 items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft size={16} />
           Quay lại đăng nhập
@@ -141,15 +141,15 @@ export function CreateAccountPage() {
         {available && (
           <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-4">
             <div className="rounded-2xl border border-border bg-surface p-4">
-              <div className="flex items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                  <Terminal size={16} className="text-brand-text" /> Mã xác nhận
+                  <Terminal size={16} className="shrink-0 text-brand-text" /> Mã xác nhận
                 </span>
                 <button
                   type="button"
                   onClick={requestKey}
                   disabled={busy || secondsLeft > 0}
-                  className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground hover:border-brand-bright disabled:opacity-50 cursor-pointer"
+                  className="min-h-10 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground hover:border-brand-bright disabled:opacity-50 cursor-pointer"
                 >
                   {secondsLeft > 0 ? `Còn ${secondsLeft}s` : "In mã ra console"}
                 </button>

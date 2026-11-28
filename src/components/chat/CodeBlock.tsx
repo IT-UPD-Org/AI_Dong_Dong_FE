@@ -53,9 +53,9 @@ export function CodeBlock({ className, children }: CodeBlockProps) {
   const isCodeElement = isValidElement(children) && children.type === "code";
 
   return (
-    <div className="group/code relative my-3 overflow-hidden rounded-xl border border-code-border bg-code text-code-foreground shadow-xs">
-      <div className="flex h-8 items-center justify-between border-b border-code-border bg-code-header px-3.5 text-xs text-code-muted select-none">
-        <span className="font-mono text-[11px] font-medium uppercase tracking-wider text-code-muted">
+    <div className="group/code relative my-3 w-full max-w-full min-w-0 overflow-hidden rounded-xl border border-code-border bg-code text-code-foreground shadow-xs">
+      <div className="flex min-h-9 items-center justify-between gap-2 border-b border-code-border bg-code-header px-3 sm:px-3.5 text-xs text-code-muted select-none">
+        <span className="truncate font-mono text-[11px] font-medium uppercase tracking-wider text-code-muted">
           {language || "code"}
         </span>
         <button
@@ -63,7 +63,7 @@ export function CodeBlock({ className, children }: CodeBlockProps) {
           onClick={handleCopy}
           aria-label="Sao chép mã"
           title={copied ? "Đã sao chép" : "Sao chép mã"}
-          className={`flex items-center gap-1.5 rounded-md px-2 py-0.8 text-[11px] font-medium transition-all cursor-pointer ${
+          className={`flex min-h-[32px] shrink-0 items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] font-medium transition-all cursor-pointer ${
             copied
               ? "bg-brand/30 text-brand-bright"
               : "text-code-muted hover:bg-code-hover hover:text-code-foreground"
@@ -83,7 +83,7 @@ export function CodeBlock({ className, children }: CodeBlockProps) {
         </button>
       </div>
 
-      <pre className="overflow-x-auto p-3.5 text-xs sm:text-[13px] font-mono leading-relaxed text-code-foreground selection:bg-brand/40">
+      <pre className="w-full max-w-full overflow-x-auto p-3 sm:p-3.5 text-xs sm:text-[13px] font-mono leading-relaxed text-code-foreground selection:bg-brand/40 [-webkit-overflow-scrolling:touch]">
         {isCodeElement ? children : <code className={className}>{children}</code>}
       </pre>
     </div>

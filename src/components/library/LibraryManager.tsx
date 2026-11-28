@@ -314,14 +314,14 @@ export function LibraryManager({ hideHeader = false }: LibraryManagerProps) {
   if (!canManage) return null;
 
   return (
-    <div className="w-full">
+    <div className="w-full min-w-0">
       {/* Page / Section Header */}
       {!hideHeader && (
         <div className="mb-6">
           <p className="font-mono text-xs uppercase tracking-[.18em] text-brand-text">
             {isEn ? "Shared Knowledge Repository" : "Kho tri thức chung"}
           </p>
-          <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h1 className="text-2xl sm:text-4xl font-bold tracking-tight text-foreground">
               {isEn ? "Shared Library" : "Kho tài liệu"}
             </h1>
@@ -329,7 +329,7 @@ export function LibraryManager({ hideHeader = false }: LibraryManagerProps) {
               <button
                 type="button"
                 onClick={openUploadModal}
-                className={primaryButtonClass}
+                className={`${primaryButtonClass} w-full sm:w-auto min-h-11 justify-center`}
               >
                 <Plus size={16} />
                 <span>{isEn ? "Upload Document" : "Tải lên tài liệu"}</span>
@@ -346,21 +346,22 @@ export function LibraryManager({ hideHeader = false }: LibraryManagerProps) {
 
       {/* Control Toolbar */}
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-1 items-center gap-2 max-w-md">
+        <div className="flex flex-1 items-center gap-2 sm:max-w-md">
           <div className="relative w-full">
-            <Filter size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Filter size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
             <input
               type="text"
               value={filterQuery}
               onChange={(e) => setFilterQuery(e.target.value)}
               placeholder={isEn ? "Filter loaded page by title or file..." : "Lọc danh sách trang hiện tại theo tên..."}
-              className={`${inputClass} pl-9 pr-8 text-xs sm:text-sm`}
+              className={`${inputClass} min-h-10 pl-9 pr-10 text-xs sm:text-sm`}
             />
             {filterQuery && (
               <button
                 type="button"
                 onClick={() => setFilterQuery("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+                aria-label={isEn ? "Clear filter" : "Xoá bộ lọc"}
+                className="absolute right-1 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-md text-sm text-muted-foreground hover:text-foreground cursor-pointer"
               >
                 ×
               </button>
@@ -368,42 +369,45 @@ export function LibraryManager({ hideHeader = false }: LibraryManagerProps) {
           </div>
         </div>
 
-        <div className="flex items-center justify-between sm:justify-end gap-2 text-xs text-muted-foreground">
+        <div className="flex flex-wrap items-center justify-between sm:justify-end gap-2 text-xs text-muted-foreground">
           {hideHeader && canManage && (
             <button
               type="button"
               onClick={openUploadModal}
-              className={primaryButtonClass}
+              className={`${primaryButtonClass} min-h-10`}
             >
               <Plus size={15} />
               <span>{isEn ? "Upload" : "Tải lên"}</span>
             </button>
           )}
 
-          <div className="flex items-center gap-1.5">
-            <span>{isEn ? "Per page:" : "Hiển thị:"}</span>
-            <select
-              value={pageSize}
-              onChange={(e) => {
-                setPageSize(Number(e.target.value));
-                setPage(1);
-              }}
-              className="rounded-lg border border-border bg-card px-2 py-1 text-xs text-foreground outline-none cursor-pointer"
-            >
-              <option value={20}>20</option>
-              <option value={50}>50</option>
-            </select>
-          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
+              <span>{isEn ? "Per page:" : "Hiển thị:"}</span>
+              <select
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setPage(1);
+                }}
+                className="min-h-10 rounded-lg border border-border bg-card px-2.5 py-1 text-xs text-foreground outline-none cursor-pointer"
+              >
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+              </select>
+            </div>
 
-          <button
-            type="button"
-            onClick={() => loadDocuments()}
-            disabled={loading}
-            title={isEn ? "Refresh list" : "Làm mới danh sách"}
-            className="flex items-center gap-1 rounded-lg border border-border bg-card p-1.5 text-foreground hover:bg-hover disabled:opacity-50 cursor-pointer"
-          >
-            <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
-          </button>
+            <button
+              type="button"
+              onClick={() => loadDocuments()}
+              disabled={loading}
+              title={isEn ? "Refresh list" : "Làm mới danh sách"}
+              aria-label={isEn ? "Refresh list" : "Làm mới danh sách"}
+              className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-card text-foreground hover:bg-hover disabled:opacity-50 cursor-pointer"
+            >
+              <RefreshCw size={15} className={loading ? "animate-spin" : ""} />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -462,8 +466,8 @@ export function LibraryManager({ hideHeader = false }: LibraryManagerProps) {
           )}
         </div>
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-xs">
-          <Table>
+        <div className="overflow-x-auto rounded-2xl border border-border bg-card shadow-xs">
+          <Table className="min-w-[680px]">
             <TableHeader>
               <TableRow className="border-b border-border bg-surface/50">
                 <TableHead className="py-3 px-4 text-xs font-semibold text-foreground">
@@ -489,7 +493,7 @@ export function LibraryManager({ hideHeader = false }: LibraryManagerProps) {
 
                 return (
                   <TableRow key={doc.id} className="border-b border-border-subtle hover:bg-hover transition-colors">
-                    <TableCell className="py-3.5 px-4 max-w-md">
+                    <TableCell className="py-3.5 px-4 max-w-md whitespace-normal">
                       <div className="flex items-start gap-3">
                         {getDocumentIcon(doc.filename, doc.content_type)}
                         <div className="min-w-0">
@@ -522,7 +526,7 @@ export function LibraryManager({ hideHeader = false }: LibraryManagerProps) {
                       </span>
                     </TableCell>
                     <TableCell className="py-3.5 px-4 text-right">
-                      <div className="flex items-center justify-end gap-1">
+                      <div className="flex items-center justify-end gap-1.5">
                         {safeUrl ? (
                           <a
                             href={safeUrl}
@@ -530,17 +534,17 @@ export function LibraryManager({ hideHeader = false }: LibraryManagerProps) {
                             rel="noopener noreferrer"
                             download
                             title={isEn ? "Download file" : "Tải tệp xuống"}
-                            className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-foreground hover:bg-hover hover:text-brand-text transition-colors"
+                            className="flex h-11 w-11 sm:h-9 sm:w-9 items-center justify-center rounded-lg border border-border text-foreground hover:bg-hover hover:text-brand-text transition-colors"
                           >
-                            <Download size={14} />
+                            <Download size={15} />
                             <span className="sr-only">{isEn ? "Download" : "Tải xuống"}</span>
                           </a>
                         ) : (
                           <span
                             title={isEn ? "No safe download link available" : "Tệp không có đường dẫn tải hợp lệ"}
-                            className="flex h-8 w-8 items-center justify-center text-muted-foreground/40 cursor-not-allowed"
+                            className="flex h-11 w-11 sm:h-9 sm:w-9 items-center justify-center text-muted-foreground/40 cursor-not-allowed"
                           >
-                            <Download size={14} />
+                            <Download size={15} />
                           </span>
                         )}
 
@@ -550,18 +554,18 @@ export function LibraryManager({ hideHeader = false }: LibraryManagerProps) {
                               type="button"
                               onClick={() => openEditModal(doc)}
                               title={isEn ? "Edit metadata" : "Chỉnh sửa thông tin"}
-                              className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-foreground hover:bg-hover hover:text-brand-text transition-colors cursor-pointer"
+                              className="flex h-11 w-11 sm:h-9 sm:w-9 items-center justify-center rounded-lg border border-border text-foreground hover:bg-hover hover:text-brand-text transition-colors cursor-pointer"
                             >
-                              <Pencil size={14} />
+                              <Pencil size={15} />
                               <span className="sr-only">{isEn ? "Edit" : "Sửa"}</span>
                             </button>
                             <button
                               type="button"
                               onClick={() => handleDelete(doc)}
                               title={isEn ? "Delete document" : "Xoá tài liệu"}
-                              className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-foreground hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 transition-colors cursor-pointer"
+                              className="flex h-11 w-11 sm:h-9 sm:w-9 items-center justify-center rounded-lg border border-border text-foreground hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 transition-colors cursor-pointer"
                             >
-                              <Trash2 size={14} />
+                              <Trash2 size={15} />
                               <span className="sr-only">{isEn ? "Delete" : "Xoá"}</span>
                             </button>
                           </>
@@ -577,7 +581,7 @@ export function LibraryManager({ hideHeader = false }: LibraryManagerProps) {
       )}
 
       {/* Pagination */}
-      <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
         <div>
           {isEn
             ? `Showing ${filteredDocuments.length} document${filteredDocuments.length === 1 ? "" : "s"}`
@@ -588,7 +592,7 @@ export function LibraryManager({ hideHeader = false }: LibraryManagerProps) {
             type="button"
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page <= 1 || loading}
-            className="rounded-lg border border-border px-3 py-1.5 text-foreground hover:bg-hover disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+            className="min-h-10 rounded-lg border border-border px-3.5 py-1.5 text-foreground hover:bg-hover disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
           >
             {isEn ? "Previous" : "Trước"}
           </button>
@@ -599,7 +603,7 @@ export function LibraryManager({ hideHeader = false }: LibraryManagerProps) {
             type="button"
             onClick={() => setPage((p) => p + 1)}
             disabled={!hasNext || loading}
-            className="rounded-lg border border-border px-3 py-1.5 text-foreground hover:bg-hover disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+            className="min-h-10 rounded-lg border border-border px-3.5 py-1.5 text-foreground hover:bg-hover disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
           >
             {isEn ? "Next" : "Sau"}
           </button>
@@ -608,7 +612,7 @@ export function LibraryManager({ hideHeader = false }: LibraryManagerProps) {
 
       {/* Upload Modal */}
       <Dialog open={isUploadOpen} onOpenChange={(open) => !uploading && (open ? setIsUploadOpen(true) : handleUserCancelUpload())}>
-        <DialogContent className="sm:max-w-lg p-6 bg-elevated border-border shadow-xl">
+        <DialogContent className="sm:max-w-lg max-h-[90dvh] overflow-y-auto p-4 sm:p-6 bg-elevated border-border shadow-xl">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold text-foreground">
               {isEn ? "Upload to Shared Library" : "Tải lên tài liệu vào Kho chung"}
@@ -651,8 +655,8 @@ export function LibraryManager({ hideHeader = false }: LibraryManagerProps) {
               >
                 <UploadCloud className="text-brand-text mb-2" size={24} />
                 {uploadFile ? (
-                  <div className="text-center">
-                    <p className="text-xs font-semibold text-foreground max-w-xs truncate">
+                  <div className="w-full min-w-0 text-center">
+                    <p className="mx-auto max-w-full truncate text-xs font-semibold text-foreground">
                       {uploadFile.name}
                     </p>
                     <p className="text-[11px] text-muted-foreground mt-0.5">
@@ -729,19 +733,19 @@ export function LibraryManager({ hideHeader = false }: LibraryManagerProps) {
               </div>
             )}
 
-            <DialogFooter className="mt-6 flex items-center justify-end gap-2">
+            <DialogFooter className="mx-0 mb-0 mt-6 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2 border-0 bg-transparent p-0">
               <button
                 type="button"
                 disabled={uploading}
                 onClick={handleUserCancelUpload}
-                className={secondaryButtonClass}
+                className={`${secondaryButtonClass} w-full sm:w-auto justify-center min-h-10`}
               >
                 {isEn ? "Cancel" : "Huỷ"}
               </button>
               <button
                 type="submit"
                 disabled={uploading || !uploadFile || !uploadTitle.trim()}
-                className={primaryButtonClass}
+                className={`${primaryButtonClass} w-full sm:w-auto justify-center min-h-10`}
               >
                 {uploading ? (
                   <>
@@ -759,7 +763,7 @@ export function LibraryManager({ hideHeader = false }: LibraryManagerProps) {
 
       {/* Edit Modal */}
       <Dialog open={editingDoc !== null} onOpenChange={(open) => !savingEdit && (open ? null : handleUserCancelEdit())}>
-        <DialogContent className="sm:max-w-md p-6 bg-elevated border-border shadow-xl">
+        <DialogContent className="sm:max-w-md max-h-[90dvh] overflow-y-auto p-4 sm:p-6 bg-elevated border-border shadow-xl">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold text-foreground">
               {isEn ? "Edit Document Metadata" : "Chỉnh sửa thông tin tài liệu"}
@@ -777,8 +781,8 @@ export function LibraryManager({ hideHeader = false }: LibraryManagerProps) {
                 </div>
               )}
 
-              <div>
-                <span className="block text-[11px] text-muted-foreground mb-1">
+              <div className="min-w-0">
+                <span className="block break-all text-[11px] text-muted-foreground mb-1">
                   {isEn ? "File name:" : "Tên tệp:"} <span className="font-mono text-foreground">{editingDoc.filename}</span>
                 </span>
               </div>
@@ -816,19 +820,19 @@ export function LibraryManager({ hideHeader = false }: LibraryManagerProps) {
                 />
               </div>
 
-              <DialogFooter className="mt-6 flex items-center justify-end gap-2">
+              <DialogFooter className="mx-0 mb-0 mt-6 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2 border-0 bg-transparent p-0">
                 <button
                   type="button"
                   disabled={savingEdit}
                   onClick={handleUserCancelEdit}
-                  className={secondaryButtonClass}
+                  className={`${secondaryButtonClass} w-full sm:w-auto justify-center min-h-10`}
                 >
                   {isEn ? "Cancel" : "Huỷ"}
                 </button>
                 <button
                   type="submit"
                   disabled={savingEdit || !editTitle.trim()}
-                  className={primaryButtonClass}
+                  className={`${primaryButtonClass} w-full sm:w-auto justify-center min-h-10`}
                 >
                   {savingEdit ? (
                     <>

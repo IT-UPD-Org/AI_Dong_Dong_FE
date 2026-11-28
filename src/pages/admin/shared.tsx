@@ -73,12 +73,12 @@ export function Pager({
   onChange: (page: number) => void;
 }) {
   return (
-    <div className="mt-4 flex items-center justify-end gap-2 text-sm">
+    <div className="mt-4 flex flex-wrap items-center justify-end gap-2 text-sm">
       <button
         type="button"
         onClick={() => onChange(page - 1)}
         disabled={page <= 1}
-        className="flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-foreground hover:bg-hover disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+        className="flex min-h-10 items-center gap-1 rounded-lg border border-border px-3.5 py-1.5 text-foreground hover:bg-hover disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
       >
         <ChevronLeft size={15} /> Trước
       </button>
@@ -87,7 +87,7 @@ export function Pager({
         type="button"
         onClick={() => onChange(page + 1)}
         disabled={!hasNext}
-        className="flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-foreground hover:bg-hover disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+        className="flex min-h-10 items-center gap-1 rounded-lg border border-border px-3.5 py-1.5 text-foreground hover:bg-hover disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
       >
         Sau <ChevronRight size={15} />
       </button>
@@ -128,10 +128,10 @@ export const inputClass =
   "w-full rounded-lg border border-border bg-field px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-brand-bright focus:ring-1 focus:ring-brand-bright";
 
 export const primaryButtonClass =
-  "inline-flex items-center gap-2 rounded-lg bg-foreground px-4 py-2 text-sm font-semibold text-background hover:bg-brand hover:text-brand-foreground disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed";
+  "inline-flex min-h-10 items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-foreground px-4 py-2 text-sm font-semibold text-background hover:bg-brand hover:text-brand-foreground disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed";
 
 export const secondaryButtonClass =
-  "inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-hover cursor-pointer";
+  "inline-flex min-h-10 items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-hover cursor-pointer";
 
 export function formatBytes(bytes: number): string {
   if (bytes === 0) return "0 B";

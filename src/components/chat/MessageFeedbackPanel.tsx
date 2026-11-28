@@ -76,10 +76,10 @@ export function MessageFeedbackPanel({ onClose, initialMode = "suggestion" }: Me
   return (
     <section
       aria-label={isEn ? "Feedback on response" : "Phản hồi về câu trả lời"}
-      className="mt-4 w-full animate-in rounded-2xl border border-border bg-card p-4 shadow-sm text-foreground fade-in slide-in-from-bottom-2 duration-300 md:max-w-[88%]"
+      className="mt-4 w-full min-w-0 max-w-full animate-in rounded-2xl border border-border bg-card p-3.5 sm:p-4 shadow-sm text-foreground fade-in slide-in-from-bottom-2 duration-300 md:max-w-[88%]"
     >
-      <div className="flex items-start justify-between gap-4">
-        <div>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
           <h2 className="text-sm font-semibold text-foreground">
             {isEn ? "Feedback on response" : "Phản hồi về câu trả lời"}
           </h2>
@@ -94,7 +94,7 @@ export function MessageFeedbackPanel({ onClose, initialMode = "suggestion" }: Me
           type="button"
           onClick={onClose}
           aria-label={isEn ? "Close feedback" : "Đóng phần phản hồi"}
-          className="flex size-8 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-hover hover:text-foreground transition-colors"
+          className="flex size-10 sm:size-8 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-hover hover:text-foreground transition-colors cursor-pointer"
         >
           <X size={16} />
         </button>
@@ -170,7 +170,7 @@ export function MessageFeedbackPanel({ onClose, initialMode = "suggestion" }: Me
             <button
               type="submit"
               disabled={!canSubmit}
-              className="rounded-xl bg-brand px-5 py-2.5 text-xs font-semibold text-brand-foreground transition-colors hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-35 cursor-pointer shadow-xs"
+              className="min-h-[44px] sm:min-h-[38px] w-full sm:w-auto rounded-xl bg-brand px-5 py-2.5 text-xs font-semibold text-brand-foreground transition-colors hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-35 cursor-pointer shadow-xs"
             >
               {mode === "suggestion"
                 ? isEn ? "Submit suggestion" : "Gửi góp ý"
@@ -239,7 +239,7 @@ function SuggestionForm({
           {isEn ? "How satisfied are you with this answer?" : "Bạn hài lòng với câu trả lời này ở mức nào?"}
         </legend>
         <div
-          className="mt-2 flex items-center gap-1"
+          className="mt-2 flex flex-wrap items-center gap-1"
           onMouseLeave={() => onRatingHover(0)}
         >
           {ratingLabels.map((label, index) => {
@@ -257,7 +257,7 @@ function SuggestionForm({
                 onFocus={() => onRatingHover(value)}
                 onBlur={() => onRatingHover(0)}
                 onClick={() => onRatingChange(value)}
-                className="rounded-md p-1 transition-transform duration-200 hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand cursor-pointer"
+                className="flex size-10 sm:size-9 items-center justify-center rounded-md transition-transform duration-200 hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand cursor-pointer"
               >
                 <Star
                   size={24}
@@ -271,7 +271,7 @@ function SuggestionForm({
             );
           })}
           {visibleRating > 0 && (
-            <span className="ml-2 text-xs font-medium text-brand-text">
+            <span className="ml-1 sm:ml-2 text-xs font-medium text-brand-text">
               {ratingLabels[visibleRating - 1]}
             </span>
           )}
@@ -329,7 +329,7 @@ function IssueForm({
               key={type}
               type="button"
               onClick={() => onIssueTypeChange(type)}
-              className={`rounded-full border px-3 py-1.5 text-xs transition-all duration-200 cursor-pointer ${
+              className={`min-h-[36px] rounded-full border px-3 py-1.5 text-xs transition-all duration-200 cursor-pointer ${
                 issueType === type
                   ? "border-brand bg-brand-soft font-medium text-brand-text"
                   : "border-border bg-field text-muted-foreground hover:border-brand/40 hover:text-foreground"
@@ -341,7 +341,7 @@ function IssueForm({
         </div>
       </fieldset>
 
-      <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_240px]">
+      <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_220px] md:grid-cols-[minmax(0,1fr)_240px]">
         <div>
           <label className="block text-xs font-medium text-muted-foreground">
             {isEn ? "Issue description" : "Mô tả lỗi"}

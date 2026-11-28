@@ -99,37 +99,39 @@ export function ProfilePage() {
       </h1>
 
       {/* Header: who you are */}
-      <section className={`${card} mt-8 flex flex-col gap-5 sm:flex-row sm:items-center`}>
-        <div className="flex size-16 shrink-0 items-center justify-center rounded-full bg-brand/10 text-2xl font-bold text-brand-text">
-          {(user?.display_name || user?.email || "?").charAt(0).toUpperCase()}
-        </div>
-        <div className="min-w-0 flex-1">
-          <h2 className="truncate text-xl font-semibold text-foreground">
-            {user?.display_name ?? (isEn ? "User" : "Người dùng")}
-          </h2>
-          <div className="mt-1.5 flex items-center gap-2 text-sm text-fg-secondary">
-            <Mail size={14} aria-hidden="true" />
-            <span className="truncate">{user?.email ?? "—"}</span>
+      <section className={`${card} mt-6 sm:mt-8 flex flex-col gap-4 sm:gap-5 sm:flex-row sm:items-center`}>
+        <div className="flex items-center gap-4 min-w-0 flex-1">
+          <div className="flex size-14 sm:size-16 shrink-0 items-center justify-center rounded-full bg-brand/10 text-xl sm:text-2xl font-bold text-brand-text">
+            {(user?.display_name || user?.email || "?").charAt(0).toUpperCase()}
           </div>
-          <div className="mt-2 flex items-center gap-2">
-            <Shield size={14} aria-hidden="true" className="text-brand-text" />
-            <span
-              className={`rounded-full border px-2.5 py-0.5 text-xs font-semibold ${
-                user?.role === "teacher"
-                  ? "border-emerald-500/30 bg-emerald-500/15 text-emerald-800 dark:text-emerald-300"
-                  : user?.role === "admin"
-                    ? "border-purple-500/30 bg-purple-500/15 text-purple-800 dark:text-purple-300"
-                    : "border-amber-500/30 bg-amber-500/15 text-amber-800 dark:text-amber-300"
-              }`}
-            >
-              {roleName}
-            </span>
+          <div className="min-w-0 flex-1">
+            <h2 className="truncate text-lg sm:text-xl font-semibold text-foreground">
+              {user?.display_name ?? (isEn ? "User" : "Người dùng")}
+            </h2>
+            <div className="mt-1 flex items-center gap-2 text-sm text-fg-secondary min-w-0">
+              <Mail size={14} aria-hidden="true" className="shrink-0" />
+              <span className="truncate">{user?.email ?? "—"}</span>
+            </div>
+            <div className="mt-2 flex items-center gap-2">
+              <Shield size={14} aria-hidden="true" className="shrink-0 text-brand-text" />
+              <span
+                className={`rounded-full border px-2.5 py-0.5 text-xs font-semibold ${
+                  user?.role === "teacher"
+                    ? "border-emerald-500/30 bg-emerald-500/15 text-emerald-800 dark:text-emerald-300"
+                    : user?.role === "admin"
+                      ? "border-purple-500/30 bg-purple-500/15 text-purple-800 dark:text-purple-300"
+                      : "border-amber-500/30 bg-amber-500/15 text-amber-800 dark:text-amber-300"
+                }`}
+              >
+                {roleName}
+              </span>
+            </div>
           </div>
         </div>
         <button
           type="button"
           onClick={handleLogout}
-          className="inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-2.5 text-sm font-semibold text-red-700 transition-colors hover:bg-destructive/15 dark:text-destructive"
+          className="inline-flex min-h-11 w-full sm:w-auto shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-2.5 text-sm font-semibold text-red-700 transition-colors hover:bg-destructive/15 dark:text-destructive"
         >
           <LogOut size={15} aria-hidden="true" />
           {t("logout")}
@@ -153,32 +155,32 @@ export function ProfilePage() {
                 maxLength={100}
                 disabled={saving}
                 onChange={(e) => setDisplayName(e.target.value)}
-                className="w-full rounded-lg border border-border bg-field px-3 py-2 text-sm text-foreground outline-none focus:border-brand-bright focus:ring-1 focus:ring-brand-bright"
+                className="min-h-11 w-full rounded-lg border border-border bg-field px-3 py-2 text-sm text-foreground outline-none focus:border-brand-bright focus:ring-1 focus:ring-brand-bright"
               />
               <button
                 type="submit"
                 disabled={saving || displayName.trim() === (user?.display_name ?? "")}
-                className="inline-flex shrink-0 cursor-pointer items-center justify-center rounded-lg bg-foreground px-4 py-2 text-sm font-semibold text-background hover:bg-brand hover:text-brand-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex min-h-11 w-full sm:w-auto shrink-0 cursor-pointer items-center justify-center rounded-lg bg-foreground px-4 py-2 text-sm font-semibold text-background hover:bg-brand hover:text-brand-foreground disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {t("save")}
               </button>
             </div>
           </form>
 
-          <div className="mt-6 grid grid-cols-2 gap-3 border-t border-border pt-5">
-            <div className="rounded-2xl border border-border bg-surface p-3.5">
-              <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-                <Coins size={14} aria-hidden="true" className="text-brand-text" />
-                <span>{isEn ? "AI Credits" : "Lượt dùng AI"}</span>
+          <div className="mt-6 grid grid-cols-2 gap-2.5 sm:gap-3 border-t border-border pt-5">
+            <div className="min-w-0 rounded-2xl border border-border bg-surface p-3 sm:p-3.5">
+              <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                <Coins size={14} aria-hidden="true" className="shrink-0 text-brand-text" />
+                <span className="truncate">{isEn ? "AI Credits" : "Lượt dùng AI"}</span>
               </div>
-              <p className="mt-1.5 text-lg font-bold text-foreground">{user?.credits ?? 0} credits</p>
+              <p className="mt-1.5 truncate text-base sm:text-lg font-bold text-foreground">{user?.credits ?? 0} credits</p>
             </div>
-            <div className="rounded-2xl border border-border bg-surface p-3.5">
-              <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-                <HardDrive size={14} aria-hidden="true" className="text-brand-text" />
-                <span>{isEn ? "Storage Used" : "Dung lượng đã dùng"}</span>
+            <div className="min-w-0 rounded-2xl border border-border bg-surface p-3 sm:p-3.5">
+              <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                <HardDrive size={14} aria-hidden="true" className="shrink-0 text-brand-text" />
+                <span className="truncate">{isEn ? "Storage Used" : "Dung lượng đã dùng"}</span>
               </div>
-              <p className="mt-1.5 text-lg font-bold text-foreground">{formatMb(used)}</p>
+              <p className="mt-1.5 truncate text-base sm:text-lg font-bold text-foreground">{formatMb(used)}</p>
             </div>
           </div>
         </section>
@@ -207,7 +209,7 @@ export function ProfilePage() {
           <p className="mt-1.5 text-xs text-muted-foreground">{percent}%</p>
           <Link
             to="/approve?type=storage_increase"
-            className="mt-5 inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-hover"
+            className="mt-5 inline-flex min-h-11 w-full sm:w-auto items-center justify-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-hover"
           >
             <HardDrive size={15} aria-hidden="true" />
             {isEn ? "Request more storage" : "Yêu cầu thêm dung lượng"}
@@ -218,7 +220,7 @@ export function ProfilePage() {
       {/* Sign-in sessions */}
       <section className={`${card} mt-6`} aria-labelledby="profile-sessions">
         <h2 id="profile-sessions" className="flex items-center gap-2 text-base font-semibold text-foreground">
-          <KeyRound size={16} aria-hidden="true" className="text-brand-text" />
+          <KeyRound size={16} aria-hidden="true" className="shrink-0 text-brand-text" />
           {isEn ? "Sign-in sessions" : "Phiên đăng nhập"}
         </h2>
         {sessionsError ? (
@@ -232,7 +234,7 @@ export function ProfilePage() {
         ) : (
           <ul className="mt-4 divide-y divide-border rounded-xl border border-border">
             {sessions.map((s) => (
-              <li key={s.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm">
+              <li key={s.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 px-4 py-3 text-sm">
                 <span className="text-foreground">
                   {isEn ? "Expires" : "Hết hạn"}{" "}
                   <span className="text-muted-foreground">{dateFormat.format(new Date(s.expires_at))}</span>
@@ -241,7 +243,7 @@ export function ProfilePage() {
                   type="button"
                   disabled={revokingId !== null}
                   onClick={() => revoke(s.id)}
-                  className="cursor-pointer rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-hover disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex min-h-10 sm:min-h-9 w-full sm:w-auto items-center justify-center cursor-pointer rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-hover disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {isEn ? "Sign out" : "Đăng xuất phiên"}
                 </button>

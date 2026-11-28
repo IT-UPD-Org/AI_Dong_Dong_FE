@@ -128,28 +128,28 @@ export function FileCard({
   return (
     <span
       onClick={handlePreview}
-      className={`group/card relative my-2 flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-border bg-card p-3 text-foreground shadow-xs transition-all hover:bg-hover hover:shadow-sm ${scheme.border} ${className}`}
+      className={`group/card relative my-2 flex w-full max-w-full min-w-0 cursor-pointer items-center justify-between gap-2 sm:gap-3 rounded-xl border border-border bg-card p-2.5 sm:p-3 text-foreground shadow-xs transition-all hover:bg-hover hover:shadow-sm ${scheme.border} ${className}`}
     >
-      <span className="flex min-w-0 flex-1 items-center gap-3">
+      <span className="flex min-w-0 flex-1 items-center gap-2.5 sm:gap-3">
         <span
-          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-transform group-hover/card:scale-105 ${scheme.iconBg}`}
+          className={`flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg transition-transform group-hover/card:scale-105 ${scheme.iconBg}`}
         >
           {scheme.icon}
         </span>
 
-        <span className="min-w-0 flex-1 block">
-          <span className="flex items-center gap-2">
+        <span className="min-w-0 flex-1 block overflow-hidden">
+          <span className="flex min-w-0 items-center gap-2">
             <span
-              className="truncate text-xs sm:text-sm font-semibold text-foreground group-hover/card:text-brand-text"
+              className="block min-w-0 truncate text-xs sm:text-sm font-semibold text-foreground group-hover/card:text-brand-text"
               title={file.name}
             >
               {file.name}
             </span>
           </span>
 
-          <span className="mt-0.5 flex items-center gap-2 text-[11px] text-muted-foreground">
+          <span className="mt-0.5 flex flex-wrap items-center gap-1.5 sm:gap-2 text-[11px] text-muted-foreground">
             <span
-              className={`rounded px-1.5 py-0.2 font-mono text-[10px] font-semibold uppercase tracking-wider border ${scheme.badgeBg}`}
+              className={`rounded px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider border ${scheme.badgeBg}`}
             >
               {(ext || "FILE").toUpperCase()}
             </span>
@@ -163,16 +163,16 @@ export function FileCard({
         </span>
       </span>
 
-      <span className="flex shrink-0 items-center gap-1.5">
+      <span className="flex shrink-0 items-center gap-1 sm:gap-1.5">
         {onPreview && (
           <button
             type="button"
             onClick={handlePreview}
             title={isEn ? "Preview document" : "Xem ngay tài liệu"}
             aria-label={isEn ? `Preview ${file.name}` : `Xem ngay ${file.name}`}
-            className="flex items-center gap-1 rounded-lg bg-brand-soft px-2.5 py-1.5 text-xs font-semibold text-brand-text transition-all hover:opacity-90 active:scale-95 cursor-pointer"
+            className="flex min-h-[40px] min-w-[40px] sm:min-h-[34px] sm:min-w-0 items-center justify-center gap-1 rounded-lg bg-brand-soft px-2.5 py-1.5 text-xs font-semibold text-brand-text transition-all hover:opacity-90 active:scale-95 cursor-pointer"
           >
-            <Eye size={13} />
+            <Eye size={14} />
             <span className="hidden sm:inline">{isEn ? "Preview" : "Xem ngay"}</span>
           </button>
         )}
@@ -183,18 +183,18 @@ export function FileCard({
           disabled={downloading}
           title={downloadSuccess ? (isEn ? "Downloaded" : "Đã tải xong") : (isEn ? "Download document" : "Tải xuống tài liệu")}
           aria-label={isEn ? `Download ${file.name}` : `Tải xuống ${file.name}`}
-          className={`flex items-center gap-1 rounded-lg border border-border px-2.5 py-1.5 text-xs font-medium transition-all hover:bg-hover active:scale-95 cursor-pointer disabled:opacity-50 ${
+          className={`flex min-h-[40px] min-w-[40px] sm:min-h-[34px] sm:min-w-0 items-center justify-center gap-1 rounded-lg border border-border px-2.5 py-1.5 text-xs font-medium transition-all hover:bg-hover active:scale-95 cursor-pointer disabled:opacity-50 ${
             downloadSuccess
               ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
               : "text-fg-secondary"
           }`}
         >
           {downloading ? (
-            <Loader2 size={13} className="animate-spin text-muted-foreground" />
+            <Loader2 size={14} className="animate-spin text-muted-foreground" />
           ) : downloadSuccess ? (
-            <Check size={13} className="text-brand-bright" />
+            <Check size={14} className="text-brand-bright" />
           ) : (
-            <Download size={13} />
+            <Download size={14} />
           )}
           <span className="hidden sm:inline">
             {downloading

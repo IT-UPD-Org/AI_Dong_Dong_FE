@@ -131,16 +131,16 @@ export function DocumentsPage() {
   const strokeDashoffset = circumference - (percentUsed / 100) * circumference;
 
   return (
-    <main className="px-4 py-6 sm:px-6 sm:py-8 text-foreground">
+    <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8 text-foreground">
       <p className="font-mono text-xs uppercase tracking-[.18em] text-brand-text">
         {isEn ? "Document Repository" : "Kho tài liệu"}
       </p>
-      <h1 className="mt-3 text-3xl sm:text-5xl font-bold tracking-[-.07em] text-foreground">
+      <h1 className="mt-2 sm:mt-3 text-3xl sm:text-5xl font-bold tracking-[-.07em] text-foreground">
         {isEn ? "Documents" : "Tài liệu"}
       </h1>
 
       {storage && (
-        <div className="mt-10 flex flex-col md:flex-row items-center gap-6 rounded-3xl border border-border bg-card p-6 shadow-sm">
+        <div className="mt-6 sm:mt-10 flex flex-col sm:flex-row items-center gap-5 sm:gap-6 rounded-2xl sm:rounded-3xl border border-border bg-card p-5 sm:p-6 shadow-sm">
           <div className="relative h-24 w-24 shrink-0">
             <svg className="h-full w-full -rotate-90 transform" viewBox="0 0 100 100">
               <circle
@@ -163,19 +163,19 @@ export function DocumentsPage() {
             </div>
           </div>
 
-          <div className="flex-1 text-sm text-fg-secondary">
-            <p className="font-semibold text-lg text-foreground mb-1">
+          <div className="w-full min-w-0 flex-1 text-sm text-fg-secondary">
+            <p className="font-semibold text-base sm:text-lg text-foreground mb-2">
               {isEn ? "Storage Capacity" : "Dung lượng lưu trữ"}
             </p>
-            <div className="flex justify-between max-w-sm mb-1">
+            <div className="flex justify-between gap-4 sm:max-w-sm mb-1">
               <span>{isEn ? "Used:" : "Đã dùng:"}</span>
               <span className="font-medium text-foreground">{formatBytes(storage.used_bytes)}</span>
             </div>
-            <div className="flex justify-between max-w-sm mb-1">
+            <div className="flex justify-between gap-4 sm:max-w-sm mb-1">
               <span>{isEn ? "Free:" : "Còn lại:"}</span>
               <span className="font-medium text-brand-text">{formatBytes(storage.free_bytes)}</span>
             </div>
-            <div className="flex justify-between max-w-sm text-muted-foreground border-t border-border mt-1 pt-1">
+            <div className="flex justify-between gap-4 sm:max-w-sm text-muted-foreground border-t border-border mt-1.5 pt-1.5">
               <span>{isEn ? "Total:" : "Tổng:"}</span>
               <span>{formatBytes(storage.total_bytes)}</span>
             </div>
@@ -184,19 +184,22 @@ export function DocumentsPage() {
       )}
 
       <div
-        className="mt-6 cursor-pointer rounded-3xl border border-dashed border-border bg-card p-10 text-center transition-colors hover:border-brand-bright hover:bg-hover"
+        className="mt-6 cursor-pointer rounded-2xl sm:rounded-3xl border border-dashed border-border bg-card p-6 sm:p-10 text-center transition-colors hover:border-brand-bright hover:bg-hover"
         onClick={() => fileInputRef.current?.click()}
       >
         <UploadCloud className="mx-auto text-brand-bright" size={30} />
-        <h2 className="mt-4 font-semibold text-foreground">
+        <h2 className="mt-3 sm:mt-4 font-semibold text-foreground">
           {isEn ? "Upload documents" : "Tải tài liệu lên"}
         </h2>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="mt-2 text-xs sm:text-sm text-muted-foreground leading-relaxed">
           {isEn
             ? "PDF, DOCX, XLSX, PPTX, Markdown and images · Powered by MarkItDown"
             : "PDF, DOCX, XLSX, PPTX, Markdown và hình ảnh · Hỗ trợ MarkItDown"}
         </p>
-        <button className="mt-6 rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-brand-foreground hover:bg-brand-hover transition-colors cursor-pointer">
+        <button
+          type="button"
+          className="mt-5 sm:mt-6 inline-flex min-h-11 items-center justify-center rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-brand-foreground hover:bg-brand-hover transition-colors cursor-pointer"
+        >
           {isEn ? "Select files" : "Chọn file"}
         </button>
         <input
@@ -209,7 +212,7 @@ export function DocumentsPage() {
         />
       </div>
 
-      <div className="mt-8 flex flex-col gap-2">
+      <div className="mt-6 sm:mt-8 flex flex-col gap-2.5">
         {loading && <p className="text-sm text-muted-foreground text-center py-4">{isEn ? "Loading documents..." : "Đang tải tài liệu..."}</p>}
         {!loading && loadError && (
           <p className="text-sm text-destructive text-center py-4">{isEn ? `Cannot load documents: ${loadError}` : `Không thể tải tài liệu: ${loadError}`}</p>
@@ -218,34 +221,36 @@ export function DocumentsPage() {
           <p className="text-sm text-muted-foreground text-center py-4">{isEn ? "No documents yet." : "Chưa có tài liệu nào."}</p>
         )}
         {docs.map(d => (
-          <div key={d.document_id} className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm">
-            <div className="shrink-0 p-2 bg-muted rounded-lg">
-              {getFileIcon(d.filename, d.file_type)}
+          <div key={d.document_id} className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm">
+            <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1">
+              <div className="shrink-0 p-2 bg-muted rounded-lg">
+                {getFileIcon(d.filename, d.file_type)}
+              </div>
+              <div className="min-w-0 flex-1">
+                {d.file_url && d.status === 'ready' ? (
+                  <a
+                    href={d.file_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="block break-words sm:truncate text-sm font-semibold text-foreground hover:text-brand-text hover:underline"
+                  >
+                    {d.title}
+                  </a>
+                ) : (
+                  <p className="break-words sm:truncate text-sm font-semibold text-foreground">{d.title}</p>
+                )}
+                <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
+                  <span className="max-w-full truncate">{d.filename}</span>
+                  <span aria-hidden="true">·</span>
+                  <span>{d.file_type === 'image' ? (isEn ? 'Image' : 'Hình ảnh') : (isEn ? 'Document' : 'Tài liệu')}</span>
+                  <span aria-hidden="true">·</span>
+                  <span>{formatBytes(d.size_bytes)}</span>
+                </p>
+                {d.error && <p className="mt-1 text-xs text-destructive break-words">{d.error}</p>}
+              </div>
             </div>
-            <div className="min-w-0 flex-1">
-              {d.file_url && d.status === 'ready' ? (
-                <a
-                  href={d.file_url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="block truncate text-sm font-semibold text-foreground hover:text-brand-text hover:underline"
-                >
-                  {d.title}
-                </a>
-              ) : (
-                <p className="truncate text-sm font-semibold text-foreground">{d.title}</p>
-              )}
-              <p className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-                <span className="truncate">{d.filename}</span>
-                <span>·</span>
-                <span>{d.file_type === 'image' ? (isEn ? 'Image' : 'Hình ảnh') : (isEn ? 'Document' : 'Tài liệu')}</span>
-                <span>·</span>
-                <span>{formatBytes(d.size_bytes)}</span>
-              </p>
-              {d.error && <p className="mt-1 text-xs text-destructive">{d.error}</p>}
-            </div>
-            <div className="flex items-center gap-3 shrink-0">
-              <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${
+            <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 border-t border-border/60 pt-2.5 sm:border-0 sm:pt-0">
+              <span className={`text-xs font-medium px-2.5 py-1 rounded-full whitespace-nowrap ${
                 d.status === 'ready' ? 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-300' :
                 d.status === 'error' ? 'bg-destructive/15 text-destructive' :
                 'bg-amber-500/15 text-amber-800 dark:text-amber-300'
@@ -253,10 +258,12 @@ export function DocumentsPage() {
                 {statusLabels[d.status]}
               </span>
               <button
+                type="button"
                 onClick={() => handleDelete(d)}
                 disabled={d.status !== 'ready' && d.status !== 'error'}
-                className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+                className="inline-flex h-11 w-11 items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl transition-colors disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
                 title={isEn ? "Delete document" : "Xóa tài liệu"}
+                aria-label={isEn ? "Delete document" : "Xóa tài liệu"}
               >
                 <Trash2 size={16} />
               </button>

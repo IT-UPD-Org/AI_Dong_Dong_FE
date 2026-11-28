@@ -95,7 +95,7 @@ export function CareerCustomSelect({
         aria-expanded={isOpen}
         onClick={() => setIsOpen((prev) => !prev)}
         className={`
-          flex w-full items-center justify-between gap-2
+          flex min-h-11 sm:min-h-9 w-full items-center justify-between gap-2
           rounded-xl border px-3 py-2 text-xs font-medium
           transition-all duration-200 outline-none
           ${

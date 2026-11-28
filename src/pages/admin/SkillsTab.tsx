@@ -244,15 +244,15 @@ export function SkillsTab() {
   const hasNext = skills.length >= pageSize;
 
   return (
-    <section className="space-y-4">
+    <section className="min-w-0 space-y-4">
       {/* Overview & Concept Explanation */}
-      <div className="rounded-2xl border border-border bg-card p-5">
+      <div className="rounded-2xl border border-border bg-card p-4 sm:p-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-start gap-3">
+          <div className="flex items-start gap-3 min-w-0">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand-text">
               <Sparkles size={20} />
             </div>
-            <div>
+            <div className="min-w-0">
               <h2 className="text-base font-bold text-foreground">
                 Kịch bản kỹ năng hệ thống (Skills / Playbooks)
               </h2>
@@ -264,7 +264,7 @@ export function SkillsTab() {
           <button
             type="button"
             onClick={openCreateDialog}
-            className={`${primaryButtonClass} shrink-0`}
+            className={`${primaryButtonClass} w-full sm:w-auto shrink-0`}
           >
             <Plus size={16} />
             <span>Thêm Skill</span>
@@ -274,22 +274,23 @@ export function SkillsTab() {
 
       {/* Search & Paging Bar */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <form onSubmit={handleSearchSubmit} className="flex flex-1 items-center gap-2 max-w-md">
+        <form onSubmit={handleSearchSubmit} className="flex flex-1 items-center gap-2 sm:max-w-md">
           <div className="relative w-full">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
             <input
               type="text"
               maxLength={200}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Tìm kiếm skill theo tên, slug, mô tả..."
-              className={`${inputClass} pl-9 pr-8 text-xs sm:text-sm`}
+              className={`${inputClass} min-h-10 pl-9 pr-10 text-xs sm:text-sm`}
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={handleClearSearch}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+                aria-label="Xoá tìm kiếm"
+                className="absolute right-1 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-md text-sm text-muted-foreground hover:text-foreground cursor-pointer"
               >
                 ×
               </button>
@@ -309,7 +310,7 @@ export function SkillsTab() {
                 setPageSize(Number(e.target.value));
                 setPage(1);
               }}
-              className="rounded-lg border border-border bg-card px-2 py-1 text-xs text-foreground outline-none cursor-pointer"
+              className="min-h-10 rounded-lg border border-border bg-card px-2.5 py-1 text-xs text-foreground outline-none cursor-pointer"
             >
               <option value={20}>20</option>
               <option value={50}>50</option>
@@ -321,9 +322,10 @@ export function SkillsTab() {
             onClick={() => loadSkills()}
             disabled={loading}
             title="Làm mới"
-            className="flex items-center gap-1 rounded-lg border border-border bg-card p-1.5 text-foreground hover:bg-hover disabled:opacity-50 cursor-pointer"
+            aria-label="Làm mới"
+            className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-card text-foreground hover:bg-hover disabled:opacity-50 cursor-pointer"
           >
-            <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
+            <RefreshCw size={15} className={loading ? "animate-spin" : ""} />
           </button>
         </div>
       </div>
@@ -363,8 +365,8 @@ export function SkillsTab() {
           )}
         </div>
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-xs">
-          <Table>
+        <div className="overflow-x-auto rounded-2xl border border-border bg-card shadow-xs">
+          <Table className="min-w-[720px]">
             <TableHeader>
               <TableRow className="border-b border-border bg-surface/50">
                 <TableHead className="py-3 px-4 text-xs font-semibold text-foreground">Tên & Mã định danh</TableHead>
@@ -377,7 +379,7 @@ export function SkillsTab() {
             <TableBody>
               {skills.map((skill) => (
                 <TableRow key={skill.id} className="border-b border-border-subtle hover:bg-hover transition-colors">
-                  <TableCell className="py-3.5 px-4 max-w-xs">
+                  <TableCell className="py-3.5 px-4 max-w-xs whitespace-normal">
                     <div className="min-w-0">
                       <span className="font-semibold text-sm text-foreground block truncate" title={skill.name}>
                         {skill.name}
@@ -389,7 +391,7 @@ export function SkillsTab() {
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="py-3.5 px-3 max-w-md">
+                  <TableCell className="py-3.5 px-3 max-w-md whitespace-normal">
                     <p className="text-xs text-muted-foreground line-clamp-2" title={skill.description}>
                       {skill.description}
                     </p>
@@ -401,7 +403,7 @@ export function SkillsTab() {
                       onClick={() => handleToggleEnabled(skill)}
                       aria-label={skill.enabled ? "Bấm để tắt skill" : "Bấm để kích hoạt skill"}
                       title={skill.enabled ? "Bấm để tắt" : "Bấm để kích hoạt"}
-                      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium transition-colors cursor-pointer ${
+                      className={`inline-flex min-h-9 items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-colors cursor-pointer ${
                         skill.enabled
                           ? "bg-brand-soft text-brand-text hover:opacity-80"
                           : "bg-surface text-muted-foreground border border-border hover:text-foreground"
@@ -423,9 +425,9 @@ export function SkillsTab() {
                       type="button"
                       onClick={() => openEditDialog(skill)}
                       title="Chỉnh sửa skill"
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border text-foreground hover:bg-hover hover:text-brand-text transition-colors cursor-pointer"
+                      className="inline-flex h-10 w-10 sm:h-9 sm:w-9 items-center justify-center rounded-lg border border-border text-foreground hover:bg-hover hover:text-brand-text transition-colors cursor-pointer"
                     >
-                      <Pencil size={14} />
+                      <Pencil size={15} />
                       <span className="sr-only">Chỉnh sửa</span>
                     </button>
                   </TableCell>
@@ -437,7 +439,7 @@ export function SkillsTab() {
       )}
 
       {/* Pagination Bar */}
-      <div className="flex items-center justify-between text-xs text-muted-foreground">
+      <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
         <div>
           Hiển thị {skills.length} skills{activeQuery ? ` cho "${activeQuery}"` : ""}
         </div>
@@ -446,7 +448,7 @@ export function SkillsTab() {
             type="button"
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page <= 1 || loading}
-            className="rounded-lg border border-border px-3 py-1.5 text-foreground hover:bg-hover disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+            className="min-h-10 rounded-lg border border-border px-3.5 py-1.5 text-foreground hover:bg-hover disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
           >
             Trước
           </button>
@@ -455,7 +457,7 @@ export function SkillsTab() {
             type="button"
             onClick={() => setPage((p) => p + 1)}
             disabled={!hasNext || loading}
-            className="rounded-lg border border-border px-3 py-1.5 text-foreground hover:bg-hover disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+            className="min-h-10 rounded-lg border border-border px-3.5 py-1.5 text-foreground hover:bg-hover disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
           >
             Sau
           </button>
@@ -467,7 +469,7 @@ export function SkillsTab() {
         open={dialogState !== null}
         onOpenChange={(open) => !saving && (open ? null : handleUserCancelDialog())}
       >
-        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto p-6 bg-elevated border-border shadow-xl">
+        <DialogContent className="sm:max-w-2xl max-h-[90dvh] overflow-y-auto p-4 sm:p-6 bg-elevated border-border shadow-xl">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold text-foreground">
               {dialogState?.type === "create" ? "Thêm Skill mới" : "Chỉnh sửa Skill"}
@@ -597,19 +599,19 @@ export function SkillsTab() {
                 </label>
               </div>
 
-              <DialogFooter className="mt-6 flex items-center justify-end gap-2">
+              <DialogFooter className="mx-0 mb-0 mt-6 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2 border-0 bg-transparent p-0">
                 <button
                   type="button"
                   disabled={saving}
                   onClick={handleUserCancelDialog}
-                  className={secondaryButtonClass}
+                  className={`${secondaryButtonClass} w-full sm:w-auto`}
                 >
                   Huỷ
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className={primaryButtonClass}
+                  className={`${primaryButtonClass} w-full sm:w-auto`}
                 >
                   {saving ? (
                     <>

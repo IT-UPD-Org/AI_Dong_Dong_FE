@@ -52,23 +52,23 @@ export function NodeDetailModal({ node, isOpen, onClose }: NodeDetailModalProps)
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-xl max-h-[85vh] overflow-hidden flex flex-col p-0 rounded-2xl border border-border bg-surface shadow-2xl">
+      <DialogContent className="w-[calc(100vw-1.5rem)] max-w-xl max-h-[88dvh] overflow-hidden flex flex-col p-0 rounded-2xl border border-border bg-surface shadow-2xl">
         {/* Header Bar */}
-        <div className="flex shrink-0 items-start justify-between border-b border-border p-5 bg-background">
-          <div className="flex items-center gap-3">
-            <div className="flex size-11 items-center justify-center rounded-xl bg-brand-soft text-brand-text">
+        <div className="flex shrink-0 items-start justify-between border-b border-border p-4 sm:p-5 pr-12 bg-background">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="flex size-10 sm:size-11 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand-text">
               {isBachelor ? (
-                <GraduationCap className="size-6" />
+                <GraduationCap className="size-5 sm:size-6" />
               ) : isDomain ? (
-                <Briefcase className="size-6" />
+                <Briefcase className="size-5 sm:size-6" />
               ) : isOccupation ? (
-                <Code2 className="size-6" />
+                <Code2 className="size-5 sm:size-6" />
               ) : (
-                <Sparkles className="size-6" />
+                <Sparkles className="size-5 sm:size-6" />
               )}
             </div>
-            <div>
-              <div className="flex items-center gap-2">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                 <span className="font-mono text-[10px] uppercase font-semibold text-brand-text bg-brand-soft px-2 py-0.5 rounded-full">
                   {layerLabel}
                 </span>
@@ -78,7 +78,7 @@ export function NodeDetailModal({ node, isOpen, onClose }: NodeDetailModalProps)
                   </span>
                 )}
               </div>
-              <h2 className="text-lg font-extrabold text-foreground mt-0.5">
+              <h2 className="text-base sm:text-lg font-extrabold text-foreground mt-0.5 break-words">
                 {nodeTitle}
               </h2>
             </div>
@@ -86,7 +86,7 @@ export function NodeDetailModal({ node, isOpen, onClose }: NodeDetailModalProps)
         </div>
 
         {/* Scrollable Body */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-5 text-xs [scrollbar-width:thin]">
+        <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-5 space-y-4 sm:space-y-5 text-xs [scrollbar-width:thin]">
           {/* A. Bachelor of IT Specific Information */}
           {isBachelor && (
             <div className="space-y-4">
@@ -371,11 +371,11 @@ export function NodeDetailModal({ node, isOpen, onClose }: NodeDetailModalProps)
         </div>
 
         {/* Footer */}
-        <div className="flex shrink-0 items-center justify-end border-t border-border px-5 py-3 bg-surface/50">
+        <div className="flex shrink-0 items-center justify-end border-t border-border px-4 sm:px-5 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-surface/50">
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl border border-border bg-background px-4 py-2 text-xs font-semibold text-foreground hover:bg-hover transition-colors cursor-pointer"
+            className="min-h-11 sm:min-h-9 rounded-xl border border-border bg-background px-5 py-2 text-xs font-semibold text-foreground hover:bg-hover transition-colors cursor-pointer"
           >
             Đóng
           </button>

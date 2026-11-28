@@ -31,6 +31,7 @@ interface RadialCanvasProps {
   selectedNodeId: string | null;
   onSelectNode: (node: CareerNode) => void;
   onNodeCenteredAndOpenModal: (node: CareerNode) => void;
+  onReset?: () => void;
   isSkeleton?: boolean;
 }
 
@@ -44,6 +45,13 @@ function easeInOutCubic(x: number): number {
   return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
 }
 
+function getNodeBounds(node: CareerNode): { halfW: number; halfH: number } {
+  if (node.type === "bachelor") return { halfW: 78, halfH: 78 };
+  if (node.type === "domain") return { halfW: 66, halfH: 66 };
+  if (node.type === "occupation") return { halfW: 96, halfH: 38 };
+  return { halfW: 84, halfH: 32 };
+}
+
 export function RadialCanvas({
   nodes,
   edges,
@@ -51,6 +59,7 @@ export function RadialCanvas({
   selectedNodeId,
   onSelectNode,
   onNodeCenteredAndOpenModal,
+  onReset,
   isSkeleton = false,
 }: RadialCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -59,56 +68,148 @@ export function RadialCanvas({
   const getNodeName = (node: CareerNode): string =>
     language === "vi" && node.vietnameseName ? node.vietnameseName : node.name;
 
-  const [camera, setCamera] = useState<Camera>({ x: 0, y: 0, scale: 0.9 });
+  const [camera, setCamera] = useState<Camera>({ x: 0, y: 0, scale: 0.95 });
   const cameraRef = useRef<Camera>(camera);
   cameraRef.current = camera;
+
+  const nodesRef = useRef<CareerNode[]>(nodes);
+  nodesRef.current = nodes;
 
   const isDraggingRef = useRef(false);
   const dragStartRef = useRef({ x: 0, y: 0 });
   const cameraStartRef = useRef({ x: 0, y: 0 });
   const hasMovedRef = useRef(false);
+  const hasUserInteractedRef = useRef(false);
   const isAnimatingRef = useRef(false);
   const animFrameIdRef = useRef<number | null>(null);
   const prevSelectedNodeIdRef = useRef<string | null>(null);
 
-  // Initialize camera centered in container
-  useEffect(() => {
-    if (containerRef.current) {
-      const { clientWidth, clientHeight } = containerRef.current;
-      setCamera({
-        x: clientWidth / 2,
-        y: clientHeight / 2 + (isSkeleton ? 0 : 40),
-        scale: isSkeleton ? 0.95 : 0.85,
-      });
+  // Multi-touch pinch zoom state
+  const activePointersRef = useRef<Map<number, { x: number; y: number }>>(new Map());
+  const pinchStartRef = useRef<{
+    distance: number;
+    scale: number;
+    cameraX: number;
+    cameraY: number;
+    midX: number;
+    midY: number;
+  } | null>(null);
+
+  const cancelCameraAnimation = useCallback(() => {
+    if (animFrameIdRef.current !== null) {
+      cancelAnimationFrame(animFrameIdRef.current);
+      animFrameIdRef.current = null;
     }
-  }, [isSkeleton]);
+    isAnimatingRef.current = false;
+  }, []);
+
+  const computeFittedCamera = useCallback(
+    (targetNodes: CareerNode[], skeletonMode: boolean, maxScale?: number): Camera => {
+      const container = containerRef.current;
+      const clientWidth = container?.clientWidth ?? 0;
+      const clientHeight = container?.clientHeight ?? 0;
+
+      // Deterministic fallback when container is not yet measured (e.g. jsdom / pre-layout)
+      if (clientWidth <= 0 || clientHeight <= 0) {
+        return {
+          x: 0,
+          y: skeletonMode ? 0 : 40,
+          scale: skeletonMode ? 0.95 : 0.85,
+        };
+      }
+
+      let minX = Infinity;
+      let maxX = -Infinity;
+      let minY = Infinity;
+      let maxY = -Infinity;
+
+      if (targetNodes.length > 0) {
+        for (const n of targetNodes) {
+          const { halfW, halfH } = getNodeBounds(n);
+          minX = Math.min(minX, n.x - halfW);
+          maxX = Math.max(maxX, n.x + halfW);
+          minY = Math.min(minY, n.y - halfH);
+          maxY = Math.max(maxY, n.y + halfH);
+        }
+      } else {
+        minX = -340;
+        maxX = 340;
+        minY = -340;
+        maxY = 340;
+      }
+
+      const isCompact = clientWidth < 640;
+      const topClearance = isCompact ? 68 : 64;
+      const bottomClearance = skeletonMode ? (isCompact ? 72 : 68) : 28;
+      const sidePad = isCompact ? 18 : 44;
+
+      const availW = Math.max(clientWidth - sidePad * 2, 160);
+      const availH = Math.max(clientHeight - topClearance - bottomClearance, 160);
+      const graphW = Math.max(maxX - minX, 200);
+      const graphH = Math.max(maxY - minY, 200);
+
+      const upperScale = maxScale ?? (skeletonMode ? 0.98 : 0.92);
+      const newScale = Math.max(0.32, Math.min(upperScale, Math.min(availW / graphW, availH / graphH)));
+
+      const midX = (minX + maxX) / 2;
+      const midY = (minY + maxY) / 2;
+      const centerX = clientWidth / 2;
+      const centerY = topClearance + (clientHeight - topClearance - bottomClearance) / 2;
+
+      return {
+        x: Math.round((centerX - midX * newScale) * 10) / 10,
+        y: Math.round((centerY - midY * newScale) * 10) / 10,
+        scale: Math.round(newScale * 1000) / 1000,
+      };
+    },
+    []
+  );
+
+  // Initialize / refit camera cleanly when switching between skeleton & active domain
+  useEffect(() => {
+    cancelCameraAnimation();
+    hasUserInteractedRef.current = false;
+    const fitted = computeFittedCamera(nodesRef.current, isSkeleton);
+    cameraRef.current = fitted;
+    setCamera(fitted);
+  }, [isSkeleton, selectedState.domainId, computeFittedCamera, cancelCameraAnimation]);
+
+  // Refit on container resize before user manually pans/zooms
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(() => {
+      if (hasUserInteractedRef.current || isAnimatingRef.current) return;
+      const fitted = computeFittedCamera(nodesRef.current, isSkeleton);
+      cameraRef.current = fitted;
+      setCamera(fitted);
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [isSkeleton, computeFittedCamera]);
 
   // Clean up animation on unmount
   useEffect(() => {
     return () => {
-      if (animFrameIdRef.current) {
-        cancelAnimationFrame(animFrameIdRef.current);
-      }
+      cancelCameraAnimation();
     };
-  }, []);
+  }, [cancelCameraAnimation]);
 
   // Smooth camera centering animation
   const animateCameraToNode = useCallback(
     (targetNode: CareerNode, onComplete?: () => void) => {
       if (!containerRef.current) return;
-      if (animFrameIdRef.current) {
-        cancelAnimationFrame(animFrameIdRef.current);
-        animFrameIdRef.current = null;
-      }
+      cancelCameraAnimation();
 
       isAnimatingRef.current = true;
       const { clientWidth, clientHeight } = containerRef.current;
+      const isCompact = clientWidth > 0 && clientWidth < 640;
 
-      let targetScale = 1.0;
-      if (targetNode.layer === 1) targetScale = 0.95;
-      else if (targetNode.layer === 2) targetScale = 1.0;
-      else if (targetNode.layer === 3) targetScale = 1.15;
-      else if (targetNode.layer === 4) targetScale = 1.25;
+      let targetScale = isCompact ? 0.85 : 1.0;
+      if (targetNode.layer === 1) targetScale = isCompact ? 0.85 : 0.95;
+      else if (targetNode.layer === 2) targetScale = isCompact ? 0.9 : 1.0;
+      else if (targetNode.layer === 3) targetScale = isCompact ? 0.95 : 1.15;
+      else if (targetNode.layer === 4) targetScale = isCompact ? 1.0 : 1.25;
 
       const targetX = clientWidth / 2 - targetNode.x * targetScale;
       const targetY = clientHeight / 2 - targetNode.y * targetScale;
@@ -142,7 +243,7 @@ export function RadialCanvas({
 
       animFrameIdRef.current = requestAnimationFrame(step);
     },
-    []
+    [cancelCameraAnimation]
   );
 
   // Trigger camera focus ONLY when selected node ID changes from outside
@@ -177,14 +278,34 @@ export function RadialCanvas({
     [onSelectNode, animateCameraToNode, onNodeCenteredAndOpenModal]
   );
 
-  // Pan / Drag handlers
+  // Pan / Drag + 2-finger pinch zoom handlers
   const handlePointerDown = (e: React.PointerEvent) => {
-    if (e.button !== 0) return; // only left click
-    if (animFrameIdRef.current) {
-      cancelAnimationFrame(animFrameIdRef.current);
-      animFrameIdRef.current = null;
-      isAnimatingRef.current = false;
+    const target = e.target as HTMLElement | null;
+    if (target?.closest('[data-canvas-control="true"]')) return;
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+
+    cancelCameraAnimation();
+    activePointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+    if (activePointersRef.current.size === 2 && containerRef.current) {
+      // Begin 2-finger pinch zoom
+      isDraggingRef.current = false;
+      hasMovedRef.current = true;
+      hasUserInteractedRef.current = true;
+      const pts = Array.from(activePointersRef.current.values());
+      const rect = containerRef.current.getBoundingClientRect();
+      const dist = Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
+      pinchStartRef.current = {
+        distance: Math.max(dist, 1),
+        scale: cameraRef.current.scale,
+        cameraX: cameraRef.current.x,
+        cameraY: cameraRef.current.y,
+        midX: (pts[0].x + pts[1].x) / 2 - rect.left,
+        midY: (pts[0].y + pts[1].y) / 2 - rect.top,
+      };
+      return;
     }
+
     isDraggingRef.current = true;
     hasMovedRef.current = false;
     dragStartRef.current = { x: e.clientX, y: e.clientY };
@@ -195,12 +316,35 @@ export function RadialCanvas({
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
+    if (activePointersRef.current.has(e.pointerId)) {
+      activePointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    }
+
+    if (activePointersRef.current.size === 2 && pinchStartRef.current && containerRef.current) {
+      const pts = Array.from(activePointersRef.current.values());
+      const rect = containerRef.current.getBoundingClientRect();
+      const dist = Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
+      const midX = (pts[0].x + pts[1].x) / 2 - rect.left;
+      const midY = (pts[0].y + pts[1].y) / 2 - rect.top;
+
+      const start = pinchStartRef.current;
+      const newScale = Math.max(0.3, Math.min(2.5, start.scale * (dist / start.distance)));
+      const ratio = newScale / start.scale;
+      const newX = midX - (start.midX - start.cameraX) * ratio;
+      const newY = midY - (start.midY - start.cameraY) * ratio;
+
+      setCamera({ x: newX, y: newY, scale: newScale });
+      return;
+    }
+
     if (!isDraggingRef.current) return;
     const dx = e.clientX - dragStartRef.current.x;
     const dy = e.clientY - dragStartRef.current.y;
+    const moveThreshold = e.pointerType === "touch" ? 8 : 4;
 
-    if (Math.hypot(dx, dy) > 4) {
+    if (Math.hypot(dx, dy) > moveThreshold) {
       hasMovedRef.current = true;
+      hasUserInteractedRef.current = true;
     }
 
     setCamera((prev) => ({
@@ -210,97 +354,130 @@ export function RadialCanvas({
     }));
   };
 
-  const handlePointerUp = () => {
-    isDraggingRef.current = false;
-    if (containerRef.current) {
-      containerRef.current.style.cursor = "grab";
+  const handlePointerUp = (e: React.PointerEvent) => {
+    activePointersRef.current.delete(e.pointerId);
+    if (activePointersRef.current.size < 2) {
+      pinchStartRef.current = null;
+    }
+    if (activePointersRef.current.size === 0) {
+      isDraggingRef.current = false;
+      if (containerRef.current) {
+        containerRef.current.style.cursor = "grab";
+      }
     }
   };
 
-  // Wheel zoom centered on mouse pointer
-  const handleWheel = (e: React.WheelEvent) => {
-    e.preventDefault();
-    if (!containerRef.current) return;
-    if (animFrameIdRef.current) {
-      cancelAnimationFrame(animFrameIdRef.current);
-      animFrameIdRef.current = null;
-      isAnimatingRef.current = false;
-    }
+  // Native non-passive wheel zoom centered on mouse pointer
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
 
-    const rect = containerRef.current.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
+    const onWheel = (e: WheelEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target?.closest('[data-canvas-control="true"]')) return;
+      e.preventDefault();
+      cancelCameraAnimation();
+      hasUserInteractedRef.current = true;
 
-    const zoomFactor = e.deltaY < 0 ? 1.12 : 0.89;
-    const currentScale = cameraRef.current.scale;
-    const currentX = cameraRef.current.x;
-    const currentY = cameraRef.current.y;
-    const newScale = Math.max(0.3, Math.min(2.5, currentScale * zoomFactor));
+      const rect = el.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
 
-    const newX = mouseX - (mouseX - currentX) * (newScale / currentScale);
-    const newY = mouseY - (mouseY - currentY) * (newScale / currentScale);
+      const zoomFactor = e.deltaY < 0 ? 1.12 : 0.89;
+      const currentScale = cameraRef.current.scale;
+      const currentX = cameraRef.current.x;
+      const currentY = cameraRef.current.y;
+      const newScale = Math.max(0.3, Math.min(2.5, currentScale * zoomFactor));
 
-    setCamera({ x: newX, y: newY, scale: newScale });
-  };
+      const newX = mouseX - (mouseX - currentX) * (newScale / currentScale);
+      const newY = mouseY - (mouseY - currentY) * (newScale / currentScale);
 
-  // Zoom controls
-  const zoomIn = () => {
-    if (!containerRef.current) return;
-    const { clientWidth, clientHeight } = containerRef.current;
-    const newScale = Math.min(2.5, camera.scale * 1.25);
-    const newX = clientWidth / 2 - (clientWidth / 2 - camera.x) * (newScale / camera.scale);
-    const newY = clientHeight / 2 - (clientHeight / 2 - camera.y) * (newScale / camera.scale);
-    setCamera({ x: newX, y: newY, scale: newScale });
-  };
+      setCamera({ x: newX, y: newY, scale: newScale });
+    };
 
-  const zoomOut = () => {
-    if (!containerRef.current) return;
-    const { clientWidth, clientHeight } = containerRef.current;
-    const newScale = Math.max(0.3, camera.scale / 1.25);
-    const newX = clientWidth / 2 - (clientWidth / 2 - camera.x) * (newScale / camera.scale);
-    const newY = clientHeight / 2 - (clientHeight / 2 - camera.y) * (newScale / camera.scale);
-    setCamera({ x: newX, y: newY, scale: newScale });
-  };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, [cancelCameraAnimation]);
 
-  const resetView = () => {
-    if (!containerRef.current) return;
-    const { clientWidth, clientHeight } = containerRef.current;
-    setCamera({
-      x: clientWidth / 2,
-      y: clientHeight / 2 + (isSkeleton ? 0 : 40),
-      scale: isSkeleton ? 0.95 : 0.85,
-    });
-  };
+  // Zoom & view controls
+  const zoomIn = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      cancelCameraAnimation();
+      hasUserInteractedRef.current = true;
+      const clientWidth = containerRef.current?.clientWidth ?? 0;
+      const clientHeight = containerRef.current?.clientHeight ?? 0;
+      setCamera((prev) => {
+        const newScale = Math.min(2.5, prev.scale * 1.25);
+        const cx = clientWidth / 2;
+        const cy = clientHeight / 2;
+        return {
+          x: cx - (cx - prev.x) * (newScale / prev.scale),
+          y: cy - (cy - prev.y) * (newScale / prev.scale),
+          scale: newScale,
+        };
+      });
+    },
+    [cancelCameraAnimation]
+  );
 
-  const fitNetwork = () => {
-    if (!containerRef.current || nodes.length === 0) return;
-    const { clientWidth, clientHeight } = containerRef.current;
+  const zoomOut = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      cancelCameraAnimation();
+      hasUserInteractedRef.current = true;
+      const clientWidth = containerRef.current?.clientWidth ?? 0;
+      const clientHeight = containerRef.current?.clientHeight ?? 0;
+      setCamera((prev) => {
+        const newScale = Math.max(0.3, prev.scale / 1.25);
+        const cx = clientWidth / 2;
+        const cy = clientHeight / 2;
+        return {
+          x: cx - (cx - prev.x) * (newScale / prev.scale),
+          y: cy - (cy - prev.y) * (newScale / prev.scale),
+          scale: newScale,
+        };
+      });
+    },
+    [cancelCameraAnimation]
+  );
 
-    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-    nodes.forEach((n) => {
-      minX = Math.min(minX, n.x - 80);
-      maxX = Math.max(maxX, n.x + 80);
-      minY = Math.min(minY, n.y - 60);
-      maxY = Math.max(maxY, n.y + 60);
-    });
+  const fitNetwork = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      cancelCameraAnimation();
+      hasUserInteractedRef.current = false;
+      const fitted = computeFittedCamera(nodesRef.current, isSkeleton, 1.35);
+      cameraRef.current = fitted;
+      setCamera(fitted);
+    },
+    [cancelCameraAnimation, computeFittedCamera, isSkeleton]
+  );
 
-    const graphW = Math.max(maxX - minX, 200);
-    const graphH = Math.max(maxY - minY, 200);
+  const resetView = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      cancelCameraAnimation();
+      isDraggingRef.current = false;
+      activePointersRef.current.clear();
+      pinchStartRef.current = null;
+      hasMovedRef.current = false;
+      hasUserInteractedRef.current = false;
+      prevSelectedNodeIdRef.current = null;
+      if (containerRef.current) {
+        containerRef.current.style.cursor = "grab";
+      }
 
-    const pad = 90;
-    const scaleX = (clientWidth - pad * 2) / graphW;
-    const scaleY = (clientHeight - pad * 2) / graphH;
-    const newScale = Math.max(0.35, Math.min(1.4, Math.min(scaleX, scaleY)));
+      const nextSkeleton = onReset ? true : isSkeleton;
+      const targetNodes = nextSkeleton && !isSkeleton ? [] : nodesRef.current;
+      const resetCam = computeFittedCamera(targetNodes, nextSkeleton);
+      cameraRef.current = resetCam;
+      setCamera(resetCam);
 
-    const midX = (minX + maxX) / 2;
-    const midY = (minY + maxY) / 2;
-
-    setCamera({
-      x: clientWidth / 2 - midX * newScale,
-      y: clientHeight / 2 - midY * newScale,
-      scale: newScale,
-    });
-  };
+      onReset?.();
+    },
+    [cancelCameraAnimation, computeFittedCamera, isSkeleton, onReset]
+  );
 
   // Node Map for edge connections
   const nodeMap = useMemo(() => {
@@ -330,7 +507,7 @@ export function RadialCanvas({
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
-      onWheel={handleWheel}
+      onPointerCancel={handlePointerUp}
       className="relative w-full h-full overflow-hidden bg-background select-none cursor-grab active:cursor-grabbing transition-colors"
       style={{ touchAction: "none" }}
     >
@@ -360,7 +537,10 @@ export function RadialCanvas({
           </linearGradient>
         </defs>
 
-        <g transform={`translate(${camera.x}, ${camera.y}) scale(${camera.scale})`}>
+        <g
+          data-testid="career-canvas-viewport"
+          transform={`translate(${camera.x}, ${camera.y}) scale(${camera.scale})`}
+        >
           {/* 1. EDGES */}
           {edges.map((edge) => {
             const source = nodeMap.get(edge.source);
@@ -615,23 +795,38 @@ export function RadialCanvas({
         </g>
       </svg>
 
-      {/* Instructional Banner for Skeleton State */}
-      {isSkeleton && (
-        <div className="absolute top-6 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
-          <div className="flex items-center gap-2.5 rounded-full border border-border bg-surface/95 px-4 py-2 text-xs font-semibold text-foreground shadow-sm backdrop-blur-sm">
-            <Sparkles className="size-4 text-brand-bright animate-pulse" />
-            <span>Chọn nhóm nghề nghiệp để khám phá mạng lưới nghề nghiệp của bạn.</span>
-          </div>
-        </div>
-      )}
+      {/* Canvas Controls: Top-Left Corner (Reset prominent + Zoom / Fit) */}
+      <div
+        data-canvas-control="true"
+        data-testid="career-canvas-controls"
+        role="toolbar"
+        aria-label={language === "vi" ? "Điều khiển cây nghề nghiệp" : "Career tree controls"}
+        onPointerDown={(e) => e.stopPropagation()}
+        onPointerMove={(e) => e.stopPropagation()}
+        onPointerUp={(e) => e.stopPropagation()}
+        onWheel={(e) => e.stopPropagation()}
+        className="absolute top-3 left-3 sm:top-4 sm:left-4 z-10 flex items-center gap-1 rounded-2xl border border-border bg-surface/95 p-1 shadow-sm backdrop-blur-md transition-colors max-w-[calc(100%-4.75rem)] sm:max-w-none"
+      >
+        <button
+          type="button"
+          data-testid="career-reset-btn"
+          onClick={resetView}
+          aria-label={language === "vi" ? "Đặt lại cây và góc nhìn" : "Reset tree and view"}
+          title={language === "vi" ? "Đặt lại cây và góc nhìn (Reset)" : "Reset tree and view"}
+          className="flex min-h-11 min-w-11 sm:min-h-9 sm:min-w-9 items-center justify-center gap-1.5 rounded-xl bg-brand-soft/80 px-2.5 sm:px-3 text-xs font-semibold text-brand-text hover:bg-brand-soft transition-colors cursor-pointer shrink-0"
+        >
+          <RotateCcw className="size-4 shrink-0" />
+          <span>{language === "vi" ? "Đặt lại" : "Reset"}</span>
+        </button>
 
-      {/* Canvas Controls: Top-left or Bottom-left */}
-      <div className="absolute bottom-5 left-5 z-20 flex items-center gap-1.5 rounded-2xl border border-border bg-surface/95 p-1.5 shadow-sm backdrop-blur-md transition-colors">
+        <div className="h-5 w-px bg-border mx-0.5 shrink-0" />
+
         <button
           type="button"
           onClick={zoomIn}
+          aria-label={language === "vi" ? "Phóng to" : "Zoom In"}
           title="Phóng to (Zoom In)"
-          className="flex size-8 items-center justify-center rounded-xl text-fg-secondary hover:bg-hover hover:text-foreground transition-colors cursor-pointer"
+          className="flex size-11 sm:size-9 items-center justify-center rounded-xl text-fg-secondary hover:bg-hover hover:text-foreground transition-colors cursor-pointer shrink-0"
         >
           <ZoomIn className="size-4" />
         </button>
@@ -639,38 +834,42 @@ export function RadialCanvas({
         <button
           type="button"
           onClick={zoomOut}
+          aria-label={language === "vi" ? "Thu nhỏ" : "Zoom Out"}
           title="Thu nhỏ (Zoom Out)"
-          className="flex size-8 items-center justify-center rounded-xl text-fg-secondary hover:bg-hover hover:text-foreground transition-colors cursor-pointer"
+          className="flex size-11 sm:size-9 items-center justify-center rounded-xl text-fg-secondary hover:bg-hover hover:text-foreground transition-colors cursor-pointer shrink-0"
         >
           <ZoomOut className="size-4" />
         </button>
 
-        <div className="h-4 w-px bg-border mx-0.5" />
-
         <button
           type="button"
           onClick={fitNetwork}
+          aria-label={language === "vi" ? "Căn vừa màn hình" : "Fit Network"}
           title="Căn vừa màn hình (Fit Network)"
-          className="flex size-8 items-center justify-center rounded-xl text-fg-secondary hover:bg-hover hover:text-foreground transition-colors cursor-pointer"
+          className="flex size-11 sm:size-9 items-center justify-center rounded-xl text-fg-secondary hover:bg-hover hover:text-foreground transition-colors cursor-pointer shrink-0"
         >
           <Maximize2 className="size-4" />
         </button>
 
-        <button
-          type="button"
-          onClick={resetView}
-          title="Đặt lại góc nhìn (Reset View)"
-          className="flex size-8 items-center justify-center rounded-xl text-fg-secondary hover:bg-hover hover:text-foreground transition-colors cursor-pointer"
+        <div className="hidden sm:block h-5 w-px bg-border mx-0.5 shrink-0" />
+
+        <span
+          data-testid="career-zoom-percent"
+          className="hidden sm:inline-block px-2 font-mono text-[11px] font-semibold text-muted-foreground select-none"
         >
-          <RotateCcw className="size-4" />
-        </button>
-
-        <div className="h-4 w-px bg-border mx-0.5" />
-
-        <span className="px-2 font-mono text-[11px] font-semibold text-muted-foreground select-none">
           {Math.round(camera.scale * 100)}%
         </span>
       </div>
+
+      {/* Instructional Banner for Skeleton State (Bottom-center so top HUD stays unobstructed) */}
+      {isSkeleton && (
+        <div className="absolute bottom-3 sm:bottom-5 left-1/2 -translate-x-1/2 z-10 pointer-events-none w-max max-w-[calc(100%-1.5rem)] pb-[env(safe-area-inset-bottom)]">
+          <div className="flex items-center gap-2 rounded-2xl sm:rounded-full border border-border bg-surface/95 px-3.5 py-2 text-[11px] sm:text-xs font-semibold text-foreground shadow-sm backdrop-blur-sm text-center">
+            <Sparkles className="size-4 shrink-0 text-brand-bright animate-pulse" />
+            <span className="leading-snug">Chọn nhóm nghề nghiệp để khám phá mạng lưới nghề nghiệp của bạn.</span>
+          </div>
+        </div>
+      )}
 
       <style>{`
         @keyframes careerFlow {

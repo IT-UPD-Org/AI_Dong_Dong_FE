@@ -27,7 +27,7 @@ export function ChatComposer({
   }
 
   return (
-    <div className="shrink-0">
+    <div className="shrink-0 px-3 sm:px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
       <form
         onSubmit={onSubmit}
         className="
@@ -35,10 +35,10 @@ export function ChatComposer({
           flex w-full
           max-w-4xl
           items-end gap-2
-          rounded-full
+          rounded-3xl
           border border-border
           bg-field
-          p-2
+          p-1.5 sm:p-2
           shadow-sm
           transition-all
           focus-within:border-brand-bright/50
@@ -49,13 +49,13 @@ export function ChatComposer({
           type="button"
           aria-label="Tải lên tệp"
           className="
-            shrink-0
+            flex size-11 shrink-0 items-center justify-center
             rounded-full
-            p-3
             text-muted-foreground
             transition-colors
             hover:bg-hover
             hover:text-brand-text
+            cursor-pointer
           "
         >
           <Paperclip size={18} />
@@ -69,13 +69,13 @@ export function ChatComposer({
           placeholder="Hỏi IT UPD GenAI bất cứ điều gì..."
           className="
             max-h-32
-            min-h-12
+            min-h-11
             min-w-0
             flex-1
             resize-none
             bg-transparent text-foreground
-            px-2 py-3
-            text-sm
+            px-2 py-2.5
+            text-base sm:text-sm
             leading-6
             outline-none
             placeholder:text-muted-foreground
@@ -87,14 +87,13 @@ export function ChatComposer({
           aria-label="Gửi tin nhắn"
           disabled={!value.trim() || loading}
           className="
-            shrink-0
+            flex size-11 shrink-0 items-center justify-center
             rounded-full
             bg-brand
-            p-3
             text-brand-foreground
             transition-all
             hover:bg-brand-hover
-
+            cursor-pointer
             disabled:cursor-not-allowed
             disabled:opacity-30
           "
@@ -103,7 +102,7 @@ export function ChatComposer({
         </button>
       </form>
 
-      <p className="mt-3 text-center text-[11px] text-muted-foreground">
+      <p className="mt-2 text-center text-[11px] leading-snug text-muted-foreground">
         IT UPD GenAI có thể mắc lỗi, vui lòng kiểm tra lại thông tin trước khi
         áp dụng vào thực tế.
       </p>

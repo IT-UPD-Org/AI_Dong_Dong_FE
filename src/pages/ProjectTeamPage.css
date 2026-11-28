@@ -29,6 +29,8 @@ body:has(.project-team) {
   color: var(--team-ink);
   background: var(--team-bg);
   font-family: "Be Vietnam Pro", sans-serif;
+  overflow-x: clip;
+  overflow-wrap: break-word;
 }
 
 :is(.dark, .dark *) .project-team,
@@ -536,8 +538,11 @@ body:has(.project-team) {
 }
 
 @media (max-width: 460px) {
+  .project-team__mobile-nav {
+    padding: 0 16px 8px;
+  }
   .project-team__main {
-    padding-inline: 22px;
+    padding-inline: 16px;
   }
   .project-team h1 {
     font-size: clamp(26px, 7.4vw, 32px);
@@ -555,5 +560,8 @@ body:has(.project-team) {
   .project-team__club-label {
     max-width: 190px;
     line-height: 1.8;
+  }
+  .project-team__footer {
+    padding: 24px 16px;
   }
 }
